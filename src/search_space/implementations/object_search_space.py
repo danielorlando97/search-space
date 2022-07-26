@@ -7,7 +7,7 @@ class ObjectSearchSpace(SearchSpace):
         super().__init__({}, None)
 
     def _get_random_value(self, domain):
-        sss = [(name, oss_property) for name, oss_property in self.__dict__.items() if isinstance(
+        sss = [(name, oss_property) for name, oss_property in self.__class__.__dict__.items() if isinstance(
             oss_property, SearchSpace)]
 
         value = {}

@@ -1,7 +1,4 @@
 
-from xml import dom
-
-
 DEBUG_SAMPLER = True
 
 
@@ -50,8 +47,7 @@ class SearchSpace:
     def _check_condition(self, constraint, sample):
         return constraint.condition(sample)
 
-    def __or__(self, func):
-        func(self)
+    def __or__(self, other):
         return self
 
     def such_that(self, func):
@@ -95,3 +91,19 @@ class SearchSpaceConstraint:
 
     def depend_of(self, other):
         return self.value == other
+
+
+class UniversalVariable:
+    def __init__(self) -> None:
+        self.ss = None
+
+    def __lshift__(self, other):
+        self.ss = other
+
+        return other
+
+    def __ge__(self, other):
+        return self.ss >= other
+
+    def __le__(self, other):
+        return self.ss <= other

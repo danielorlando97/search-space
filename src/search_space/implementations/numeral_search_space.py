@@ -14,12 +14,14 @@ class NumeralSearchSpace(SearchSpace):
 
 
 class ContinueSearchSpace(NumeralSearchSpace):
-    def __init__(self, min=0, max=100000, distribute_like=ContinueNormalDistributeSampler()) -> None:
+    def __init__(self, min=0, max=100000,
+                 distribute_like=ContinueNormalDistributeSampler(u=50000, o2=10)) -> None:
         super().__init__(min, max, distribute_like)
 
 
 class NaturalSearchSpace(NumeralSearchSpace):
-    def __init__(self, min=0, max=100000, distribute_like=NaturalNormalDistributeSampler()) -> None:
+    def __init__(self, min=0, max=100000,
+                 distribute_like=ContinueNormalDistributeSampler(u=50000, o2=10)) -> None:
         super().__init__(min, max, distribute_like)
 
 
