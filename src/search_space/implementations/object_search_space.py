@@ -16,9 +16,6 @@ class ObjectSearchSpace(SearchSpace):
 
         return value
 
-    def __or__(self, func):
-        return None
-
 
 class ListSearchSpace(ObjectSearchSpace):
     size = NaturalSearchSpace()

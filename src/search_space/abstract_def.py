@@ -99,7 +99,6 @@ class UniversalVariable:
 
     def __lshift__(self, other):
         self.ss = other
-
         return other
 
     def __ge__(self, other):
@@ -107,3 +106,8 @@ class UniversalVariable:
 
     def __le__(self, other):
         return self.ss <= other
+
+    def __getattr__(self, name):
+        x = UniversalVariable()
+        x.ss = self.ss.__class__.__dict__[name]
+        return x

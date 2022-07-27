@@ -21,7 +21,7 @@ class ContinueSearchSpace(NumeralSearchSpace):
 
 class NaturalSearchSpace(NumeralSearchSpace):
     def __init__(self, min=0, max=100000,
-                 distribute_like=ContinueNormalDistributeSampler(u=50000, o2=10)) -> None:
+                 distribute_like=NaturalNormalDistributeSampler(u=50000, o2=10)) -> None:
         super().__init__(min, max, distribute_like)
 
 
