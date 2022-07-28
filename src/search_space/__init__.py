@@ -1,3 +1,4 @@
 from .abstract_def import SearchSpace, SearchSpaceConstraint, UniversalVariable
 from .implementations.numeral_search_space import ContinueSearchSpace, NaturalSearchSpace
 from .implementations.object_search_space import ObjectSearchSpace
+from .implementations.categorical_search_space import BooleanSearchSpace, CategoricalSearchSpace
