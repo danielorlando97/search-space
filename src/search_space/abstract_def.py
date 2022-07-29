@@ -1,6 +1,32 @@
 DEBUG_SAMPLER = True
 
 
+class Singleton(type):
+    _instances = None
+
+    def __call__(cls, *args, **kwargs):
+        if cls._instances is None:
+            cls._instances = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances
+
+
+class ContextManagerSearchSpace(metaclass=Singleton):
+    def __init__(self) -> None:
+        self.__dict = {}
+
+    def _get_last_sampler(self, search_space):
+        try:
+            return self.__dict[search_space]
+        except KeyError:
+            return None
+
+    def _save_new_sampler(self, search_space, value):
+        self.__dict[search_space] = value
+
+    def reset(self):
+        self.__dict = {}
+
+
 class SearchSpace:
     def __init__(self, domain, distribute_like, log_name=None) -> None:
         self._distribution = distribute_like
@@ -13,8 +39,9 @@ class SearchSpace:
         self.__cache = None
 
     def get_sampler(self, local_domain=None):
-        if not self.__cache is None:
-            return self.__cache
+        cache_value = ContextManagerSearchSpace()._get_last_sampler(self)
+        if not cache_value is None:
+            return cache_value
 
         transformers = [c for c in self.constraint_list if c.is_transformer]
         conditions = [c for c in self.constraint_list if c.is_condition]
@@ -33,10 +60,10 @@ class SearchSpace:
                 print(
                     f'Check conditions by sampler {sample} in {self.scope}')
             for c in conditions:
-                if self._check_condition(c, sample):
+                if not self._check_condition(c, sample):
                     break
             else:
-                self.__cache = sample
+                ContextManagerSearchSpace()._save_new_sampler(self, sample)
                 return sample
 
     def _get_random_value(self, domain):
@@ -49,6 +76,11 @@ class SearchSpace:
         return constraint.check_condition(sample)
 
     def __or__(self, other):
+        try:
+            for f in other:
+                f(self)
+        except TypeError:
+            other(self)
         return self
 
     def such_that(self, func):
@@ -101,6 +133,9 @@ class SearchSpace:
     def __eq__(self, other):
         return SearchSpace.SearchSpaceConditions(self, lambda ssv: ssv == other)
 
+    def __hash__(self) -> int:
+        return id(self)
+
 
 class SearchSpaceConstraint:
     def __init__(self, value, search_space) -> None:
@@ -124,7 +159,7 @@ class SearchSpaceConstraint:
         raise TypeError(
             f"is constraint isn't transform constraint")
 
-    def _func_condition(self, domain):
+    def _func_condition(self, sampler):
         raise TypeError(
             f"is constraint isn't conditional constraint")
 
@@ -164,29 +199,105 @@ class SearchSpaceConstraint:
 
 
 class UniversalVariable:
-    def __init__(self) -> None:
-        self.ss: SearchSpace = None
+    def __init__(self, father=None, func=None) -> None:
+        self.father = father
+        self.func = func
 
-    def __lshift__(self, other):
-        self.ss = other
-        return other
+    # def __lshift__(self, other):
+    #     self.ss = other
+    #     return other
 
     def __ge__(self, other):
-        return self.ss._great_equal(other)
+        return UniversalVariable(father=self, func=lambda ss: ss._great_equal(other))
 
     def __gt__(self, other):
-        return self.ss._great(other)
+        return UniversalVariable(father=self, func=lambda ss: ss._great(other))
 
     def __le__(self, other):
-        return self.ss._less_equal(other)
+        return UniversalVariable(father=self, func=lambda ss: ss._less_equal(other))
 
     def __lt__(self, other):
-        return self.ss._less(other)
+        return UniversalVariable(father=self, func=lambda ss: ss._less(other))
 
     def __ne__(self, other):
-        return self.ss._not_equal(other)
+        return UniversalVariable(father=self, func=lambda ss: ss._not_equal(other))
 
     def __getattr__(self, name):
-        x = UniversalVariable()
-        x.ss = self.ss.__class__.__dict__[name]
-        return x
+        return UniversalVariable(father=self, func=lambda ss: ss.__class__.__dict__[name])
+
+    def __rrshift__(self, other):
+        return UniversalVariable(father=self, func=lambda ss: other >> ss)
+
+    def __call__(self, ss: SearchSpace) -> None:
+        if self.func is None:
+            return ss
+
+        return self.func(self.father(ss))
+
+
+class FunctionConstraint(SearchSpaceConstraint):
+    @property
+    def is_condition(self):
+        return True
+
+    def __init__(self, params, func) -> None:
+        self.params = params
+        self.func = func
+        self.index = [i for i, p in enumerate(
+            params) if isinstance(p, UniversalVariable)][0]
+        super().__init__(None, None)
+
+    def __call__(self, search_space):
+        search_space.constraint_list.append(self)
+        self.__ss = search_space
+        return self
+
+    @property
+    def is_context_sensitive(self):
+        result = False
+        for i, param in enumerate(self.params):
+            if i == self.index:
+                continue
+
+            self.value = param
+            result |= super().is_context_sensitive
+
+        return result
+
+    def _func_condition(self, sampler):
+        params = self._real_value
+        params[self.index] = sampler
+
+        result = self.func(*params)
+        return result
+
+    @property
+    def _real_value(self):
+        result = []
+        for i, param in enumerate(self.params):
+            if i == self.index:
+                result.append(param)
+                continue
+            self.value = param
+            result.append(super()._real_value)
+
+        return result
+
+
+class MetaPredication(type):
+    _instances = None
+
+    def __call__(cls, *args, **kwargs):
+        instance = super(
+            MetaPredication, cls).__call__(*args, **kwargs)
+        try:
+            instance.__call__
+            return FunctionConstraint(list(args), instance.__call__)
+        except AttributeError:
+            l = list(args)
+            return FunctionConstraint(l[0:-1], l[-1])
+
+
+class Predication(metaclass=MetaPredication):
+    def __init__(self, *args) -> None:
+        pass
