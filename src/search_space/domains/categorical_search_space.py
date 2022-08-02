@@ -1,10 +1,21 @@
-from typing import List
-from search_space.abstract_def import SearchSpaceConstraint, SearchSpace
+from math import sqrt
+
+# try:
+#     from ..abs_search_space import SearchSpace
+#     from ..ss_constraint import SearchSpaceConstraint
+#     from .numeral_search_space import NaturalNormalDistributeSampler
+# except (ModuleNotFoundError, ImportError):
+from ..abs_search_space import SearchSpace
+from ..ss_constraint import SearchSpaceConstraint
 from .numeral_search_space import NaturalNormalDistributeSampler
 
 
 class CategoricalSearchSpace(SearchSpace):
-    def __init__(self, domain, distribute_like=NaturalNormalDistributeSampler(u=50000, o2=10), log_name=None) -> None:
+    def __init__(self, domain, distribute_like=None, log_name=None) -> None:
+        if distribute_like is None:
+            distribute_like = NaturalNormalDistributeSampler(
+                u=(len(domain) + 0) / 2, o2=sqrt((len(domain) + 0) / 4))
+
         super().__init__(domain, distribute_like, log_name)
 
     def _get_random_value(self, domain):
@@ -16,7 +27,7 @@ class CategoricalSearchSpace(SearchSpace):
 
 
 class BooleanSearchSpace(CategoricalSearchSpace):
-    def __init__(self, distribute_like=NaturalNormalDistributeSampler(u=50000, o2=10), log_name=None) -> None:
+    def __init__(self, distribute_like=None, log_name=None) -> None:
         super().__init__([False, True], distribute_like, log_name)
 
 
@@ -25,7 +36,7 @@ class NotEqual(SearchSpaceConstraint):
     def is_transformer(self):
         return True
 
-    def _func_transform(self, domain: List):
+    def _func_transform(self, domain):
         result = domain.copy()
         result.remove(self._real_value)
         return result

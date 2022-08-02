@@ -1,5 +1,13 @@
-from search_space.abstract_def import SearchSpace, SearchSpaceConstraint
-from samplers.implementations.normal_distribution_sampler import NaturalNormalDistributeSampler, ContinueNormalDistributeSampler
+from math import sqrt
+
+# try:
+#     from ..abs_search_space import SearchSpace
+#     from ..ss_constraint import SearchSpaceConstraint
+#     from ...samplers.implementations.normal_distribution_sampler import NaturalNormalDistributeSampler, ContinueNormalDistributeSampler
+# except (ModuleNotFoundError, ImportError):
+from ..abs_search_space import SearchSpace
+from ..ss_constraint import SearchSpaceConstraint
+from ...samplers.implementations.normal_distribution_sampler import NaturalNormalDistributeSampler, ContinueNormalDistributeSampler
 
 
 class NumeralSearchSpace(SearchSpace):
@@ -22,16 +30,26 @@ class NumeralSearchSpace(SearchSpace):
         self.constraint_list.append(Less(other, self))
         return self.constraint_list[-1]
 
+    def _not_equal(self, other):
+        self.constraint_list.append(NotEqual(other, self))
+        return self.constraint_list[-1]
+
 
 class ContinueSearchSpace(NumeralSearchSpace):
-    def __init__(self, min=0, max=100000, log_name=None,
-                 distribute_like=ContinueNormalDistributeSampler(u=50000, o2=10)) -> None:
+    def __init__(self, min=0, max=100000, log_name=None, distribute_like=None) -> None:
+        if distribute_like is None:
+            distribute_like = ContinueNormalDistributeSampler(
+                u=(max + min) / 2, o2=sqrt((max + min) / 4))
         super().__init__(min, max, distribute_like, log_name)
 
 
 class NaturalSearchSpace(NumeralSearchSpace):
     def __init__(self, min=0, max=100000, log_name=None,
-                 distribute_like=NaturalNormalDistributeSampler(u=50000, o2=10)) -> None:
+                 distribute_like=None) -> None:
+        if distribute_like is None:
+            distribute_like = NaturalNormalDistributeSampler(
+                u=(max + min) / 2, o2=sqrt((max + min) / 4))
+
         super().__init__(min, max, distribute_like, log_name)
 
 
@@ -71,3 +89,12 @@ class Less(LessEqual):
 
     def _func_condition(self, sampler):
         return self._real_value > sampler
+
+
+class NotEqual(SearchSpaceConstraint):
+    @property
+    def is_condition(self):
+        return True
+
+    def _func_condition(self, sampler):
+        return self._real_value != sampler

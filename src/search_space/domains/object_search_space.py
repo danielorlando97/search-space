@@ -1,6 +1,11 @@
-from search_space.abstract_def import SearchSpace
-from search_space.implementations.numeral_search_space import NaturalSearchSpace, NaturalNormalDistributeSampler
-from search_space.implementations.categorical_search_space import CategoricalSearchSpace
+# try:
+#     from ..abs_search_space import SearchSpace
+#     from .numeral_search_space import NaturalNormalDistributeSampler, NaturalSearchSpace
+#     from .categorical_search_space import CategoricalSearchSpace
+# except (ModuleNotFoundError, ImportError):
+from ..abs_search_space import SearchSpace
+from .numeral_search_space import NaturalNormalDistributeSampler, NaturalSearchSpace
+from .categorical_search_space import CategoricalSearchSpace
 
 
 class ObjectSearchSpace(SearchSpace):

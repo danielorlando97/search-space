@@ -1,6 +1,11 @@
-import imp
-from samplers.abstract_def import Sampler
 from random import random
+
+# try:
+#     from ..abstract_def import Sampler
+# except (ModuleNotFoundError, ImportError):
+#     from samplers.abstract_def import Sampler
+
+from ..abstract_def import Sampler
 
 
 class ContinueNormalDistributeSampler(Sampler):
