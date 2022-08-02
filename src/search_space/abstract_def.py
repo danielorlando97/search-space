@@ -87,6 +87,10 @@ class SearchSpace:
         func(self)
         return self
 
+    def _equal(self, other):
+        raise TypeError(
+            f"'==' not supported between instances of '{self.__class__.__name__}' and '{type(other).__name__}' ")
+
     def _great_equal(self, other):
         raise TypeError(
             f"'>=' not supported between instances of '{self.__class__.__name__}' and '{type(other).__name__}' ")
@@ -106,6 +110,14 @@ class SearchSpace:
     def _not_equal(self, other):
         raise TypeError(
             f"'!=' not supported between instances of '{self.__class__.__name__}' and '{type(other).__name__}' ")
+
+    def _length(self):
+        raise TypeError(
+            f"'len' not supported between instances of '{self.__class__.__name__}'")
+
+    def _getitem(self, index):
+        raise TypeError(
+            f"Indexation not supported between instances of '{self.__class__.__name__}'")
 
     class SearchSpaceConditions:
         def __init__(self, ss, func) -> None:
@@ -132,6 +144,12 @@ class SearchSpace:
 
     def __eq__(self, other):
         return SearchSpace.SearchSpaceConditions(self, lambda ssv: ssv == other)
+
+    def __len__(self):
+        return SearchSpace.SearchSpaceConditions(self, lambda ssv: len(ssv))
+
+    def __getitem__(self):
+        return SearchSpace.SearchSpaceConditions(self, lambda ssv: len(ssv))
 
     def __hash__(self) -> int:
         return id(self)
@@ -208,25 +226,84 @@ class UniversalVariable:
     #     return other
 
     def __ge__(self, other):
-        return UniversalVariable(father=self, func=lambda ss: ss._great_equal(other))
+        def func(ss):
+            try:
+                return ss._great_equal(other)
+            except AttributeError:
+                return ss >= other
+        return UniversalVariable(father=self, func=func)
+
+    def __eq__(self, other):
+        def func(ss):
+            try:
+                return ss._equal(other)
+            except AttributeError:
+                return ss == other
+        return UniversalVariable(father=self, func=func)
 
     def __gt__(self, other):
-        return UniversalVariable(father=self, func=lambda ss: ss._great(other))
+        def func(ss):
+            try:
+                return ss._great(other)
+            except AttributeError:
+                return ss > other
+        return UniversalVariable(father=self, func=func)
 
     def __le__(self, other):
-        return UniversalVariable(father=self, func=lambda ss: ss._less_equal(other))
+        def func(ss):
+            try:
+                return ss._less_equal(other)
+            except AttributeError:
+                return ss <= other
+        return UniversalVariable(father=self, func=func)
 
     def __lt__(self, other):
-        return UniversalVariable(father=self, func=lambda ss: ss._less(other))
+        def func(ss):
+            try:
+                return ss._less(other)
+            except AttributeError:
+                return ss < other
+        return UniversalVariable(father=self, func=func)
 
     def __ne__(self, other):
-        return UniversalVariable(father=self, func=lambda ss: ss._not_equal(other))
+        def func(ss):
+            try:
+                return ss._not_equal(other)
+            except AttributeError:
+                return ss != other
+        return UniversalVariable(father=self, func=func)
 
     def __getattr__(self, name):
-        return UniversalVariable(father=self, func=lambda ss: ss.__class__.__dict__[name])
+        if name == 'i':
+            return UniversalVariable(father=self)
+
+        def func(ss):
+            try:
+                return ss.__class__.__dict__[name]
+            except KeyError:
+                return ss.__dict__[name]
+
+        return UniversalVariable(father=self, func=func)
 
     def __rrshift__(self, other):
         return UniversalVariable(father=self, func=lambda ss: other >> ss)
+
+    def __len__(self):
+        def func(ss):
+            try:
+                return ss._length()
+            except AttributeError:
+                return len(ss)
+        return UniversalVariable(father=self, func=func)
+
+    def __getitem__(self, index):
+        def func(ss):
+            try:
+                return ss._getitem(index)
+            except AttributeError:
+                return ss[index]
+
+        return UniversalVariable(father=self, func=func)
 
     def __call__(self, ss: SearchSpace) -> None:
         if self.func is None:
