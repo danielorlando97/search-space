@@ -4,6 +4,8 @@
 #     from tools.singleton import Singleton
 
 from ..tools.singleton import Singleton
+from ..samplers import SamplerFactory
+from ..samplers.basic_names import UNIFORM
 DEBUG_SAMPLER = False
 
 

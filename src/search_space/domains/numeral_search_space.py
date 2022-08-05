@@ -7,7 +7,7 @@ from math import sqrt
 # except (ModuleNotFoundError, ImportError):
 from ..abs_search_space import SearchSpace
 from ..ss_constraint import SearchSpaceConstraint
-from ...samplers.implementations.normal_distribution_sampler import NaturalNormalDistributeSampler, ContinueNormalDistributeSampler
+from ...samplers.implementations.uniform_sampler import NaturalNormalDistributeSampler, ContinueNormalDistributeSampler
 
 
 class NumeralSearchSpace(SearchSpace):
