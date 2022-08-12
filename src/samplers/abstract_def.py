@@ -24,7 +24,7 @@ class Sampler:
     def get_float(self, min, max):
         return self.__random_value__(self, (min, max))
 
-    def choise(self, domain):
+    def choice(self, domain):
         index = self.get_int((0, len(domain)))
         return domain[index]
 

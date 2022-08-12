@@ -4,7 +4,7 @@
 #     from tools.singleton import Singleton
 
 from ..tools.singleton import Singleton
-from ..samplers import SamplerFactory
+from ..samplers import SamplerFactory, Sampler
 from ..samplers.basic_names import UNIFORM
 DEBUG_SAMPLER = False
 
@@ -27,8 +27,9 @@ class ContextManagerSearchSpace(metaclass=Singleton):
 
 
 class SearchSpace:
-    def __init__(self, domain, distribute_like, log_name=None) -> None:
-        self._distribution = distribute_like
+    def __init__(self, domain, distribute_like=UNIFORM, log_name=None) -> None:
+        self._distribution: Sampler = SamplerFactory(
+        ).create_new_sampler(self, distribute_like)
         self.domain = domain
         self.constraint_list = []
         self.scope = log_name if not log_name is None else self.__class__.__name__
