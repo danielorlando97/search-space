@@ -1,3 +1,3 @@
-from search_space.spaces.search_space import SearchSpace
+from search_space.spaces.search_space import SearchSpace, Function
 from search_space.spaces.universal_variable import UniversalVariableInstance as UniversalVariable
 from search_space.spaces.ss_constraint import Predication, SearchSpaceConstraint

@@ -1,4 +1,5 @@
-from ..context_manager.sampler_context import ConstraintInfo, SamplerInfo
+from .universal_variable import UniversalVariable
+from ..context_manager.sampler_context import ConstraintInfo, SamplerInfo, InitSamplerInfo
 from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
@@ -11,6 +12,12 @@ class SearchSpace:
         self.domain = domain
         self.constraint_list = []
         self.scope = log_name if not log_name is None else self.__class__.__name__
+
+    ####################################
+    #                                  #
+    #       Sampler Generate           #
+    #                                  #
+    ####################################
 
     def get_sampler(self, local_domain=None, context: SamplerContext = None):
         """
@@ -29,11 +36,11 @@ class SearchSpace:
         conditions = [c for c in self.constraint_list if c.is_condition]
 
         domain = self.domain if local_domain is None else local_domain
+        context.push_log(InitSamplerInfo(self, domain))
 
         for c in transformers:
             domain = self._check_transform(c, domain, context)
 
-        self.__last_domain = domain
         while True:
             sample = self._get_random_value(domain)
             for c in conditions:
@@ -42,7 +49,7 @@ class SearchSpace:
             else:
                 context.registry_sampler(self, sample)
                 context.push_log(SamplerInfo(
-                    self.scope, domain, self._distribution.last_value(domain), sample))
+                    self, domain, self._distribution.last_value(domain), sample))
                 return sample, context
 
     def _get_random_value(self, domain):
@@ -60,7 +67,7 @@ class SearchSpace:
         """
         result = constraint.transform(domain, context)
         context.push_log(ConstraintInfo(
-            self.scope, constraint.__class__.__name__, domain, result))
+            self, constraint.__class__.__name__, domain, result))
         return result
 
     def _check_condition(self, constraint, sample, context: SamplerContext):
@@ -69,16 +76,56 @@ class SearchSpace:
 
         result = constraint.check_condition(sample, context)
         context.push_log(ConstraintInfo(
-            self.scope, constraint.__class__.__name__, sample, result))
+            self, constraint.__class__.__name__, sample, result))
         return result
 
     def __or__(self, other):
-        try:
+        """
+        """
+        if isinstance(other, SearchSpace):
+            return OpSearchSpace(lambda x, y: x | y, self, other)
+
+        if isinstance(other, UniversalVariable):
+            other(self)
+        else:
             for f in other:
                 f(self)
-        except TypeError:
-            other(self)
         return self
+
+    def __hash__(self) -> int:
+        return id(self)
+
+    def is_equal(self, other):
+        try:
+            return self._distribution == other._distribution
+        except AttributeError:
+            return False
+
+    ####################################
+    #                                  #
+    #       Class Constraint           #
+    #                                  #
+    ####################################
+
+    ####################################
+    #                                  #
+    #       List Constraint            #
+    #                                  #
+    ####################################
+
+    def _length(self):
+        raise TypeError(
+            f"'len' not supported between instances of '{self.__class__.__name__}'")
+
+    def _getitem(self, index):
+        raise TypeError(
+            f"Indexation not supported between instances of '{self.__class__.__name__}'")
+
+    ####################################
+    #                                  #
+    #   Binary Compare Constrains      #
+    #                                  #
+    ####################################
 
     def _equal(self, other):
         raise TypeError(
@@ -104,10 +151,158 @@ class SearchSpace:
         raise TypeError(
             f"'!=' not supported between instances of '{self.__class__.__name__}' and '{type(other).__name__}' ")
 
-    def _length(self):
-        raise TypeError(
-            f"'len' not supported between instances of '{self.__class__.__name__}'")
+    ####################################
+    #                                  #
+    #       Class Operations           #
+    #                                  #
+    ####################################
 
-    def _getitem(self, index):
+    def __getattr__(self, name):
+        return OpSearchSpace(lambda x: x.__dict__[name], self)
+
+    ####################################
+    #                                  #
+    #       List Operations            #
+    #                                  #
+    ####################################
+
+    def __getitem__(self, index):
+        return OpSearchSpace(lambda x: x[index], self)
+
+    ####################################
+    #                                  #
+    #       Unary Operations           #
+    #                                  #
+    ####################################
+
+    def __neg__(self):
+        return OpSearchSpace(lambda x: -x, self)
+
+    ####################################
+    #                                  #
+    #   Binary Arithmetic Operations   #
+    #                                  #
+    ####################################
+
+    def __add__(self, other):
+        return OpSearchSpace(lambda x, y: x+y, self, other)
+
+    def __radd__(self, other):
+        return OpSearchSpace(lambda x, y: x+y, self, other)
+
+    def __mul__(self, other):
+        return OpSearchSpace(lambda x, y: x*y, self, other)
+
+    def __rmul__(self, other):
+        return OpSearchSpace(lambda x, y: x*y, self, other)
+
+    def __sub__(self, other):
+        return OpSearchSpace(lambda x, y: x-y, self, other)
+
+    def __rsub__(self, other):
+        return OpSearchSpace(lambda x, y: x-y, other, self)
+
+    def __div__(self, other):
+        return OpSearchSpace(lambda x, y: x/y, self, other)
+
+    def __rmul__(self, other):
+        return OpSearchSpace(lambda x, y: x/y, other, self)
+
+    def __mod__(self, other):
+        return OpSearchSpace(lambda x, y: x % y, self, other)
+
+    def __divmod__(self, other):
+        return OpSearchSpace(lambda x, y: x % y, other, self)
+
+    ####################################
+    #                                  #
+    #   Binary Logical Operations      #
+    #                                  #
+    ####################################
+
+    def __and__(self, other):
+        return OpSearchSpace(lambda x, y: x & y, self, other)
+
+    def __rand__(self, other):
+        return OpSearchSpace(lambda x, y: x & y, self, other)
+
+    def __ror__(self, other):
+        return OpSearchSpace(lambda x, y: x | y, self, other)
+
+    def __xor__(self, other):
+        return OpSearchSpace(lambda x, y: x ^ y, self, other)
+
+    def __rxor__(self, other):
+        return OpSearchSpace(lambda x, y: x ^ y, self, other)
+
+    ####################################
+    #                                  #
+    #   Binary Compare Operations      #
+    #                                  #
+    ####################################
+
+    def __eq__(self, other):
+        return OpSearchSpace(lambda x, y: x == y, self, other)
+
+    def __req__(self, other):
+        return OpSearchSpace(lambda x, y: x == y, self, other)
+
+    def __ne__(self, other):
+        return OpSearchSpace(lambda x, y: x != y, self, other)
+
+    def __rne__(self, other):
+        return OpSearchSpace(lambda x, y: x != y, self, other)
+
+    def __lt__(self, other):
+        return OpSearchSpace(lambda x, y: x < y, self, other)
+
+    def __rlt__(self, other):
+        return OpSearchSpace(lambda x, y: x > y, self, other)
+
+    def __gt__(self, other):
+        return OpSearchSpace(lambda x, y: x > y, self, other)
+
+    def __rgt__(self, other):
+        return OpSearchSpace(lambda x, y: x < y, self, other)
+
+    def __ge__(self, other):
+        return OpSearchSpace(lambda x, y: x >= y, self, other)
+
+    def __rge__(self, other):
+        return OpSearchSpace(lambda x, y: x <= y, self, other)
+
+    def __le__(self, other):
+        return OpSearchSpace(lambda x, y: x <= y, self, other)
+
+    def __rle__(self, other):
+        return OpSearchSpace(lambda x, y: x >= y, self, other)
+
+
+class OpSearchSpace(SearchSpace):
+    def __init__(self, func, *operators, log_name=None) -> None:
+        self.func = func
+        self.operators = operators
+        super().__init__(None, log_name=log_name)
+
+    def get_sampler(self, context: SamplerContext = None):
+        values = []
+        context = context if not context is None else SamplerContext()
+        for op in self.operators:
+            values.append(self.computing_real_value(op, context))
+
+        return self.func(*values), context
+
+    def computing_real_value(self, op, context):
+        if isinstance(op, SearchSpace):
+            return op.get_sampler(context=context)[0]
+        else:
+            return op
+
+
+class Function(OpSearchSpace):
+    def __init__(self, *operators, log_name=None) -> None:
+        super().__init__(self.__call__, *operators, log_name=log_name)
+
+    def __call__(self, *args, **kwd):
         raise TypeError(
-            f"Indexation not supported between instances of '{self.__class__.__name__}'")
+            f"'{self.__class__.__name__}' isn't a callable type")

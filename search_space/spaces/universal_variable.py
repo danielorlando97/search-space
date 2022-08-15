@@ -1,10 +1,21 @@
-from .search_space import SearchSpace
+from search_space.sampler import SamplerFactory
+from search_space.sampler.distribution_names import UNIFORM_BERNOULLI
 
+
+# TODO: Change to AST Constraints
 
 class UniversalVariable:
     def __init__(self, father=None, func=None) -> None:
         self.father = father
         self.func = func
+
+    def __or__(self, other):
+        def func(ss):
+            try:
+                return ss._great_equal(other)
+            except AttributeError:
+                return ss >= other
+        return UniversalVariable(father=self, func=func)
 
     def __ge__(self, other):
         def func(ss):
@@ -69,14 +80,6 @@ class UniversalVariable:
     def __rrshift__(self, other):
         return UniversalVariable(father=self, func=lambda ss: other >> ss)
 
-    def __len__(self):
-        def func(ss):
-            try:
-                return ss._length()
-            except AttributeError:
-                return len(ss)
-        return UniversalVariable(father=self, func=func)
-
     def __getitem__(self, index):
         def func(ss):
             try:
@@ -86,7 +89,7 @@ class UniversalVariable:
 
         return UniversalVariable(father=self, func=func)
 
-    def __call__(self, ss: SearchSpace) -> None:
+    def __call__(self, ss) -> None:
         if self.func is None:
             return ss
 

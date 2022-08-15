@@ -6,7 +6,7 @@ class SamplerInfo:
         self.real_value = real_value
 
     def __str__(self) -> str:
-        pass
+        return f'{self.scope.scope}[{self.domain}] ---> {self.sampler_value} ---> {self.real_value}'
 
 
 class ConstraintInfo:
@@ -17,7 +17,16 @@ class ConstraintInfo:
         self.constraint_name = constraint_name
 
     def __str__(self) -> str:
-        pass
+        return f'{self.scope.scope}[{self.initial_domain}] ---> {self.constraint_name} ---> {self.result}'
+
+
+class InitSamplerInfo:
+    def __init__(self, scope, domain) -> None:
+        self.scope = scope
+        self.domain = domain
+
+    def __str__(self) -> str:
+        return f'Sampler in {self.scope.scope}[{self.domain}]:'
 
 
 class SamplerContext:
@@ -39,4 +48,24 @@ class SamplerContext:
             return None
 
     def print_history(self):
-        pass
+        result, index = [], 0
+        while index < len(self.sampler_logs):
+            r, index = self.__print_history(index=index)
+            result += r
+
+        print('\n'.join(result))
+
+    def __print_history(self, index=0, tabs=''):
+        result = [tabs + str(self.sampler_logs[index])]
+        index += 1
+        while index < len(self.sampler_logs):
+            log = self.sampler_logs[index]
+            if isinstance(log, InitSamplerInfo):
+                r, index = self.__print_history(index, tabs + '\t')
+                result += r
+            else:
+                result.append(tabs + '\t' + str(log))
+                if isinstance(log, SamplerInfo):
+                    return result, index + 1
+                index += 1
+        return result, index

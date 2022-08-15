@@ -1,8 +1,3 @@
-# try:
-#     from .abs_search_space import SearchSpace
-# except (ModuleNotFoundError, ImportError):
-#     from abs_search_space import SearchSpace
-
 from .search_space import SearchSpace
 from .universal_variable import UniversalVariable
 
