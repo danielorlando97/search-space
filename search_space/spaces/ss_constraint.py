@@ -130,3 +130,8 @@ class MetaPredication(type):
 class Predication(metaclass=MetaPredication):
     def __init__(self, *args) -> None:
         pass
+
+
+class NaturalValue:
+    def __init__(self, value) -> None:
+        pass

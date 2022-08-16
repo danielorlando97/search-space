@@ -1,5 +1,9 @@
+from unittest.mock import seal
 from search_space.spaces import SearchSpace, SearchSpaceConstraint
 from search_space.sampler.distribution_names import UNIFORM
+from search_space.utils import visitor
+from search_space.spaces.asts import universal_variable_ast as Val_AST
+from search_space.spaces.asts import numeral_ast as N_AST
 
 
 class NumeralSearchSpace(SearchSpace):
@@ -25,6 +29,43 @@ class NumeralSearchSpace(SearchSpace):
     def _not_equal(self, other):
         self.constraint_list.append(NotEqual(other, self))
         return self.constraint_list[-1]
+
+    ####################################
+    #                                  #
+    #       Add Constraint Visitor     #
+    #                                  #
+    ####################################
+
+    @visitor.on('constraint')
+    def add_constraint(self, constraint):
+        pass
+
+    @visitor.when(Val_AST.GreatEqual)
+    def add_constraint(self, constraint: Val_AST.GreatEqual):
+        target = self.add_constraint(constraint.father)
+        other = self.add_constraint(constraint.other)
+        return N_AST.GreatEqualNumeralConstraint(target, other)
+
+    ####################################
+    #                                  #
+    #  Transform Domain by Constraints #
+    #                                  #
+    ####################################
+
+    @visitor.on('constraint')
+    def transform_domain(self, constraint, domain):
+        pass
+
+    @visitor.when(N_AST.GreatEqualNumeralConstraint)
+    def transform_domain(self, constraint: N_AST.GreatEqualNumeralConstraint, domain):
+        a, b = self.transform_domain(constraint.target, domain)
+        return (max(a, self._real_value), b)
+
+    ####################################
+    #                                  #
+    #       Specific Search Spaces     #
+    #                                  #
+    ####################################
 
 
 class ContinueSearchSpace(NumeralSearchSpace):

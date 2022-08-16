@@ -1,8 +1,11 @@
-from .universal_variable import UniversalVariable
+from .asts.universal_variable_ast import UniversalVariable
 from ..context_manager.sampler_context import ConstraintInfo, SamplerInfo, InitSamplerInfo
 from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
+from search_space.utils import visitor
+from search_space.spaces.asts import universal_variable_ast as Val_AST
+from search_space.spaces.asts import default_ast as Default_AST
 
 
 class SearchSpace:
@@ -32,17 +35,15 @@ class SearchSpace:
         if not cache_value is None:
             return cache_value, context
 
-        transformers = [c for c in self.constraint_list if c.is_transformer]
-        conditions = [c for c in self.constraint_list if c.is_condition]
-
         domain = self.domain if local_domain is None else local_domain
         context.push_log(InitSamplerInfo(self, domain))
 
-        for c in transformers:
-            domain = self._check_transform(c, domain, context)
+        for c in self.constraint_list:
+            domain = self.transform_domain(c, domain)
 
         while True:
             sample = self._get_random_value(domain)
+            return sample
             for c in conditions:
                 if not self._check_condition(c, sample, context):
                     break
@@ -86,10 +87,10 @@ class SearchSpace:
             return OpSearchSpace(lambda x, y: x | y, self, other)
 
         if isinstance(other, UniversalVariable):
-            other(self)
+            self.constraint_list.append(self.add_constraint(other))
         else:
             for f in other:
-                f(self)
+                self.constraint_list.append(self.add_constraint(f))
         return self
 
     def __hash__(self) -> int:
@@ -103,53 +104,36 @@ class SearchSpace:
 
     ####################################
     #                                  #
-    #       Class Constraint           #
+    #       Add Constraint Visitor     #
     #                                  #
     ####################################
 
+    @visitor.on('constraint')
+    def add_constraint(self, constraint):
+        pass
+
+    @visitor.when(Val_AST.UniversalVariable)
+    def add_constraint(self, constraint):
+        raise TypeError(
+            f'{self.__class__.__name__} not support that operation')
+
+    @visitor.when(Val_AST.NaturalValue)
+    def add_constraint(self, constraint: Val_AST.NaturalValue):
+        return Default_AST.NaturalValue(constraint.other[0])
+
     ####################################
     #                                  #
-    #       List Constraint            #
+    #  Transform Domain by Constraints #
     #                                  #
     ####################################
 
-    def _length(self):
-        raise TypeError(
-            f"'len' not supported between instances of '{self.__class__.__name__}'")
+    @visitor.on('constraint')
+    def transform_domain(self, constraint, domain):
+        pass
 
-    def _getitem(self, index):
-        raise TypeError(
-            f"Indexation not supported between instances of '{self.__class__.__name__}'")
-
-    ####################################
-    #                                  #
-    #   Binary Compare Constrains      #
-    #                                  #
-    ####################################
-
-    def _equal(self, other):
-        raise TypeError(
-            f"'==' not supported between instances of '{self.__class__.__name__}' and '{type(other).__name__}' ")
-
-    def _great_equal(self, other):
-        raise TypeError(
-            f"'>=' not supported between instances of '{self.__class__.__name__}' and '{type(other).__name__}' ")
-
-    def _great(self, other):
-        raise TypeError(
-            f"'>' not supported between instances of '{self.__class__.__name__}' and '{type(other).__name__}' ")
-
-    def _less_equal(self, other):
-        raise TypeError(
-            f"'<=' not supported between instances of '{self.__class__.__name__}' and '{type(other).__name__}' ")
-
-    def _less(self, other):
-        raise TypeError(
-            f"'<' not supported between instances of '{self.__class__.__name__}' and '{type(other).__name__}' ")
-
-    def _not_equal(self, other):
-        raise TypeError(
-            f"'!=' not supported between instances of '{self.__class__.__name__}' and '{type(other).__name__}' ")
+    @visitor.when(Default_AST.NaturalValue)
+    def transform_domain(self, constraint: Default_AST.NaturalValue, domain):
+        return constraint.value
 
     ####################################
     #                                  #
