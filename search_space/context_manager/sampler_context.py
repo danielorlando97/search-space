@@ -17,7 +17,7 @@ class ConstraintInfo:
         self.constraint_name = constraint_name
 
     def __str__(self) -> str:
-        return f'{self.scope.scope}[{self.initial_domain}] ---> {self.constraint_name} ---> {self.result}'
+        return f'{self.scope}[{self.constraint_name}]: {self.initial_domain} ---> {self.result}'
 
 
 class InitSamplerInfo:

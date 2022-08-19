@@ -1,28 +1,41 @@
-from .asts.universal_variable_ast import UniversalVariable
-from ..context_manager.sampler_context import ConstraintInfo, SamplerInfo, InitSamplerInfo
+from .ast_constraint import UniversalVariable
+from ..context_manager.sampler_context import SamplerInfo, InitSamplerInfo
 from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
-from search_space.utils import visitor
-from search_space.spaces.asts import universal_variable_ast as Val_AST
-from search_space.spaces.asts import default_ast as Default_AST
+from search_space.errors import InvalidSampler
+
+
+class SearchSpaceDomain:
+    def limits(self):
+        pass
+
+    def initial_limits(self):
+        pass
+
+    def transform(self, ast, context):
+        pass
+
+    def check_sampler(self, ast, sampler, context):
+        pass
 
 
 class SearchSpace:
-    def __init__(self, domain, distribute_like=UNIFORM, log_name=None) -> None:
+
+    def __init__(self, initial_domain, distribute_like=UNIFORM, log_name=None) -> None:
         self._distribution: Sampler = SamplerFactory().create_sampler(
             distribute_like, search_space=self)
-        self.domain = domain
+        self.initial_domain = initial_domain
         self.constraint_list = []
         self.scope = log_name if not log_name is None else self.__class__.__name__
 
-    ####################################
-    #                                  #
-    #       Sampler Generate           #
-    #                                  #
-    ####################################
+    #################################################################
+    #                                                               #
+    #                     Sampler Generate                          #
+    #                                                               #
+    #################################################################
 
-    def get_sampler(self, local_domain=None, context: SamplerContext = None):
+    def get_sampler(self, context: SamplerContext = None):
         """
             This method generate a new sampler by SearchSpace's domain and config
             This sample is unique for each instance of ContextManager
@@ -35,23 +48,27 @@ class SearchSpace:
         if not cache_value is None:
             return cache_value, context
 
-        domain = self.domain if local_domain is None else local_domain
-        context.push_log(InitSamplerInfo(self, domain))
+        domain: SearchSpaceDomain = self._create_domain(self.initial_domain)
+        context.push_log(InitSamplerInfo(self, domain.initial_limits))
 
-        for c in self.constraint_list:
-            domain = self.transform_domain(c, domain)
+        for ast in self.constraint_list:
+            domain = domain.transform(ast, context)
 
         while True:
             sample = self._get_random_value(domain)
-            return sample
-            for c in conditions:
-                if not self._check_condition(c, sample, context):
-                    break
-            else:
+
+            try:
+                for ast in self.constraint_list:
+                    domain = domain.check_sampler(ast, sample, context)
+
                 context.registry_sampler(self, sample)
                 context.push_log(SamplerInfo(
-                    self, domain, self._distribution.last_value(domain), sample))
+                    self, domain.limits, self._distribution.last_value(domain.limits), sample))
+
                 return sample, context
+
+            except InvalidSampler as err:
+                context.push_log(err.text)
 
     def _get_random_value(self, domain):
         """
@@ -63,22 +80,32 @@ class SearchSpace:
         """
         pass
 
-    def _check_transform(self, constraint, domain, context: SamplerContext):
+    def _create_domain(self, domain) -> SearchSpaceDomain:
         """
+            For default, this method generate a new random value intro the domain
+            In the inherence, each class can do override it to change the types and form
+            to generate new values
+            for example: the categorical Search Space override it to get the random index
+            and sample the category with that index
         """
-        result = constraint.transform(domain, context)
-        context.push_log(ConstraintInfo(
-            self, constraint.__class__.__name__, domain, result))
-        return result
+        pass
 
-    def _check_condition(self, constraint, sample, context: SamplerContext):
-        """
-        """
+    # def _check_transform(self, constraint, domain, context: SamplerContext):
+    #     """
+    #     """
+    #     result = constraint.transform(domain, context)
+    #     context.push_log(ConstraintInfo(
+    #         self, constraint.__class__.__name__, domain, result))
+    #     return result
 
-        result = constraint.check_condition(sample, context)
-        context.push_log(ConstraintInfo(
-            self, constraint.__class__.__name__, sample, result))
-        return result
+    # def _check_condition(self, constraint, sample, context: SamplerContext):
+    #     """
+    #     """
+
+    #     result = constraint.check_condition(sample, context)
+    #     context.push_log(ConstraintInfo(
+    #         self, constraint.__class__.__name__, sample, result))
+    #     return result
 
     def __or__(self, other):
         """
@@ -87,10 +114,10 @@ class SearchSpace:
             return OpSearchSpace(lambda x, y: x | y, self, other)
 
         if isinstance(other, UniversalVariable):
-            self.constraint_list.append(self.add_constraint(other))
+            self.constraint_list.append(other)
         else:
             for f in other:
-                self.constraint_list.append(self.add_constraint(f))
+                self.constraint_list.append(f)
         return self
 
     def __hash__(self) -> int:
@@ -102,71 +129,38 @@ class SearchSpace:
         except AttributeError:
             return False
 
-    ####################################
-    #                                  #
-    #       Add Constraint Visitor     #
-    #                                  #
-    ####################################
-
-    @visitor.on('constraint')
-    def add_constraint(self, constraint):
-        pass
-
-    @visitor.when(Val_AST.UniversalVariable)
-    def add_constraint(self, constraint):
-        raise TypeError(
-            f'{self.__class__.__name__} not support that operation')
-
-    @visitor.when(Val_AST.NaturalValue)
-    def add_constraint(self, constraint: Val_AST.NaturalValue):
-        return Default_AST.NaturalValue(constraint.other[0])
-
-    ####################################
-    #                                  #
-    #  Transform Domain by Constraints #
-    #                                  #
-    ####################################
-
-    @visitor.on('constraint')
-    def transform_domain(self, constraint, domain):
-        pass
-
-    @visitor.when(Default_AST.NaturalValue)
-    def transform_domain(self, constraint: Default_AST.NaturalValue, domain):
-        return constraint.value
-
-    ####################################
-    #                                  #
-    #       Class Operations           #
-    #                                  #
-    ####################################
+    #################################################################
+    #                                                               #
+    #                     Class Operations                          #
+    #                                                               #
+    #################################################################
 
     def __getattr__(self, name):
         return OpSearchSpace(lambda x: x.__dict__[name], self)
 
-    ####################################
-    #                                  #
-    #       List Operations            #
-    #                                  #
-    ####################################
+    #################################################################
+    #                                                               #
+    #                     List Operations                           #
+    #                                                               #
+    #################################################################
 
     def __getitem__(self, index):
         return OpSearchSpace(lambda x: x[index], self)
 
-    ####################################
-    #                                  #
-    #       Unary Operations           #
-    #                                  #
-    ####################################
+    #################################################################
+    #                                                               #
+    #                     Unary Operations                          #
+    #                                                               #
+    #################################################################
 
     def __neg__(self):
         return OpSearchSpace(lambda x: -x, self)
 
-    ####################################
-    #                                  #
-    #   Binary Arithmetic Operations   #
-    #                                  #
-    ####################################
+    #################################################################
+    #                                                               #
+    #              Binary Arithmetic Operations                     #
+    #                                                               #
+    #################################################################
 
     def __add__(self, other):
         return OpSearchSpace(lambda x, y: x+y, self, other)
@@ -189,7 +183,7 @@ class SearchSpace:
     def __div__(self, other):
         return OpSearchSpace(lambda x, y: x/y, self, other)
 
-    def __rmul__(self, other):
+    def __rdiv__(self, other):
         return OpSearchSpace(lambda x, y: x/y, other, self)
 
     def __mod__(self, other):
@@ -198,11 +192,11 @@ class SearchSpace:
     def __divmod__(self, other):
         return OpSearchSpace(lambda x, y: x % y, other, self)
 
-    ####################################
-    #                                  #
-    #   Binary Logical Operations      #
-    #                                  #
-    ####################################
+    #################################################################
+    #                                                               #
+    #                 Binary Logical Operations                     #
+    #                                                               #
+    #################################################################
 
     def __and__(self, other):
         return OpSearchSpace(lambda x, y: x & y, self, other)
@@ -219,43 +213,61 @@ class SearchSpace:
     def __rxor__(self, other):
         return OpSearchSpace(lambda x, y: x ^ y, self, other)
 
-    ####################################
-    #                                  #
-    #   Binary Compare Operations      #
-    #                                  #
-    ####################################
+    #################################################################
+    #                                                               #
+    #                 Binary Compare Operations                     #
+    #                                                               #
+    #################################################################
 
     def __eq__(self, other):
+        if isinstance(other, UniversalVariable):
+            return other.__eq__(self)
+
         return OpSearchSpace(lambda x, y: x == y, self, other)
 
     def __req__(self, other):
         return OpSearchSpace(lambda x, y: x == y, self, other)
 
     def __ne__(self, other):
+        if isinstance(other, UniversalVariable):
+            return other.__ne__(self)
+
         return OpSearchSpace(lambda x, y: x != y, self, other)
 
     def __rne__(self, other):
         return OpSearchSpace(lambda x, y: x != y, self, other)
 
     def __lt__(self, other):
+        if isinstance(other, UniversalVariable):
+            return other.__rlt__(self)
+
         return OpSearchSpace(lambda x, y: x < y, self, other)
 
     def __rlt__(self, other):
         return OpSearchSpace(lambda x, y: x > y, self, other)
 
     def __gt__(self, other):
+        if isinstance(other, UniversalVariable):
+            return other.__rgt__(self)
+
         return OpSearchSpace(lambda x, y: x > y, self, other)
 
     def __rgt__(self, other):
         return OpSearchSpace(lambda x, y: x < y, self, other)
 
     def __ge__(self, other):
+        if isinstance(other, UniversalVariable):
+            return other.__rge__(self)
+
         return OpSearchSpace(lambda x, y: x >= y, self, other)
 
     def __rge__(self, other):
         return OpSearchSpace(lambda x, y: x <= y, self, other)
 
     def __le__(self, other):
+        if isinstance(other, UniversalVariable):
+            return other.__rle__(self)
+
         return OpSearchSpace(lambda x, y: x <= y, self, other)
 
     def __rle__(self, other):
