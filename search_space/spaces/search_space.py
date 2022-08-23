@@ -4,6 +4,9 @@ from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
 from search_space.errors import InvalidSampler
+from copy import copy
+from typing import Any
+# from typing_extensions import Self
 
 
 class SearchSpaceDomain:
@@ -25,6 +28,7 @@ class SearchSpace:
     def __init__(self, initial_domain, distribute_like=UNIFORM, log_name=None) -> None:
         self._distribution: Sampler = SamplerFactory().create_sampler(
             distribute_like, search_space=self)
+        self._distribution_name = distribute_like
         self.initial_domain = initial_domain
         self.constraint_list = []
         self.scope = log_name if not log_name is None else self.__class__.__name__
@@ -35,7 +39,7 @@ class SearchSpace:
     #                                                               #
     #################################################################
 
-    def get_sampler(self, context: SamplerContext = None):
+    def get_sampler(self, context: SamplerContext = None, local_domain=None):
         """
             This method generate a new sampler by SearchSpace's domain and config
             This sample is unique for each instance of ContextManager
@@ -48,14 +52,15 @@ class SearchSpace:
         if not cache_value is None:
             return cache_value, context
 
-        domain: SearchSpaceDomain = self._create_domain(self.initial_domain)
+        domain: SearchSpaceDomain = self._create_domain(
+            self.initial_domain) if local_domain is None else local_domain
         context.push_log(InitSamplerInfo(self, domain.initial_limits))
 
         for ast in self.constraint_list:
             domain = domain.transform(ast, context)
 
         while True:
-            sample = self._get_random_value(domain)
+            sample = self._get_random_value(domain, context)
 
             try:
                 for ast in self.constraint_list:
@@ -63,14 +68,31 @@ class SearchSpace:
 
                 context.registry_sampler(self, sample)
                 context.push_log(SamplerInfo(
-                    self, domain.limits, self._distribution.last_value(domain.limits), sample))
+                    self, domain.limits,
+                    None if self._distribution is None else self._distribution.last_value(domain.limits), sample))
 
                 return sample, context
 
             except InvalidSampler as err:
                 context.push_log(err.text)
 
-    def _get_random_value(self, domain):
+    def check_sampler(self, sample, local_domain=None, context: SamplerContext = None):
+        domain: SearchSpaceDomain = self._create_domain(
+            self.initial_domain) if local_domain is None else local_domain
+        context.push_log(InitSamplerInfo(self, domain.initial_limits))
+
+        for ast in self.constraint_list:
+            domain = domain.transform(ast, context)
+
+        try:
+            for ast in self.constraint_list:
+                domain = domain.check_sampler(ast, sample, context)
+            return True, context
+        except InvalidSampler as err:
+            context.push_log(err.text)
+            return False, context
+
+    def _get_random_value(self, domain, context):
         """
             For default, this method generate a new random value intro the domain
             In the inherence, each class can do override it to change the types and form
@@ -107,7 +129,7 @@ class SearchSpace:
     #         self, constraint.__class__.__name__, sample, result))
     #     return result
 
-    def __or__(self, other):
+    def __or__(self, other) -> Any:
         """
         """
         if isinstance(other, SearchSpace):
@@ -123,11 +145,19 @@ class SearchSpace:
     def __hash__(self) -> int:
         return id(self)
 
-    def is_equal(self, other):
+    def is_equal(self, other) -> bool:
         try:
             return self._distribution == other._distribution
         except AttributeError:
             return False
+
+    def __copy__(self):
+        result = type(self)(self.initial_domain,
+                            distribute_like=self._distribution_name, log_name=self.scope)
+
+        result.constraint_list = copy(self.constraint_list)
+        result.initial_domain = self.initial_domain
+        return result
 
     #################################################################
     #                                                               #

@@ -194,7 +194,7 @@ class ContinueSearchSpace(NumeralSearchSpace):
     def __init__(self, min=0, max=100000, log_name=None, distribute_like=UNIFORM) -> None:
         super().__init__(min, max, distribute_like, log_name)
 
-    def _get_random_value(self, domain: NumeralDomain):
+    def _get_random_value(self, domain: NumeralDomain, context):
         return self._distribution.get_float(*domain.limits)
 
 
@@ -202,7 +202,7 @@ class NaturalSearchSpace(NumeralSearchSpace):
     def __init__(self, min=0, max=100000, log_name=None, distribute_like=UNIFORM) -> None:
         super().__init__(min, max, distribute_like, log_name)
 
-    def _get_random_value(self, domain: NumeralDomain):
+    def _get_random_value(self, domain: NumeralDomain, context):
         return self._distribution.get_int(*domain.limits)
 
 

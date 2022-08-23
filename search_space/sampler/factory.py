@@ -53,6 +53,9 @@ class SamplerFactory(metaclass=Singleton):
         self.db[name] = cclass
 
     def create_sampler(self, distribute_name, search_space=None):
+        if distribute_name is None:
+            return None
+
         if search_space is None:
             return self.db[distribute_name]()
 
