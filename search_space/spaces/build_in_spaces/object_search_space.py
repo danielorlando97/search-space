@@ -34,7 +34,7 @@ class ObjectDomain(SearchSpaceDomain):
         return result
 
     def transform(self, node, context):
-        for name, domain in self.domain:
+        for name, domain in self.domain.items():
             ast = self.attribute_attention.visit(name, node)
             self.domain[name] = domain.transform(ast, context)
 
@@ -75,17 +75,15 @@ def decorator(func):
 
             for key, item in _self.__class__.__dict__.items():
                 if ss.is_equal(item):  # check instance
-                    ss = fabric.__dict__[key].get_sampler(context, local_domain=domain.limits[key])[
-                        0]
+                    try:
+                        # check rules
+                        value = args[args_len - 1 - index]
+                        context.registry_sampler(fabric.__dict__[key], value)
+                    except IndexError:
+                        value = fabric.__dict__[key].get_sampler(context, local_domain=domain.domain[key])[0]
+        
+                    new_kwargs[func_data.args[args_len - 1 - index]] = value
                     break
-            try:
-                # check rules
-                value = args[args_len - 1 - index]
-                context.registry_sampler(ss, value)
-            except IndexError:
-                value = ss.get_sampler(context)
-
-            new_kwargs[func_data.args[args_len - 1 - index]] = value
 
         args = args[0: args_len - defaults_len]
         return func(*args, **new_kwargs)
@@ -104,7 +102,7 @@ class MetaClassFabricSearchSpace(Type):
             logs_name = None
 
         if not cls.class_decorated:
-
+            cls.class_decorated = True
             for attr in cls.__dict__:  # there's propably a better way to do this
                 if callable(getattr(cls, attr)):
                     setattr(cls, attr, decorator(getattr(cls, attr)))
@@ -120,12 +118,12 @@ class MetaClassFabricSearchSpace(Type):
 class FabricSearchSpace(SearchSpace):
     def __init__(self, cls, initial_data, log_name=None) -> None:
         super().__init__(None, None, log_name)
-        self.cls = cls
+        self.class_type = cls
         self.initial_domain = initial_data
 
     def _get_random_value(self, domain, context):
         args, kw = self.initial_domain
-        result = type.__call__(self.cls, *args, **kw,
+        result = type.__call__(self.class_type, *args, **kw,
                                __context__=context, __fabric__=self, __domain__=domain)
         result.__context__ = context
         result.__fabric__ = self

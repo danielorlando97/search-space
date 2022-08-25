@@ -92,6 +92,10 @@ class NumeralRestrictionDomain:
     def visit(self, node: ast.SelfValue):
         return self
 
+    @visitor.when(ast.NoEvaluate)
+    def visit(self, node: ast.NoEvaluate):
+        return self
+
     @visitor.when(ast.NaturalValue)
     def visit(self, node: ast.NaturalValue):
         try:

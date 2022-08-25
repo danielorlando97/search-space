@@ -1,10 +1,8 @@
-from multiprocessing import context
 from search_space import distribution_names as df
 from search_space import NaturalSearchSpace as N
 from search_space import ContinueSearchSpace as R
 from search_space import UniversalVariable as x
 import os
-import pytest
 
 validate_replay_count = os.getenv('validate_replay_count', '')
 if any(validate_replay_count):

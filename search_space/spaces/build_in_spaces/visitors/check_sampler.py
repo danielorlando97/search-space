@@ -69,6 +69,11 @@ class ValidateSampler:
     #                                                               #
     #################################################################
 
+    @visitor.when(ast.GetAttribute)
+    def visit(self, sampler, node: ast.GetAttribute):
+        self.visit(sampler, node.father)
+        return self.space.__dict__[node.name].get_sampler(context=self.context)[0]
+        
     @visitor.when(ast.SelfValue)
     def visit(self, sampler, node: ast.SelfValue):
         return sampler

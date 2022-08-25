@@ -231,12 +231,12 @@ class NaturalValue(AstNode):
 class SelfValue(AstNode):
     @property
     def is_self(self):
-        return False
+        return True
 
 class NoEvaluate(AstNode):
     @property
     def can_evaluate(self):
-        return True
+        return False
 
 
 

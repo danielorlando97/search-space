@@ -2,9 +2,7 @@ from search_space.utils import visitor
 from search_space.spaces import ast_constraint as ast
 from search_space.utils.singleton import Singleton
 
-class AttributeAttention(Singleton):
-    def __init__(self) -> None:
-        pass
+class AttributeAttention(metaclass=Singleton):
 
     @visitor.on("node")
     def visit(self, attribute, node):
