@@ -2,109 +2,48 @@ from copy import copy
 from typing import Type
 from search_space.spaces import SearchSpace, SearchSpaceDomain
 import inspect
-from search_space.utils import visitor
-from search_space.spaces import ast_constraint as ast
-from search_space.context_manager import SamplerContext, ConstraintInfo
-from search_space.errors import UnSupportOpError, InvalidSampler
-
+from search_space.spaces.build_in_spaces import visitors
 
 class ObjectDomain(SearchSpaceDomain):
-    def __init__(self, cls) -> None:
+    def __init__(self, space) -> None:
         super().__init__()
-        self.cls = cls
+        self.space = space
+        self.domain = {}
+        self.attribute_attention = visitors.AttributeAttention()
 
-        for key, items in cls.__dict__.items():
+        for key, items in space.__dict__.items():
             if isinstance(items, SearchSpace):
-                self.__dict__[key] = items._create_domain(items.initial_domain)
+                self.domain[key] = items._create_domain(items.initial_domain)
 
-    #################################################################
-    #                                                               #
-    #                  Transformations                              #
-    #                                                               #
-    #################################################################
+    @property
+    def initial_limits(self):
+        result = {}
 
-    @visitor.on("node")
+        for name, domain in self.domain.items():
+            result[name] = domain.initial_limits
+        
+        return result
+
+    @property
+    def limits(self):
+        result = {}
+
+        for name, domain in self.domain.items():
+            result[name] = domain.limits
+        
+        return result
+
     def transform(self, node, context):
-        pass
+        for name, domain in self.domain:
+            ast = self.attribute_attention.visit(name, node)
+            self.domain[name] = domain.transform(ast, context)
 
-    @visitor.when(ast.UniversalVariable)
-    def transform(self, node, context: SamplerContext):
-        raise UnSupportOpError(self, node, "transform")
-
-    #################################################################
-    #                                                               #
-    #             Class Transformations                             #
-    #                                                               #
-    #################################################################
-
-    @visitor.when(ast.Index)
-    def transform(self, node, context: SamplerContext):
-        name = node.index
-        self.__dict__[name] = self.__dict__[name].transform(node.ast, context)
         return self
 
-    #################################################################
-    #                                                               #
-    #                  Simple Transform                             #
-    #                                                               #
-    #################################################################
-
-    @visitor.when(ast.SelfValue)
-    def transform(self, node: ast.SelfValue, context: SamplerContext):
-        return self
-
-    @visitor.when(ast.NaturalValue)
-    def transform(self, node: ast.NaturalValue, context: SamplerContext):
-        try:
-            return node.other.get_sampler(context=context)[0]
-        except AttributeError:
-            return node.other
-
-    #################################################################
-    #                                                               #
-    #                  Check Sample                                 #
-    #                                                               #
-    #################################################################
-
-    @visitor.on("node")
     def check_sampler(self, node, sampler, context):
-        pass
-
-    #################################################################
-    #                                                               #
-    #             Class Transformations                             #
-    #                                                               #
-    #################################################################
-
-    @visitor.when(ast.Index)
-    def check_sampler(self, node, sampler, context):
-        name = node.index
-        local_domain = self.__dict__[name]
-        property_sample = sampler.__dict__[name].get_sampler(context)
-        result, _ = self.cls.__dict__[
-            name].check_sampler(property_sample, context, local_domain=local_domain)
-
-        if result:
-            return self
-
-        raise InvalidSampler(f"the property {name} has error")
-
-    #################################################################
-    #                                                               #
-    #                  Simple Transform                             #
-    #                                                               #
-    #################################################################
-
-    @visitor.when(ast.SelfValue)
-    def check_sampler(self, node: ast.SelfValue, sampler, context: SamplerContext):
+        visitors.ValidateSampler(context, self.space).visit(sampler, node)
         return self
 
-    @visitor.when(ast.NaturalValue)
-    def check_sampler(self, node: ast.NaturalValue, sampler, context: SamplerContext):
-        try:
-            return node.other.get_sampler(context=context)[0]
-        except AttributeError:
-            return node.other
 
 
 def decorator(func):
@@ -136,7 +75,7 @@ def decorator(func):
 
             for key, item in _self.__class__.__dict__.items():
                 if ss.is_equal(item):  # check instance
-                    ss = fabric.__dict__[key].get_sampler(context, local_domain=domain.__dict__[key])[
+                    ss = fabric.__dict__[key].get_sampler(context, local_domain=domain.limits[key])[
                         0]
                     break
             try:

@@ -4,6 +4,7 @@ from search_space import NaturalSearchSpace as N
 from search_space import ContinueSearchSpace as R
 from search_space import UniversalVariable as x
 import os
+import pytest
 
 validate_replay_count = os.getenv('validate_replay_count', '')
 if any(validate_replay_count):
@@ -12,7 +13,7 @@ else:
     validate_replay_count = 100
 
 
-def test_natural_sampler():
+def test_natural_space():
     n = N(0, 10000000, distribute_like=df.UNIFORM)
 
     v1, _ = n.get_sampler()
@@ -37,7 +38,7 @@ def test_natural_sampler():
         assert 10 <= value and value <= 20
 
 
-def test_real_sampler():
+def test_real_space():
     n = R(0, 10000000, distribute_like=df.UNIFORM)
 
     v1, _ = n.get_sampler()
@@ -66,7 +67,7 @@ def test_real_sampler():
         assert 10 <= value and value <= 20
 
 
-def test_lt_dsl():
+def test_lt_constraint_dsl():
     """Real Space Test"""
     n = R() | (x < 5)
 
@@ -92,7 +93,7 @@ def test_lt_dsl():
         assert mv < nv
 
 
-def test_le_dsl():
+def test_le_constraint_dsl():
     """Real Space Test"""
     n = R() | (x <= 5)
 
@@ -118,7 +119,7 @@ def test_le_dsl():
         assert mv <= nv
 
 
-def test_gt_dsl():
+def test_gt_constraint_dsl():
     """Real Space Test"""
     n = R(0, 10) | (x > 5)
 
@@ -144,7 +145,7 @@ def test_gt_dsl():
         assert mv > nv
 
 
-def test_ge_dsl():
+def test_ge_constraint_dsl():
     """Real Space Test"""
     n = R(0, 10) | (x >= 5)
 

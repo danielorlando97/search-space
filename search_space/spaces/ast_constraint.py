@@ -56,6 +56,23 @@ class UniversalVariable:
             other = NaturalValue(other)
         return Great(other, father=self)
 
+    def __getattr__(self, name):
+        return GetAttribute(name, father=self)
+
+
+
+
+
+class AstNode(UniversalVariable):
+    @property
+    def can_evaluate(self):
+        return True
+
+    @property
+    def is_self(self):
+        return False
+
+
     #################################################################
     #                                                               #
     #           Binary Segmentation Constraint                       #
@@ -63,20 +80,20 @@ class UniversalVariable:
     #################################################################
 
 
-class OrSegmentation(UniversalVariable):
+class OrSegmentation(AstNode):
     def __init__(self, left,  right) -> None:
         super().__init__(None)
         self.right = right
         self.left = left
 
 
-class NotEqualSegmentation(UniversalVariable):
+class NotEqualSegmentation(AstNode):
     def __init__(self, other, father=None) -> None:
         super().__init__(father)
         self.other = other
 
 
-class ModuleSegmentation(UniversalVariable):
+class ModuleSegmentation(AstNode):
     def __init__(self, left,  right) -> None:
         super().__init__(None)
         self.right = right
@@ -89,38 +106,38 @@ class ModuleSegmentation(UniversalVariable):
         raise UnSupportOpError(self, other, '|')
 
     def __eq__(self, other):
-        if not isinstance(other, UniversalVariable):
+        if not isinstance(other, AstNode):
             other = NaturalValue(other)
 
         return EqualModuleSegmentation(self.left, self.right, other)
 
     # def __ne__(self, other):
-    #     if not isinstance(other, UniversalVariable):
+    #     if not isinstance(other, AstNode):
     #         other = NaturalValue(other)
     #     return NotEqualSegmentation(other, father=self)
 
     # def __ge__(self, other):
-    #     if not isinstance(other, UniversalVariable):
+    #     if not isinstance(other, AstNode):
     #         other = NaturalValue(other)
     #     return GreatEqual(other, father=self)
 
     # def __gt__(self, other):
-    #     if not isinstance(other, UniversalVariable):
+    #     if not isinstance(other, AstNode):
     #         other = NaturalValue(other)
     #     return Great(other, father=self)
 
     # def __le__(self, other):
-    #     if not isinstance(other, UniversalVariable):
+    #     if not isinstance(other, AstNode):
     #         other = NaturalValue(other)
     #     return LessEqual(other, father=self)
 
     # def __lt__(self, other):
-    #     if not isinstance(other, UniversalVariable):
+    #     if not isinstance(other, AstNode):
     #         other = NaturalValue(other)
     #     return LessEqual(other, father=self)
 
 
-class EqualModuleSegmentation(UniversalVariable):
+class EqualModuleSegmentation(AstNode):
     def __init__(self, left,  right, cmp) -> None:
         super().__init__(None)
         self.right = right
@@ -128,31 +145,31 @@ class EqualModuleSegmentation(UniversalVariable):
         self.cmp = cmp
 
 
-# class NotEqualModuleSegmentation(UniversalVariable):
+# class NotEqualModuleSegmentation(AstNode):
 #     def __init__(self, other, father=None) -> None:
 #         super().__init__(father)
 #         self.other = other
 
 
-# class GreatEqualModuleSegmentation(UniversalVariable):
+# class GreatEqualModuleSegmentation(AstNode):
 #     def __init__(self, other, father=None) -> None:
 #         super().__init__(father)
 #         self.other = other
 
 
-# class GreatModuleSegmentation(UniversalVariable):
+# class GreatModuleSegmentation(AstNode):
 #     def __init__(self, other, father=None) -> None:
 #         super().__init__(father)
 #         self.other = other
 
 
-# class LessEqualModuleSegmentation(UniversalVariable):
+# class LessEqualModuleSegmentation(AstNode):
 #     def __init__(self, other, father=None) -> None:
 #         super().__init__(father)
 #         self.other = other
 
 
-# class LessModuleSegmentation(UniversalVariable):
+# class LessModuleSegmentation(AstNode):
 #     def __init__(self, other, father=None) -> None:
 #         super().__init__(father)
 #         self.other = other
@@ -164,31 +181,31 @@ class EqualModuleSegmentation(UniversalVariable):
     #################################################################
 
 
-class Equal(UniversalVariable):
+class Equal(AstNode):
     def __init__(self, other, father=None) -> None:
         super().__init__(father)
         self.other = other
 
 
-class GreatEqual(UniversalVariable):
+class GreatEqual(AstNode):
     def __init__(self, other, father=None) -> None:
         super().__init__(father)
         self.other = other
 
 
-class Great(UniversalVariable):
+class Great(AstNode):
     def __init__(self, other, father=None) -> None:
         super().__init__(father)
         self.other = other
 
 
-class LessEqual(UniversalVariable):
+class LessEqual(AstNode):
     def __init__(self, other, father=None) -> None:
         super().__init__(father)
         self.other = other
 
 
-class Less(UniversalVariable):
+class Less(AstNode):
     def __init__(self, other, father=None) -> None:
         super().__init__(father)
         self.other = other
@@ -200,14 +217,27 @@ class Less(UniversalVariable):
     #################################################################
 
 
-class NaturalValue(UniversalVariable):
+class GetAttribute(AstNode):
+    def __init__(self, name, father=None) -> None:
+        super().__init__(father)
+        self.name = name
+
+class NaturalValue(AstNode):
     def __init__(self, other, father=None) -> None:
         super().__init__(father)
         self.other = other
 
 
-class SelfValue(UniversalVariable):
-    pass
+class SelfValue(AstNode):
+    @property
+    def is_self(self):
+        return False
+
+class NoEvaluate(AstNode):
+    @property
+    def can_evaluate(self):
+        return True
+
 
 
 UniversalVariableInstance = SelfValue()
