@@ -4,6 +4,7 @@ from search_space.spaces import SearchSpace, SearchSpaceDomain
 import inspect
 from search_space.spaces.build_in_spaces import visitors
 
+
 class ObjectDomain(SearchSpaceDomain):
     def __init__(self, space) -> None:
         super().__init__()
@@ -21,7 +22,7 @@ class ObjectDomain(SearchSpaceDomain):
 
         for name, domain in self.domain.items():
             result[name] = domain.initial_limits
-        
+
         return result
 
     @property
@@ -30,7 +31,7 @@ class ObjectDomain(SearchSpaceDomain):
 
         for name, domain in self.domain.items():
             result[name] = domain.limits
-        
+
         return result
 
     def transform(self, node, context):
@@ -44,6 +45,8 @@ class ObjectDomain(SearchSpaceDomain):
         visitors.ValidateSampler(context, self.space).visit(sampler, node)
         return self
 
+# TODO: Check If the params complies with constraint rules
+# TODO: Add decorator for add contextual functions
 
 
 def decorator(func):
@@ -80,8 +83,9 @@ def decorator(func):
                         value = args[args_len - 1 - index]
                         context.registry_sampler(fabric.__dict__[key], value)
                     except IndexError:
-                        value = fabric.__dict__[key].get_sampler(context, local_domain=domain.domain[key])[0]
-        
+                        value = fabric.__dict__[key].get_sampler(
+                            context, local_domain=domain.domain[key], not_save=func.__name__ != '__init__')[0]
+
                     new_kwargs[func_data.args[args_len - 1 - index]] = value
                     break
 

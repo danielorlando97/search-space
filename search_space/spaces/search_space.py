@@ -39,7 +39,7 @@ class SearchSpace:
     #                                                               #
     #################################################################
 
-    def get_sampler(self, context: SamplerContext = None, local_domain=None):
+    def get_sampler(self, context: SamplerContext = None, local_domain=None, not_save = False):
         """
             This method generate a new sampler by SearchSpace's domain and config
             This sample is unique for each instance of ContextManager
@@ -66,7 +66,7 @@ class SearchSpace:
                 for ast in self.constraint_list:
                     domain = domain.check_sampler(ast, sample, context)
 
-                context.registry_sampler(self, sample)
+                if not not_save: context.registry_sampler(self, sample)
                 context.push_log(SamplerInfo(
                     self, domain.limits,
                     None if self._distribution is None else self._distribution.last_value(domain.limits), sample))

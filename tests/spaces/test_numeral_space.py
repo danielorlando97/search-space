@@ -2,13 +2,7 @@ from search_space import distribution_names as df
 from search_space import NaturalSearchSpace as N
 from search_space import ContinueSearchSpace as R
 from search_space import UniversalVariable as x
-import os
-
-validate_replay_count = os.getenv('validate_replay_count', '')
-if any(validate_replay_count):
-    validate_replay_count = int(validate_replay_count)
-else:
-    validate_replay_count = 100
+from tests.config import validate_replay_count
 
 
 def test_natural_space():
