@@ -3,3 +3,4 @@ from .numeral_restriction_domain import NumeralRestrictionDomain
 from .attribute_attention import AttributeAttention
 from .index_attention import IndexTransform
 from .self_detector import SelfDetector
+from .categorical_restriction_domain import CategoricalRestrictionDomain

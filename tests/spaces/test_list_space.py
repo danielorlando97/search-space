@@ -4,6 +4,7 @@ from search_space import ContinueSearchSpace as R
 from search_space import UniversalVariable as x
 from search_space import UniversalIndex as i
 from tests.config import validate_replay_count
+from search_space.spaces.build_in_spaces.object_search_space import MetaClassFabricSearchSpace
 
 
 natural_array_space = Array(
@@ -144,8 +145,39 @@ def test_matrix_space():
         natural_matrix, _ = natural_matrix_space.get_sampler()
 
         assert len(natural_matrix) <= 10
-        assert len(natural_matrix) == [
+        assert natural_matrix == [
             row for row in natural_matrix if len(row) == 10]
 
         assert len(natural_matrix) * \
             10 == len([item for row in natural_matrix for item in row])
+
+
+class Line(metaclass=MetaClassFabricSearchSpace):
+    """Domain Description"""
+    m_domain = R()
+    n_domain = R()
+    x_domain = R()
+
+    """Class Description"""
+
+    def __init__(self, m: float = m_domain, n: float = n_domain) -> None:
+        self.m, self.n = m, n
+
+    def get_point(self, x: float = x_domain):
+        return (x, self.m * x + self.n)
+
+
+def test_list_object():
+    line_list_space = Array(
+        type_space=Line(), len_space=N(2, 10))
+
+    for _ in range(validate_replay_count):
+        line_list, _ = line_list_space.get_sampler()
+
+        assert len(line_list) <= 10
+        assert len(line_list) == len([
+            item for item in line_list if type(item) == Line])
+        assert 0 != len(
+            [item for item in line_list if item.m != line_list[0].m])
+        assert 0 != len(
+            [item for item in line_list if item.n != line_list[0].n])

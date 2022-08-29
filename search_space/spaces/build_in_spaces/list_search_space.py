@@ -81,3 +81,10 @@ class ListSearchSpace(SearchSpace):
 
     def _create_domain(self, domain) -> SearchSpaceDomain:
         return ListDomain(self)
+
+    def __copy__(self):
+        instance = super().__copy__()
+        instance.len_space = copy(self.len_space)
+        instance.type_space = copy(self.type_space)
+
+        return instance

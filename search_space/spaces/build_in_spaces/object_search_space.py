@@ -122,8 +122,8 @@ class MetaClassFabricSearchSpace(Type):
 
 
 class FabricSearchSpace(SearchSpace):
-    def __init__(self, cls, initial_data, log_name=None) -> None:
-        super().__init__(None, None, log_name)
+    def __init__(self, cls, initial_data=None, log_name=None, distribute_like=None) -> None:
+        super().__init__(None, distribute_like, log_name)
         self.class_type = cls
         self.initial_domain = initial_data
 
@@ -139,3 +139,15 @@ class FabricSearchSpace(SearchSpace):
     # TODO: Add domain to create domain
     def _create_domain(self, domain) -> SearchSpaceDomain:
         return ObjectDomain(self)
+
+    def __copy__(self):
+        instance = super().__copy__()
+
+        instance.class_type = self.class_type
+        instance.initial_domain = self.initial_domain
+
+        for key, item in self.__dict__.items():
+            if isinstance(item, SearchSpace):
+                instance.__dict__[key] = copy(item)
+
+        return instance
