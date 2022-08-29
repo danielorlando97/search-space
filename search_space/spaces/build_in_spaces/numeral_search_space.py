@@ -1,7 +1,8 @@
+from search_space.errors import NotEvaluateError
 from search_space.spaces import SearchSpace, SearchSpaceDomain
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext, ConstraintInfo
-from search_space.spaces.build_in_spaces import visitors
+from search_space.spaces import visitors
 
 
 class NumeralDomain(SearchSpaceDomain):
@@ -18,13 +19,16 @@ class NumeralDomain(SearchSpaceDomain):
     def limits(self):
         return (self.new_min, self.new_max)
 
-
     def transform(self, node, context):
-        v = visitors.NumeralRestrictionDomain(self.new_min, self.new_max, context, self.space)
-        v.visit(node)
-        self.new_min, self.new_max = v.min, v.max   
-        return self 
+        try:
+            v = visitors.NumeralRestrictionDomain(
+                self.new_min, self.new_max, context, self.space)
 
+            v.visit(node)
+            self.new_min, self.new_max = v.min, v.max
+        except NotEvaluateError:
+            pass
+        return self
 
     def check_sampler(self, node, sampler, context):
         visitors.ValidateSampler(context, self.space).visit(sampler, node)
@@ -54,5 +58,3 @@ class NaturalSearchSpace(NumeralSearchSpace):
 
     def _get_random_value(self, domain: NumeralDomain, context):
         return self._distribution.get_int(*domain.limits)
-
-

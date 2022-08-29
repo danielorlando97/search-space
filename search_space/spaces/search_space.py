@@ -3,7 +3,7 @@ from ..context_manager.sampler_context import SamplerInfo, InitSamplerInfo
 from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
-from search_space.errors import InvalidSampler
+from search_space.errors import InvalidSampler, NotEvaluateError
 from copy import copy
 from typing import Any
 # from typing_extensions import Self
@@ -39,7 +39,7 @@ class SearchSpace:
     #                                                               #
     #################################################################
 
-    def get_sampler(self, context: SamplerContext = None, local_domain=None, not_save = False):
+    def get_sampler(self, context: SamplerContext = None, local_domain=None, not_save=False, local_constraints=[]):
         """
             This method generate a new sampler by SearchSpace's domain and config
             This sample is unique for each instance of ContextManager
@@ -56,17 +56,18 @@ class SearchSpace:
             self.initial_domain) if local_domain is None else local_domain
         context.push_log(InitSamplerInfo(self, domain.initial_limits))
 
-        for ast in self.constraint_list:
+        for ast in self.constraint_list + local_constraints:
             domain = domain.transform(ast, context)
 
         while True:
             sample = self._get_random_value(domain, context)
 
             try:
-                for ast in self.constraint_list:
+                for ast in self.constraint_list + local_constraints:
                     domain = domain.check_sampler(ast, sample, context)
 
-                if not not_save: context.registry_sampler(self, sample)
+                if not not_save:
+                    context.registry_sampler(self, sample)
                 context.push_log(SamplerInfo(
                     self, domain.limits,
                     None if self._distribution is None else self._distribution.last_value(domain.limits), sample))

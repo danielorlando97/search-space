@@ -1,16 +1,20 @@
 from search_space.utils import visitor
 from search_space.spaces import ast_constraint as ast
 from search_space.errors import InvalidSampler
+from .index_solution import IndexSolutionVisitor
+from search_space.spaces.ast_index import AstIndexNode
+
 
 class ValidateSampler:
     def __init__(self, context, space) -> None:
         self.context = context
         self.space = space
+        self.index_solution = IndexSolutionVisitor(self.context)
 
     def check_is_not_eval_node(self, *nodes):
         for node in nodes:
             try:
-                if node.can_evaluate:
+                if not node.can_evaluate:
                     return node
             except AttributeError:
                 pass
@@ -28,12 +32,12 @@ class ValidateSampler:
 
     @visitor.when(ast.GreatEqual)
     def visit(self, sampler, node: ast.GreatEqual):
-        a = self.visit(sampler, node.father)
-        b = self.visit(sampler, node.other)
-
-        no_eval_node = self.check_is_not_eval_node(a, b)
+        no_eval_node = self.check_is_not_eval_node(node.father, node.other)
         if not no_eval_node is None:
             return no_eval_node
+
+        a = self.visit(sampler, node.father)
+        b = self.visit(sampler, node.other)
 
         if a >= b:
             return self
@@ -43,12 +47,12 @@ class ValidateSampler:
 
     @visitor.when(ast.Great)
     def visit(self, sampler, node: ast.Great):
-        a = self.visit(sampler, node.father)
-        b = self.visit(sampler, node.other)
-
-        no_eval_node = self.check_is_not_eval_node(a, b)
+        no_eval_node = self.check_is_not_eval_node(node.father, node.other)
         if not no_eval_node is None:
             return no_eval_node
+
+        a = self.visit(sampler, node.father)
+        b = self.visit(sampler, node.other)
 
         if a > b:
             return self
@@ -56,15 +60,14 @@ class ValidateSampler:
         raise InvalidSampler(
             f"{self.space.scope}[{sampler}]: inconsistent {a} > {b}")
 
-
     @visitor.when(ast.LessEqual)
     def visit(self, sampler, node: ast.LessEqual):
+        no_eval_node = self.check_is_not_eval_node(node.father, node.other)
+        if not no_eval_node is None:
+            return no_eval_node
+
         a = self.visit(sampler, node.father)
         b = self.visit(sampler, node.other)
-
-        no_eval_node = self.check_is_not_eval_node(a, b)
-        if not no_eval_node is None:
-            return no_eval_nodes
 
         if a <= b:
             return self
@@ -72,15 +75,11 @@ class ValidateSampler:
         raise InvalidSampler(
             f"{self.space.scope}[{sampler}]: inconsistent {a} <= {b}")
 
-
     @visitor.when(ast.Less)
     def visit(self, sampler, node: ast.Less):
+
         a = self.visit(sampler, node.father)
         b = self.visit(sampler, node.other)
-
-        no_eval_node = self.check_is_not_eval_node(a, b)
-        if not no_eval_node is None:
-            return no_eval_node
 
         if a < b:
             return self
@@ -101,9 +100,11 @@ class ValidateSampler:
         result = self.context.get_sampler_value(self.space.__dict__[node.name])
         if result is None:
             return ast.NoEvaluate()
-        
+
         return result
-        
+
+    # TODO: transform ast to check sample
+
     @visitor.when(ast.SelfValue)
     def visit(self, sampler, node: ast.SelfValue):
         return sampler

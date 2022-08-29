@@ -1,6 +1,6 @@
 from search_space.utils import visitor
 from search_space.spaces import ast_constraint as ast
-from search_space.errors import UnSupportOpError
+from search_space.errors import UnSupportOpError, NotEvaluateError
 from search_space.context_manager import SamplerContext, ConstraintInfo
 
 
@@ -14,7 +14,6 @@ class NumeralRestrictionDomain:
               CmpOp := < | <= | > | >=
     """
 
-
     def __init__(self, _min, _max, context: SamplerContext, space) -> None:
         self.min, self.max = _min, _max
         self.context = context
@@ -27,7 +26,6 @@ class NumeralRestrictionDomain:
     @visitor.when(ast.UniversalVariable)
     def visit(self, node):
         raise UnSupportOpError(self, node, "transform")
-
 
     #################################################################
     #                                                               #
@@ -94,7 +92,7 @@ class NumeralRestrictionDomain:
 
     @visitor.when(ast.NoEvaluate)
     def visit(self, node: ast.NoEvaluate):
-        return self
+        raise NotEvaluateError()
 
     @visitor.when(ast.NaturalValue)
     def visit(self, node: ast.NaturalValue):

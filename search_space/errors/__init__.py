@@ -8,3 +8,13 @@ class InvalidSampler(Exception):
     @property
     def text(self):
         return self.args[0]
+
+
+class InvalidSpaceDefinition(Exception):
+    @property
+    def text(self):
+        return self.args[0]
+
+
+class NotEvaluateError(Exception):
+    pass

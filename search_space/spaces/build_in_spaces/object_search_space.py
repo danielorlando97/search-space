@@ -2,7 +2,7 @@ from copy import copy
 from typing import Type
 from search_space.spaces import SearchSpace, SearchSpaceDomain
 import inspect
-from search_space.spaces.build_in_spaces import visitors
+from search_space.spaces import visitors
 
 
 class ObjectDomain(SearchSpaceDomain):
@@ -118,6 +118,8 @@ class MetaClassFabricSearchSpace(Type):
 
         return oss
 
+# TODO: modify __copy__
+
 
 class FabricSearchSpace(SearchSpace):
     def __init__(self, cls, initial_data, log_name=None) -> None:
@@ -134,5 +136,6 @@ class FabricSearchSpace(SearchSpace):
         result.__domain__ = domain
         return result
 
+    # TODO: Add domain to create domain
     def _create_domain(self, domain) -> SearchSpaceDomain:
         return ObjectDomain(self)

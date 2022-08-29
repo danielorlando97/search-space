@@ -59,8 +59,8 @@ class UniversalVariable:
     def __getattr__(self, name):
         return GetAttribute(name, father=self)
 
-
-
+    def __getitem__(self, index):
+        return GetIndex(index, father=self)
 
 
 class AstNode(UniversalVariable):
@@ -71,7 +71,6 @@ class AstNode(UniversalVariable):
     @property
     def is_self(self):
         return False
-
 
     #################################################################
     #                                                               #
@@ -222,6 +221,13 @@ class GetAttribute(AstNode):
         super().__init__(father)
         self.name = name
 
+
+class GetIndex(AstNode):
+    def __init__(self, index, father=None) -> None:
+        super().__init__(father)
+        self.index = index
+
+
 class NaturalValue(AstNode):
     def __init__(self, other, father=None) -> None:
         super().__init__(father)
@@ -233,11 +239,11 @@ class SelfValue(AstNode):
     def is_self(self):
         return True
 
+
 class NoEvaluate(AstNode):
     @property
     def can_evaluate(self):
         return False
-
 
 
 UniversalVariableInstance = SelfValue()

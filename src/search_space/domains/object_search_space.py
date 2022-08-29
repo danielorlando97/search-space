@@ -23,64 +23,6 @@ class ObjectSearchSpace(SearchSpace):
         return value
 
 
-class IndexOfList:
-    def __init__(self, father=None, func=None) -> None:
-        self.father = father
-        self.func = func
-
-    def __ge__(self, other):
-        return IndexOfList(father=self, func=lambda i: i >= other)
-
-    def __gt__(self, other):
-        return IndexOfList(father=self, func=lambda i: i > other)
-
-    def __le__(self, other):
-        return IndexOfList(father=self, func=lambda i: i <= other)
-
-    def __lt__(self, other):
-        return IndexOfList(father=self, func=lambda i: i < other)
-
-    def __ne__(self, other):
-        return IndexOfList(father=self, func=lambda i: i != other)
-
-    def __add__(self, other):
-        return IndexOfList(
-            father=self, func=lambda i: i + other)
-
-    def __sub__(self, other):
-        return IndexOfList(
-            father=self, func=lambda i: i - other)
-
-    def __mul__(self, other):
-        return IndexOfList(
-            father=self, func=lambda i: i * other)
-
-    def __div__(self, other):
-        return IndexOfList(
-            father=self, func=lambda i: i / other)
-
-    def __mod__(self, other):
-        return IndexOfList(
-            father=self, func=lambda i: i % other)
-
-    def __and__(self, other):
-        return IndexOfList(
-            father=self, func=lambda i: i and other)
-
-    def __or__(self, other):
-        return IndexOfList(
-            father=self, func=lambda i: i or other)
-
-    def __hash__(self) -> int:
-        return id(self)
-
-    def __call__(self, index: int) -> None:
-        if self.func is None:
-            return index
-
-        return self.func(self.father(index))
-
-
 class ListSearchSpace(SearchSpace):
     def __init__(self, value_space_ctr, *args, len_distribute_like=NaturalNormalDistributeSampler(3, 100)) -> None:
         self.size = NaturalSearchSpace(
