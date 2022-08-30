@@ -15,6 +15,13 @@ class AttributeAttention(metaclass=Singleton):
     #                                                               #
     #################################################################
 
+    @visitor.when(ast.ConditionalConstraint)
+    def visit(self, attribute, node: ast.ConditionalConstraint):
+        condition = self.visit(attribute, node.condition)
+        then = self.visit(attribute, node.father)
+
+        return ast.ConditionalConstraint(condition, then)
+
     @visitor.when(ast.GreatEqual)
     def visit(self, attribute, node: ast.GreatEqual):
         father: ast.AstNode = self.visit(attribute, node.father)

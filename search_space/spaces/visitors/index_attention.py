@@ -28,6 +28,13 @@ class IndexTransform():
     #                                                               #
     #################################################################
 
+    @visitor.when(ast.ConditionalConstraint)
+    def visit(self, index, node: ast.ConditionalConstraint, context, domain):
+        condition = self.visit(index, node.condition, context, domain)
+        then = self.visit(index, node.father, context, domain)
+
+        return ast.ConditionalConstraint(condition, then)
+
     @visitor.when(ast.GreatEqual)
     def visit(self, index, node: ast.GreatEqual, context, domain):
         father: ast.AstNode = self.visit(index, node.father, context, domain)

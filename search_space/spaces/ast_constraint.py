@@ -62,6 +62,17 @@ class UniversalVariable:
     def __getitem__(self, index):
         return GetIndex(index, father=self)
 
+    # conditionals
+
+    def __rrshift__(self, other):
+        if not isinstance(other, UniversalVariable):
+            other = NaturalValue(other)
+
+        return ConditionalConstraint(condition=other, then=self)
+
+    def __rshift__(self, other):
+        return ConditionalConstraint(condition=self, then=other)
+
 
 class AstNode(UniversalVariable):
     @property
@@ -178,6 +189,11 @@ class EqualModuleSegmentation(AstNode):
     #           Binary Restriction Constraint                       #
     #                                                               #
     #################################################################
+
+class ConditionalConstraint(AstNode):
+    def __init__(self, condition, then) -> None:
+        super().__init__(then)
+        self.condition = condition
 
 
 class Equal(AstNode):

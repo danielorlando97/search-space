@@ -3,6 +3,7 @@ from search_space.spaces import ast_constraint as ast
 from search_space.errors import InvalidSampler
 from .index_solution import IndexSolutionVisitor
 from search_space.spaces.ast_index import AstIndexNode
+from .ast_solution import AstSolution
 
 
 class ValidateSampler:
@@ -10,6 +11,7 @@ class ValidateSampler:
         self.context = context
         self.space = space
         self.index_solution = IndexSolutionVisitor(self.context)
+        self.ast_solution = AstSolution(context)
 
     def check_is_not_eval_node(self, *nodes):
         for node in nodes:
@@ -29,6 +31,14 @@ class ValidateSampler:
     #                  Binary Cmp Visit                             #
     #                                                               #
     #################################################################
+
+    @visitor.when(ast.ConditionalConstraint)
+    def visit(self, sampler, node: ast.ConditionalConstraint):
+        bool_: bool = self.ast_solution.visit(sampler, node.condition)
+        if bool_:
+            self.visit(sampler, node.father)
+
+        return self
 
     @visitor.when(ast.GreatEqual)
     def visit(self, sampler, node: ast.GreatEqual):

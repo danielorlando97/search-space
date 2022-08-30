@@ -4,3 +4,4 @@ from .attribute_attention import AttributeAttention
 from .index_attention import IndexTransform
 from .self_detector import SelfDetector
 from .categorical_restriction_domain import CategoricalRestrictionDomain
+from .ast_solution import AstSolution

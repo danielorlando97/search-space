@@ -2,6 +2,7 @@ from search_space.utils import visitor
 from search_space.spaces import ast_constraint as ast
 from search_space.errors import UnSupportOpError, NotEvaluateError
 from search_space.context_manager import SamplerContext, ConstraintInfo
+from search_space.spaces import visitors
 
 
 class CategoricalRestrictionDomain:
@@ -13,6 +14,7 @@ class CategoricalRestrictionDomain:
         self.domain = domain
         self.context = context
         self.space = space
+        self.solution = visitors.AstSolution(context)
 
     @visitor.on("node")
     def visit(self, node):
@@ -27,6 +29,14 @@ class CategoricalRestrictionDomain:
     #                  Binary Cmp Visit                             #
     #                                                               #
     #################################################################
+
+    @visitor.when(ast.ConditionalConstraint)
+    def visit(self, node: ast.ConditionalConstraint):
+        bool_: bool = self.solution.visit(node.condition)
+        if bool_:
+            self.visit(node.father)
+
+        return self
 
     @visitor.when(ast.GreatEqual)
     def visit(self, node: ast.GreatEqual):
