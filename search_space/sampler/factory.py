@@ -26,6 +26,7 @@ class Sampler:
     def choice(self, domain, repeat_last_value=False):
         index = self.get_int(
             0, len(domain) - 1, repeat_last_value=repeat_last_value)
+
         return domain[index]
 
     def get_boolean(self, domain=(0, 1), repeat_last_value=False):
@@ -41,6 +42,9 @@ class Sampler:
         return value
 
     def last_value(self, domain):
+        if type(domain) == type(list()):
+            domain = (0, len(domain) - 1)
+
         return self.history[domain][-1]
 
 

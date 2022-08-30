@@ -57,8 +57,6 @@ class SelfDetector(metaclass=Singleton):
     def visit(self, node: ast.GetAttribute):
         return self.visit(node.father)
 
-    # TODO: transform ast to check sample
-
     @visitor.when(ast.SelfValue)
     def visit(self, node: ast.SelfValue):
         return True

@@ -7,12 +7,6 @@ from tests.config import validate_replay_count
 from search_space.spaces.build_in_spaces.object_search_space import MetaClassFabricSearchSpace
 
 
-natural_array_space = Array(
-    type_space=N() | (x < 1000000), len_space=N(10, 20))
-# natural_array_space |= (x[1] < 3, x[i != 1] < 2, x[i] <= x[i + 1])
-natural_array_space |= (x[i] <= x[i + 1])
-
-
 def test_list_space():
     natural_array_space = Array(
         type_space=N(), len_space=N(2, 10))
@@ -32,7 +26,7 @@ def test_list_space():
         assert len(real_list) <= 10
         assert any([v for v in real_list if v != real_list[0]])
 
-# TODO: (x < 10) raise error
+# TODO: (x[i] < 10) ==> (x < 10) raise error
 
 
 def test_lt_constraint_dsl():

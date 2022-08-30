@@ -6,18 +6,19 @@ from search_space.spaces import visitors
 
 
 class CategoricalDomain(SearchSpaceDomain):
-    def __init__(self, domain) -> None:
+    def __init__(self, domain, space) -> None:
         super().__init__()
         self.domain = domain
         self.new_domain = domain
+        self.space = space
 
     @property
     def initial_limits(self):
-        return self.domain,
+        return self.domain
 
     @property
     def limits(self):
-        return self.new_domain,
+        return self.new_domain
 
     def transform(self, node, context):
         try:
@@ -25,7 +26,7 @@ class CategoricalDomain(SearchSpaceDomain):
                 self.new_domain, context, self.space)
 
             v.visit(node)
-            self.new_domain = self.domain
+            self.new_domain = v.domain
         except NotEvaluateError:
             pass
         return self
@@ -36,16 +37,16 @@ class CategoricalDomain(SearchSpaceDomain):
 
 
 class CategoricalSearchSpace(SearchSpace):
-    def __init__(self, domain, distribute_like=UNIFORM, log_name=None) -> None:
-        super().__init__(domain, distribute_like, log_name)
+    def __init__(self, *domain, distribute_like=UNIFORM, log_name=None) -> None:
+        super().__init__(list(domain), distribute_like, log_name)
 
     def _create_domain(self, domain) -> SearchSpaceDomain:
-        return CategoricalDomain(domain)
+        return CategoricalDomain(domain, self)
 
     def _get_random_value(self, domain, context):
         return self._distribution.choice(domain.limits)
 
 
 class BooleanSearchSpace(CategoricalSearchSpace):
-    def __init__(self, distribute_like=None, log_name=None) -> None:
-        super().__init__([False, True], distribute_like, log_name)
+    def __init__(self, distribute_like=UNIFORM, log_name=None) -> None:
+        super().__init__(False, True, distribute_like=distribute_like, log_name=log_name)

@@ -103,8 +103,6 @@ class ValidateSampler:
 
         return result
 
-    # TODO: transform ast to check sample
-
     @visitor.when(ast.SelfValue)
     def visit(self, sampler, node: ast.SelfValue):
         return sampler

@@ -118,8 +118,6 @@ class MetaClassFabricSearchSpace(Type):
 
         return oss
 
-# TODO: modify __copy__
-
 
 class FabricSearchSpace(SearchSpace):
     def __init__(self, cls, initial_data=None, log_name=None, distribute_like=None) -> None:

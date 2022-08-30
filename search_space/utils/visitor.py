@@ -2,8 +2,6 @@ import inspect
 
 __all__ = ['on', 'when']
 
-# TODO: visitor with inherence
-
 
 def on(param_name):
     def f(fn):

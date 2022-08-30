@@ -30,8 +30,6 @@ class ListDomain(ObjectDomain):
 
         return self
 
-# TODO: modify __copy__
-
 
 class ListSearchSpace(SearchSpace):
     def __init__(self, type_space: SearchSpace, len_space: NaturalSearchSpace = NaturalSearchSpace(), log_name=None, distribute_like=None) -> None:
