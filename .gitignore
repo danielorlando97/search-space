@@ -5,6 +5,8 @@ __pycache__/
 .DS_Store
 
 to_do.ipynb
+last
+last_tests
 # C extensions
 *.so
 
