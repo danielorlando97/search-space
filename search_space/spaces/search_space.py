@@ -3,6 +3,8 @@ from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
 from search_space.errors import InvalidSampler, NotEvaluateError
+from .algebra_constraint.ast import AstRoot, SelfNode
+from .algebra_constraint import visitors
 
 
 class SearchSpace(ast.SelfNode):
@@ -12,6 +14,7 @@ class SearchSpace(ast.SelfNode):
         self._distribution: Sampler = SamplerFactory().create_sampler(
             distribute_like, search_space=self)
         self.initial_domain = initial_domain
+        self.ast_constraint = AstRoot()
 
     def get_sample(self, context=None, local_domain=None):
 
@@ -45,14 +48,15 @@ class SearchSpace(ast.SelfNode):
         pass
 
     def __check_sample__(self, sample, context):
-        """
-        """
+        visitors.ValidateSampler(context).visit(sample, self.ast_constraint)
         return sample
 
     def __ast_optimization__(self, ast_list):
         """
         """
-        pass
+
+        for func in ast_list:
+            self.ast_constraint.add_constraint(func(SelfNode()))
 
     def __or__(self, other):
         """

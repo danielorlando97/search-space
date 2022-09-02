@@ -18,3 +18,9 @@ class InvalidSpaceDefinition(Exception):
 
 class NotEvaluateError(Exception):
     pass
+
+
+class InvalidSpaceConstraint(Exception):
+    @property
+    def text(self):
+        return self.args[0]

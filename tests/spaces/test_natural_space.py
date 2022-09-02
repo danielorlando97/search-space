@@ -24,3 +24,12 @@ def test_natural_minimal():
         value, _ = n.get_sample()
         assert value % 1 == 0, 'values should be integers'
         assert 10 <= value and value <= 100
+
+
+def test_natural_dsl_constraint():
+    n = N() | (lambda x: (x < 10))
+
+    for _ in range(validate_replay_count):
+        value, _ = n.get_sample()
+        assert value % 1 == 0, 'values should be integers'
+        assert value < 10
