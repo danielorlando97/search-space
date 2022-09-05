@@ -29,13 +29,12 @@ class SearchSpace(ast.SelfNode):
             raise CircularDependencyDetected(f'in {self.__class__.__name__}')
         context.registry_init_sampler_process(self)
 
-        return self.__get_sample__(context, local_domain)
-
-    def __get_sample__(self, context=None, local_domain=None):
-
         domain = self.initial_domain if local_domain is None else local_domain
         domain = self.__domain_filter__(domain, context)
 
+        return self.__get_sample__(context, domain)
+
+    def __get_sample__(self, context, domain):
         while True:
             sample = self.__sampler__(domain, context.create_child())
             try:

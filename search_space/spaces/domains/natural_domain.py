@@ -3,12 +3,12 @@ from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 
 
-class ContinuosDomain:
+class NaturalDomain:
     def __init__(self, _min, _max) -> None:
         self.min, self.max = _min, _max
 
     def get_sample(self, sampler: Sampler):
-        return sampler.get_float(self.min, self.max)
+        return sampler.get_int(self.min, self.max)
 
     @property
     def limits(self):
@@ -58,14 +58,14 @@ class ContinuosDomain:
         if other == self.max or self.min == other:
             return self
 
-        return BachedDomain(ContinuosDomain(self.min, other), ContinuosDomain(other, self.max))
+        return BachedDomain(NaturalDomain(self.min, other), NaturalDomain(other, self.max))
 
     def __lt__(self, other):
         if self.min > other:
             raise InvalidSpaceDefinition(
                 f"All values intro [{self.min}, {self.max}] are graters that {other}")
 
-        self.max = min(other, self.max)
+        self.max = min(other - 1, self.max)
         return self
 
     def __gt__(self, other):
@@ -73,11 +73,21 @@ class ContinuosDomain:
             raise InvalidSpaceDefinition(
                 f"All values intro [{self.min}, {self.max}] are less that {other}")
 
-        self.min = max(other, self.min)
+        self.min = max(other + 1, self.min)
         return self
 
     def __ge__(self, other):
-        return self.__gt__(self, other)
+        if self.max < other:
+            raise InvalidSpaceDefinition(
+                f"All values intro [{self.min}, {self.max}] are less that {other}")
+
+        self.min = max(other, self.min)
+        return self
 
     def __le__(self, other):
-        return self.__lt__(self, other)
+        if self.min > other:
+            raise InvalidSpaceDefinition(
+                f"All values intro [{self.min}, {self.max}] are graters that {other}")
+
+        self.max = min(other, self.max)
+        return self
