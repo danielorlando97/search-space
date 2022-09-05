@@ -35,6 +35,7 @@ class SamplerContext:
         self.context = {}
         self.result = None
         self.father: SamplerContext = father
+        self.sampling_status = {}
 
     #################################################################
     #                                                               #
@@ -47,6 +48,17 @@ class SamplerContext:
 
     def registry_sampler(self, search_space, value):
         self.context[search_space] = value
+
+    def registry_init_sampler_process(self, search_space):
+        self.context[search_space] = True
+
+    def check_sampling_status(self, search_space):
+        try:
+            return self.sampling_status[search_space]
+        except KeyError:
+            if not self.father is None:
+                return self.father.check_sampling_status(search_space)
+            return None
 
     def get_sampler_value(self, search_space):
         try:

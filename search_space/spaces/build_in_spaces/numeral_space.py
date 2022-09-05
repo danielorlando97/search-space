@@ -18,11 +18,14 @@ class NumeralSearchSpace(SearchSpace):
 
 
 class ContinueSearchSpace(NumeralSearchSpace):
-    def __init__(self, min=0, max=100000, log_name=None, distribute_like=UNIFORM) -> None:
+    def __init__(self, min=0, max=100000, distribute_like=UNIFORM) -> None:
         super().__init__(min, max, distribute_like)
 
     def __sampler__(self, domain, context):
         return self._distribution.get_float(*domain)
+
+    def __copy__(self):
+        return ContinueSearchSpace(self.initial_domain[0], self.initial_domain[1], self.__distribute_like)
 
 
 class NaturalSearchSpace(NumeralSearchSpace):
@@ -31,3 +34,6 @@ class NaturalSearchSpace(NumeralSearchSpace):
 
     def __sampler__(self, domain, context):
         return self._distribution.get_int(*domain)
+
+    def __copy__(self):
+        return NaturalSearchSpace(self.initial_domain[0], self.initial_domain[1], self.__distribute_like)

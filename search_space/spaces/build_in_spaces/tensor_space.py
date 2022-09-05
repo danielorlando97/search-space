@@ -4,26 +4,26 @@ from search_space.spaces import SearchSpace
 from copy import copy
 from search_space.spaces.algebra_constraint import visitors
 from .numeral_space import NaturalSearchSpace
-from search_space.utils.singleton import Singleton
+from search_space.spaces.algebra_constraint import ast_index
+from search_space.spaces.algebra_constraint import ast
+# TODO: check space types
 
 
 class TensorSearchSpace(SearchSpace):
     def __init__(self, space_type: SearchSpace, shape_space: list) -> None:
         super().__init__(None, None)
-        self.len_spaces = shape_space
+        self.len_spaces = shape_space if type(
+            shape_space) == type(list()) else [shape_space]
         self.type_space = space_type
         self.samplers = {}
 
-    def get_sample(self, context=None, local_domain=None):
-
-        context = context if not context is None else SamplerContext()
-        cache_value = context.get_sampler_value(self)
-        if not cache_value is None:
-            return cache_value, context
-
+    def __get_sample__(self, context=None, local_domain=None):
         shape = []
         for ls in self.len_spaces:
-            shape.append(ls.get_sample(context))
+            try:
+                shape.append(ls.get_sample(context)[0])
+            except AttributeError:
+                shape.append(ls)
 
         self.__create_samplers__(
             shape, visitors.IndexAstModifierVisitor(context, self))
@@ -55,7 +55,7 @@ class TensorSearchSpace(SearchSpace):
 
     def __sampler__(self, shape, context, index=[]):
         if not any(shape):
-            return self.samplers[tuple(index)].get_sample(context)
+            return self.samplers[tuple(index)].get_sample(context)[0]
 
         result = []
         for i in range(shape[0]):
@@ -63,6 +63,9 @@ class TensorSearchSpace(SearchSpace):
 
         return result
 
+    def __build_constraint__(self, func):
+
+        return func(*([ast_index.SelfNode(i) for i in range(0, len(self.len_spaces))] + [ast.SelfNode()]))
 
 # TODO: revolver circular problem
 

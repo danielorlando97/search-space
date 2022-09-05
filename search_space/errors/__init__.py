@@ -28,3 +28,7 @@ class InvalidSpaceConstraint(Exception):
 
 class SpaceBuildingError(Exception):
     pass
+
+
+class CircularDependencyDetected(Exception):
+    pass
