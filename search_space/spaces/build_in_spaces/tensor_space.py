@@ -13,11 +13,11 @@ class TensorSearchSpace(SearchSpace):
     def __init__(self, space_type: SearchSpace, shape_space: list) -> None:
         super().__init__(None, None)
         self.len_spaces = shape_space if type(
-            shape_space) == type(list()) else [shape_space]
+            shape_space) in [type(list()), type(tuple())] else [shape_space]
         self.type_space = space_type
         self.samplers = {}
 
-    def __get_sample__(self, context=None, local_domain=None):
+    def __domain_filter__(self, domain, context):
         shape = []
         for ls in self.len_spaces:
             try:
@@ -28,16 +28,7 @@ class TensorSearchSpace(SearchSpace):
         self.__create_samplers__(
             shape, visitors.IndexAstModifierVisitor(context, self))
 
-        while True:
-            sample = self.__sampler__(shape, context.create_child())
-            try:
-                self.__check_sample__(sample, context)
-
-                context.registry_sampler(self, sample)
-                return sample, context
-
-            except InvalidSampler:
-                pass
+        return shape
 
     def __create_samplers__(self, shape, index_modifier: visitors.IndexAstModifierVisitor, index=[]):
         if not any(shape):
