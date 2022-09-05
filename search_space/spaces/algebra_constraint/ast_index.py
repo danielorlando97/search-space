@@ -1,12 +1,13 @@
 from search_space.utils.ast_tools import decorated_all_methods, check_ast_precedence, check_params_type
 
+
 check_natural_value = check_params_type(
-    lambda: SpaceOperationNode, lambda x: NaturalValue(x))
+    lambda: IndexNode, lambda x: NaturalValue(x))
 
 
 @decorated_all_methods(check_natural_value)
-class SpaceOperationNode:
-    precedence = 0
+class IndexNode:
+    precedence = 0.5
 
     #################################################################
     #                                                               #
@@ -144,7 +145,7 @@ class SpaceOperationNode:
     #################################################################
 
 
-class SearchBinaryOperation(SpaceOperationNode):
+class IndexBinaryOperation(IndexNode):
     def __init__(self, target, other) -> None:
         super().__init__()
         self.target = target
@@ -157,7 +158,7 @@ class SearchBinaryOperation(SpaceOperationNode):
     #################################################################
 
 
-class GetAttr(SearchBinaryOperation):
+class GetAttr(IndexBinaryOperation):
     pass
 
     #################################################################
@@ -167,7 +168,7 @@ class GetAttr(SearchBinaryOperation):
     #################################################################
 
 
-class GetItem(SearchBinaryOperation):
+class GetItem(IndexBinaryOperation):
     pass
 
     #################################################################
@@ -177,23 +178,23 @@ class GetItem(SearchBinaryOperation):
     #################################################################
 
 
-class AddOp(SearchBinaryOperation):
+class AddOp(IndexBinaryOperation):
     pass
 
 
-class SubOp(SearchBinaryOperation):
+class SubOp(IndexBinaryOperation):
     pass
 
 
-class MultiOp(SearchBinaryOperation):
+class MultiOp(IndexBinaryOperation):
     pass
 
 
-class DivOp(SearchBinaryOperation):
+class DivOp(IndexBinaryOperation):
     pass
 
 
-class ModOp(SearchBinaryOperation):
+class ModOp(IndexBinaryOperation):
     pass
 
     #################################################################
@@ -203,15 +204,15 @@ class ModOp(SearchBinaryOperation):
     #################################################################
 
 
-class AndOp(SearchBinaryOperation):
+class AndOp(IndexBinaryOperation):
     pass
 
 
-class OrOp(SearchBinaryOperation):
+class OrOp(IndexBinaryOperation):
     pass
 
 
-class XorOp(SearchBinaryOperation):
+class XorOp(IndexBinaryOperation):
     pass
 
     #################################################################
@@ -221,27 +222,27 @@ class XorOp(SearchBinaryOperation):
     #################################################################
 
 
-class EqualOp(SearchBinaryOperation):
+class EqualOp(IndexBinaryOperation):
     pass
 
 
-class NotEqualOp(SearchBinaryOperation):
+class NotEqualOp(IndexBinaryOperation):
     pass
 
 
-class GreatOrEqualOp(SearchBinaryOperation):
+class GreatOrEqualOp(IndexBinaryOperation):
     pass
 
 
-class GreatOp(SearchBinaryOperation):
+class GreatOp(IndexBinaryOperation):
     pass
 
 
-class LessOrEqualOp(SearchBinaryOperation):
+class LessOrEqualOp(IndexBinaryOperation):
     pass
 
 
-class LessOp(SearchBinaryOperation):
+class LessOp(IndexBinaryOperation):
     pass
 
     #################################################################
@@ -251,17 +252,17 @@ class LessOp(SearchBinaryOperation):
     #################################################################
 
 
-class SearchUnaryOperation(SpaceOperationNode):
+class IndexUnaryOperation(IndexNode):
     def __init__(self, target) -> None:
         super().__init__()
         self.target = target
 
 
-class NegOp(SearchUnaryOperation):
+class NegOp(IndexUnaryOperation):
     pass
 
 
-class NaturalValue(SearchUnaryOperation):
+class NaturalValue(IndexUnaryOperation):
     pass
 
     #################################################################
@@ -271,5 +272,7 @@ class NaturalValue(SearchUnaryOperation):
     #################################################################
 
 
-class SelfNode(SpaceOperationNode):
-    pass
+class SelfNode(IndexNode):
+    def __init__(self, shape_index) -> None:
+        super().__init__()
+        self.shape_index = shape_index

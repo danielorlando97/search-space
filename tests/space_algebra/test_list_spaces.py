@@ -4,7 +4,7 @@ from tests.config import validate_replay_count
 
 
 def test_natural_minimal():
-    n = R(0, 100000000000)
+    n = N(0, 100000000000) ^ 10
 
     v1, _ = n.get_sample()
     v2, _ = n.get_sample()
@@ -18,8 +18,22 @@ def test_natural_minimal():
     assert not any(values_list), """
     The same sampler generates the same value for the same context"""
 
-    n = R(10, 100)
+    n = N(10, 100) ^ 10
 
     for _ in range(validate_replay_count):
         value, _ = n.get_sample()
-        assert 10 <= value and value <= 100
+        assert len(value) == 10
+        for v in value:
+            assert v % 1 == 0, 'values should be integers'
+            assert 10 <= v and v <= 100
+
+
+# def test_natural_dsl_constraint():
+#     n = N() | (lambda x: (x < 10))
+
+#     for _ in range(validate_replay_count):
+#         value, _ = n.get_sample()
+#         assert value % 1 == 0, 'values should be integers'
+#         assert value < 10
+
+ss.Tensor[ss.N(0, 1000)](shape=(1, N(0, 1000)))

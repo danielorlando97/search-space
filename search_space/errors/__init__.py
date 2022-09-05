@@ -24,3 +24,7 @@ class InvalidSpaceConstraint(Exception):
     @property
     def text(self):
         return self.args[0]
+
+
+class SpaceBuildingError(Exception):
+    pass

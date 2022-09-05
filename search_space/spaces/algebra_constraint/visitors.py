@@ -1,2 +1,3 @@
 from .domain_modifier_visitor import DomainModifierVisitor
 from .sample_check_visitor import ValidateSampler
+from .index_ast_modifier import IndexAstModifierVisitor

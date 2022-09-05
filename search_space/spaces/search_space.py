@@ -54,19 +54,18 @@ class SearchSpace(ast.SelfNode):
     def __ast_optimization__(self, ast_list):
         """
         """
-
         for func in ast_list:
             self.ast_constraint.add_constraint(func(SelfNode()))
+
+        return self
 
     def __or__(self, other):
         """
         """
         if type(other) == type(tuple()):
-            self.__ast_optimization__(other)
-            return self
+            return self.__ast_optimization__(other)
         if callable(other):
-            self.__ast_optimization__([other])
-            return self
+            return self.__ast_optimization__([other])
 
         return super().__or__(self, other)
 
