@@ -148,8 +148,8 @@ class IndexNode:
 class IndexBinaryOperation(IndexNode):
     def __init__(self, target, other) -> None:
         super().__init__()
-        self.target = target
-        self.other = other
+        self.a = target
+        self.b = other
 
     #################################################################
     #                                                               #

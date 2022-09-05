@@ -58,10 +58,11 @@ def test_tensor_dynamical_lens():
                     assert v <= 10
 
 
-# def test_natural_dsl_constraint():
-#     n = N() | (lambda x: (x < 10))
+def test_tensor_dsl_minimal():
+    n = ss.Tensor(space_type=ss.N(0, 10), shape_space=(10))
+    n |= (lambda i, x: x[i % 3 == 0] < 3)
 
-#     for _ in range(validate_replay_count):
-#         value, _ = n.get_sample()
-#         assert value % 1 == 0, 'values should be integers'
-#         assert value < 10
+    for _ in range(validate_replay_count):
+        value, _ = n.get_sample()
+        for i, v in enumerate(value):
+            assert i % 3 != 0 or v < 3

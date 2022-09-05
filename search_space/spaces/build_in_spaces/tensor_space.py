@@ -17,7 +17,7 @@ class TensorSearchSpace(SearchSpace):
         self.type_space = space_type
         self.samplers = {}
 
-    def __domain_filter__(self, domain, context):
+    def __sampler__(self, domain, context):
         shape = []
         for ls in self.len_spaces:
             try:
@@ -25,47 +25,32 @@ class TensorSearchSpace(SearchSpace):
             except AttributeError:
                 shape.append(ls)
 
-        self.__create_samplers__(
-            shape, visitors.IndexAstModifierVisitor(context, self))
+        def f(shape, index):
+            if not any(shape):
+                return self[index].get_sample(context, local_domain=domain)[0]
 
-        return shape
-
-    def __create_samplers__(self, shape, index_modifier: visitors.IndexAstModifierVisitor, index=[]):
-        if not any(shape):
-            try:
-                self.samplers[tuple(index)]
-            except KeyError:
-                self.samplers[tuple(index)] = copy(self.type_space)
-                self.samplers[tuple(index)] |= index_modifier.visit(
-                    self.ast_constraint, tuple(index))
-
-        else:
+            result = []
             for i in range(shape[0]):
-                self.__create_samplers__(
-                    shape[1:], index_modifier, index + [i])
+                result.append(f(shape[1:], index + [i]))
 
-    def __sampler__(self, shape, context, index=[]):
-        if not any(shape):
-            return self.samplers[tuple(index)].get_sample(context)[0]
+            return result
 
-        result = []
-        for i in range(shape[0]):
-            result.append(self.__sampler__(shape[1:], context, index + [i]))
-
-        return result
+        return f(shape, [])
 
     def __build_constraint__(self, func):
 
         return func(*([ast_index.SelfNode(i) for i in range(0, len(self.len_spaces))] + [ast.SelfNode()]))
 
-# TODO: revolver circular problem
+    def __getitem__(self, index):
+        if type(index) == type(list()):
+            index = tuple(index)
 
-    def __get_index__(self, index, context):
         try:
-            sampler = self.samplers[tuple(index)]
+            self.samplers[index]
         except KeyError:
-            self.samplers[tuple(index)] = copy(self.type_space)
-            self.samplers[tuple(index)] |= visitors.IndexAstModifierVisitor(context, self).visit(
-                self.ast_constraint, tuple(index))
+            self.samplers[index] = copy(self.type_space)
+            self.samplers[index].visitor_layers.append(
+                visitors.IndexAstModifierVisitor(self))
+            self.samplers[index].ast_constraint = self.ast_constraint
 
-        return self.samplers[tuple(index)]
+        return self.samplers[index]

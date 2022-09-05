@@ -2,9 +2,10 @@ from . import ast
 from search_space.utils import visitor
 from search_space.spaces.algebra_constraint import ast
 from . import ast_index
+from . import VisitorLayer
 
 
-class IndexAstModifierVisitor:
+class IndexAstModifierVisitor(VisitorLayer):
     def __init__(self, context, space) -> None:
         self.context = context
         self.space = space
@@ -45,15 +46,7 @@ class IndexAstModifierVisitor:
 
     @visitor.when(ast.GetItem)
     def visit(self, node: ast.GetItem, current_index):
-        if isinstance(node.other, ast_index.IndexNode):
-            result = self.index_solution.visit(self.current_index, node.other)
-            if type(result) == type(bool()):
-                index = self.current_index[-len(current_index) - 1]
-            else:
-                index = result
-        else:
-            index = self.visit(node.other, current_index)
-
+        index = self.visit(node.other, current_index)
         return self.visit(node.target, [index] + current_index)
 
     @visitor.when(ast.SelfNode)
@@ -68,6 +61,13 @@ class IndexAstModifierVisitor:
 
     @visitor.when(ast.NaturalValue)
     def visit(self, node: ast.NaturalValue, current_index):
+        if isinstance(node.target, ast_index.IndexNode):
+            result = self.index_solution.visit(self.current_index, node.target)
+            if type(result) == type(bool()):
+                return ast.NaturalValue(self.current_index[-len(current_index) - 1])
+            else:
+                return ast.NaturalValue(result)
+
         if not any(current_index):
             return node
 

@@ -1,3 +1,4 @@
+from typing import List
 from .algebra_space import ast
 from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
@@ -5,17 +6,25 @@ from search_space.context_manager import SamplerContext
 from search_space.errors import InvalidSampler, NotEvaluateError, CircularDependencyDetected
 from .algebra_constraint.ast import AstRoot, SelfNode
 from .algebra_constraint import visitors
+from .algebra_constraint import VisitorLayer
 
 
 class SearchSpace(ast.SelfNode):
 
-    def __init__(self, initial_domain, distribute_like=UNIFORM) -> None:
+    def __init__(self, initial_domain, distribute_like=UNIFORM, visitor_layers=[]) -> None:
         super().__init__()
         self._distribution: Sampler = SamplerFactory().create_sampler(
             distribute_like, search_space=self)
         self.initial_domain = initial_domain
         self.__distribute_like = distribute_like
         self.ast_constraint = AstRoot()
+        self.visitor_layers: List[VisitorLayer] = [
+            visitors.ValidateSampler()] + visitor_layers
+
+    def __sampler__(self, domain, context):
+        """
+        """
+        pass
 
     def get_sample(self, context=None, local_domain=None):
 
@@ -31,10 +40,6 @@ class SearchSpace(ast.SelfNode):
 
         domain = self.initial_domain if local_domain is None else local_domain
         domain = self.__domain_filter__(domain, context)
-
-        return self.__get_sample__(context, domain)
-
-    def __get_sample__(self, context, domain):
         while True:
             sample = self.__sampler__(domain, context.create_child())
             try:
@@ -47,17 +52,28 @@ class SearchSpace(ast.SelfNode):
                 pass
 
     def __domain_filter__(self, domain, context):
-        """
-        """
-        return domain
+        ast_result = self.ast_constraint
+        for visitor in reversed(self.visitor_layers):
 
-    def __sampler__(self, domain, context):
-        """
-        """
-        pass
+            # All visitors modifier the ast except the last one
+            # The last one return the restricted domain
+
+            ast_result = visitor.transform_to_modifier(
+                ast_result, domain, context)
+
+        return ast_result
 
     def __check_sample__(self, sample, context):
-        visitors.ValidateSampler(context).visit(sample, self.ast_constraint)
+
+        ast_result = self.ast_constraint
+        for visitor in reversed(self.visitor_layers):
+
+            # All visitors modifier the ast except the last one
+            # The last one check if the sample is valid
+
+            ast_result = visitor.transform_to_check_sample(
+                ast_result, sample, context)
+
         return sample
 
     def __ast_optimization__(self, ast_list):

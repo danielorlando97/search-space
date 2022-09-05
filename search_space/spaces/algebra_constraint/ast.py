@@ -282,3 +282,12 @@ class AstRoot(UniversalVariableNode):
 
     def add_constraint(self, ast):
         self.asts.append(ast)
+
+    def __add__(self, other):
+        if other is None:
+            return self
+
+        n = AstRoot()
+        n.asts = self.asts + other.asts
+
+        return n
