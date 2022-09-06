@@ -1,5 +1,5 @@
 from search_space.context_manager.sampler_context import SamplerContext
-from search_space.errors import InvalidSampler
+from search_space.errors import InvalidSpaceConstraint, NotEvaluateError
 from search_space.spaces import SearchSpace
 from copy import copy
 from search_space.spaces.algebra_constraint import visitors
@@ -25,6 +25,8 @@ class TensorSearchSpace(SearchSpace):
             except AttributeError:
                 shape.append(ls)
 
+        self.__current_shape = shape
+
         def f(shape, index):
             if not any(shape):
                 return self[index].get_sample(context, local_domain=domain)[0]
@@ -36,6 +38,9 @@ class TensorSearchSpace(SearchSpace):
             return result
 
         return f(shape, [])
+
+    def __check_sample__(self, sample, context):
+        return sample
 
     def __build_constraint__(self, func):
 
@@ -49,8 +54,21 @@ class TensorSearchSpace(SearchSpace):
             self.samplers[index]
         except KeyError:
             self.samplers[index] = copy(self.type_space)
-            self.samplers[index].visitor_layers.append(
-                visitors.IndexAstModifierVisitor(self))
+            self.samplers[index].visitor_layers += [
+                visitors.EvalAstChecked(),
+                visitors.IndexAstModifierVisitor(self, index)
+            ]
             self.samplers[index].ast_constraint = self.ast_constraint
 
         return self.samplers[index]
+
+    def __check_index__(self, index):
+        for i, size in enumerate(self.__current_shape):
+            try:
+                value = index[i]
+            except IndexError:
+                raise InvalidSpaceConstraint(
+                    f'bad index reference index={index} shape={self.__current_shape}')
+
+            if value < 0 or value >= size:
+                raise NotEvaluateError("Index out of range")

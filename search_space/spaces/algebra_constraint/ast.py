@@ -291,3 +291,7 @@ class AstRoot(UniversalVariableNode):
         n.asts = self.asts + other.asts
 
         return n
+
+
+class NotEvaluate(UniversalVariableNode):
+    pass

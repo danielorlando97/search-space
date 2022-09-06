@@ -1,12 +1,11 @@
 from search_space.utils import visitor
 from search_space.spaces.algebra_constraint import ast
 from search_space.errors import InvalidSampler
+from . import VisitorLayer
+from search_space.utils.singleton import Singleton
 
 
-class ValidateSampler:
-    def __init__(self, context) -> None:
-        self.context = context
-
+class ValidateSampler(VisitorLayer, metaclass=Singleton):
     def check_is_not_eval_node(self, *nodes):
         for node in nodes:
             try:
@@ -16,14 +15,18 @@ class ValidateSampler:
                 pass
         return None
 
+    @property
+    def do_transform_to_modifier(self):
+        return False
+
     @visitor.on("node")
-    def visit(self, sample, node):
+    def transform_to_check_sample(self, node, sample, context=None):
         pass
 
     @visitor.when(ast.AstRoot)
-    def visit(self, sample, node: ast.AstRoot):
+    def transform_to_check_sample(self, node, sample, context=None):
         for n in node.asts:
-            self.visit(sample, n)
+            self.transform_to_check_sample(n, sample)
 
     #################################################################
     #                                                               #
@@ -32,10 +35,10 @@ class ValidateSampler:
     #################################################################
 
     @visitor.when(ast.LessOp)
-    def visit(self, sampler, node: ast.LessOp):
+    def transform_to_check_sample(self, node, sample, context=None):
 
-        a = self.visit(sampler, node.target)
-        b = self.visit(sampler, node.other)
+        a = self.transform_to_check_sample(node.target, sample)
+        b = self.transform_to_check_sample(node.other, sample)
 
         if a < b:
             return self
@@ -49,13 +52,27 @@ class ValidateSampler:
     #                                                               #
     #################################################################
 
+    @visitor.when(ast.GetItem)
+    def transform_to_check_sample(self, node: ast.GetItem, sample, context=None):
+
+        a = self.transform_to_check_sample(node.target, sample)
+        b = self.transform_to_check_sample(node.other, sample)
+
+        if a < b:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {a} < {b} ]")
+
     @visitor.when(ast.SelfNode)
-    def visit(self, sampler, node: ast.SelfNode):
-        return sampler
+    def transform_to_check_sample(self, node, sample, context=None):
+        return sample
 
     @visitor.when(ast.NaturalValue)
-    def visit(self, sampler, node: ast.NaturalValue):
+    def transform_to_check_sample(self, node, sample, context=None):
         try:
-            return node.target.get_sample(context=self.context)[0]
+            return node.target.get_sample(context=context)[0]
         except AttributeError:
             return node.target
+        except TypeError:
+            pass

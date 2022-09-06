@@ -1,21 +1,26 @@
 from search_space.utils import visitor
 from search_space.spaces.algebra_constraint import ast
+from . import VisitorLayer
+from search_space.utils.singleton import Singleton
 
 
-class DomainModifierVisitor:
-    def __init__(self, domain) -> None:
-        self.domain = domain
+class DomainModifierVisitor(VisitorLayer, metaclass=Singleton):
+    @property
+    def do_transform_to_check_sample(self):
+        return False
 
     @visitor.on("node")
-    def visit(self, node, context):
+    def transform_to_modifier(self, node, domain=None, context=None):
         pass
 
     @visitor.when(ast.AstRoot)
-    def visit(self, node: ast.AstRoot, context):
-        for n in node.asts:
-            self.visit(n, context)
+    def transform_to_modifier(self, node: ast.AstRoot, domain, context):
+        self.domain = domain
 
-        return self.domain
+        for n in node.asts:
+            self.transform_to_modifier(n, context=context)
+
+        return node, self.domain
 
     #################################################################
     #                                                               #
@@ -24,9 +29,9 @@ class DomainModifierVisitor:
     #################################################################
 
     @visitor.when(ast.LessOp)
-    def visit(self, node: ast.LessOp, context):
-        _ = self.visit(node.target, context)
-        limit = self.visit(node.other, context)
+    def transform_to_modifier(self, node, domain=None, context=None):
+        _ = self.transform_to_modifier(node.target, context=context)
+        limit = self.transform_to_modifier(node.other, context=context)
 
         self.domain = self.domain < limit
 
@@ -37,12 +42,12 @@ class DomainModifierVisitor:
     #################################################################
 
     @visitor.when(ast.SelfNode)
-    def visit(self, node: ast.SelfNode, context):
+    def transform_to_modifier(self, node, domain=None, context=None):
         pass
 
     @visitor.when(ast.NaturalValue)
-    def visit(self, node: ast.NaturalValue, context):
+    def transform_to_modifier(self, node, domain=None, context=None):
         try:
-            return node.target.get_sample(context=self.context)[0]
+            return node.target.get_sample(context=context)[0]
         except AttributeError:
             return node.target
