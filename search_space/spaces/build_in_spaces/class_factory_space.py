@@ -1,6 +1,3 @@
-from ast import arg
-import inspect
-from search_space.errors import InvalidSpaceDefinition
 from search_space.sampler.distribution_names import UNIFORM
 from .categorical_search_space import CategoricalSearchSpace
 from search_space.spaces.algebra_constraint import visitors

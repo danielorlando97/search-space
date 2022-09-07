@@ -8,6 +8,11 @@ check_natural_value = check_params_type(
 @decorated_all_methods(check_natural_value)
 class UniversalVariableNode:
     precedence = 1
+
+    @property
+    def is_self(self):
+        return False
+
     #################################################################
     #                                                               #
     #                     Class Operations                          #
@@ -272,7 +277,9 @@ class NaturalValue(UniversalVariableUnaryOperation):
 
 
 class SelfNode(UniversalVariableNode):
-    pass
+    @property
+    def is_self(self):
+        return True
 
 
 class AstRoot(UniversalVariableNode):

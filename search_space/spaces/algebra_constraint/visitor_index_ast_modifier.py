@@ -54,6 +54,7 @@ class IndexAstModifierVisitor(VisitorLayer):
     #                                                               #
     #################################################################
 
+# TODO: refactor to x[(i, j)]
     @visitor.when(ast.GetItem)
     def visit(self, node, current_index, context):
         index = self.visit(node.other, current_index, context)
