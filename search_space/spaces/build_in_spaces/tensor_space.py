@@ -17,7 +17,7 @@ class TensorSearchSpace(SearchSpace):
         self.type_space = space_type
         self.samplers = {}
 
-    def __sampler__(self, domain, context):
+    def __domain_filter__(self, domain, context):
         shape = []
         for ls in self.len_spaces:
             try:
@@ -27,8 +27,12 @@ class TensorSearchSpace(SearchSpace):
 
         self.__current_shape = shape
 
+        return super().__domain_filter__(domain, context)
+
+    def __sampler__(self, domain, context):
+
         def f(shape, index):
-            if not any(shape):
+            if len(shape) == 0:
                 return self[index].get_sample(context, local_domain=domain)[0]
 
             result = []
@@ -37,9 +41,9 @@ class TensorSearchSpace(SearchSpace):
 
             return result
 
-        return f(shape, [])
+        return f(self.__current_shape, [])
 
-    def __check_sample__(self, sample, context):
+    def __check_sample__(self, sample, ast_result, context):
         return sample
 
     def __build_constraint__(self, func):
@@ -72,3 +76,6 @@ class TensorSearchSpace(SearchSpace):
 
             if value < 0 or value >= size:
                 raise NotEvaluateError("Index out of range")
+
+
+# TODO copy

@@ -69,10 +69,10 @@ class ClassFabricSearchSpace(CategoricalSearchSpace):
             for key, item in kws.items():
                 new_kw[key] = item.get_sample(context=context)[0]
 
-            instance = type.__call__(instance_class, *new_args, **new_kw)
+            instance = instance_class(*new_args, **new_kw)
 
         except KeyError:
-            instance = type.__call__(instance_class)
+            instance = instance_class()
 
         instance.__context__ = context
         instance.__abi__ = self.abi
@@ -92,3 +92,6 @@ class ClassFabricSearchSpace(CategoricalSearchSpace):
             item.visitor_layers.append(visitors.MemberAstModifier(key))
 
         return super().__ast_optimization__(ast_list)
+
+
+# TODO copy

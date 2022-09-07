@@ -46,6 +46,42 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         raise InvalidSampler(
             f"inconsistent sampler => [ {a} < {b} ]")
 
+    @visitor.when(ast.LessOrEqualOp)
+    def transform_to_check_sample(self, node, sample, context=None):
+
+        a = self.transform_to_check_sample(node.target, sample)
+        b = self.transform_to_check_sample(node.other, sample)
+
+        if a <= b:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {a} < {b} ]")
+
+    @visitor.when(ast.GreatOp)
+    def transform_to_check_sample(self, node, sample, context=None):
+
+        a = self.transform_to_check_sample(node.target, sample)
+        b = self.transform_to_check_sample(node.other, sample)
+
+        if a > b:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {a} < {b} ]")
+
+    @visitor.when(ast.GreatOrEqualOp)
+    def transform_to_check_sample(self, node, sample, context=None):
+
+        a = self.transform_to_check_sample(node.target, sample)
+        b = self.transform_to_check_sample(node.other, sample)
+
+        if a >= b:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {a} < {b} ]")
+
     #################################################################
     #                                                               #
     #                  Simple Transform                             #

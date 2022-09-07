@@ -16,7 +16,7 @@ class SearchSpace(ast.SelfNode):
         self._distribution: Sampler = SamplerFactory().create_sampler(
             distribute_like, search_space=self)
         self.initial_domain = initial_domain
-        self.__distribute_like = distribute_like
+        self.__distribute_like__ = distribute_like
         self.ast_constraint = AstRoot()
         self.visitor_layers: List[VisitorLayer] = visitor_layers
 

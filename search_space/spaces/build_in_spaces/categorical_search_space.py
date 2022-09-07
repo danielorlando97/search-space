@@ -17,7 +17,7 @@ class CategoricalSearchSpace(SearchSpace):
         return super().__domain_filter__(c_domain, context)
 
     def __copy__(self):
-        return CategoricalSearchSpace(*self.initial_domain, distribute_like=self.__distribute_like)
+        return CategoricalSearchSpace(*self.initial_domain, distribute_like=self.__distribute_like__)
 
 
 class BooleanSearchSpace(CategoricalSearchSpace):
@@ -26,4 +26,4 @@ class BooleanSearchSpace(CategoricalSearchSpace):
                          visitor_layers=visitor_layers)
 
     def __copy__(self):
-        return BooleanSearchSpace(distribute_like=self.__distribute_like)
+        return BooleanSearchSpace(distribute_like=self.__distribute_like__)

@@ -4,7 +4,7 @@ from . import VisitorLayer
 from search_space.utils.singleton import Singleton
 
 
-class DomainModifierVisitor(VisitorLayer, metaclass=Singleton):
+class DomainModifierVisitor(VisitorLayer):
     @property
     def do_transform_to_check_sample(self):
         return False
@@ -34,6 +34,27 @@ class DomainModifierVisitor(VisitorLayer, metaclass=Singleton):
         limit = self.transform_to_modifier(node.other, context=context)
 
         self.domain = self.domain < limit
+
+    @visitor.when(ast.LessOrEqualOp)
+    def transform_to_modifier(self, node, domain=None, context=None):
+        _ = self.transform_to_modifier(node.target, context=context)
+        limit = self.transform_to_modifier(node.other, context=context)
+
+        self.domain = self.domain <= limit
+
+    @visitor.when(ast.GreatOp)
+    def transform_to_modifier(self, node, domain=None, context=None):
+        _ = self.transform_to_modifier(node.target, context=context)
+        limit = self.transform_to_modifier(node.other, context=context)
+
+        self.domain = self.domain > limit
+
+    @visitor.when(ast.GreatOrEqualOp)
+    def transform_to_modifier(self, node, domain=None, context=None):
+        _ = self.transform_to_modifier(node.target, context=context)
+        limit = self.transform_to_modifier(node.other, context=context)
+
+        self.domain = self.domain >= limit
 
     #################################################################
     #                                                               #

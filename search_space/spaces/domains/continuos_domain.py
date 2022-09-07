@@ -77,7 +77,7 @@ class ContinuosDomain:
         return self
 
     def __ge__(self, other):
-        return self.__gt__(self, other)
+        return self.__gt__(other)
 
     def __le__(self, other):
-        return self.__lt__(self, other)
+        return self.__lt__(other)

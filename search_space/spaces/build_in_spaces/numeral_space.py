@@ -24,7 +24,7 @@ class ContinueSearchSpace(NumeralSearchSpace):
         return super().__domain_filter__(c_domain, context)
 
     def __copy__(self):
-        return ContinueSearchSpace(self.initial_domain[0], self.initial_domain[1], self.__distribute_like)
+        return ContinueSearchSpace(self.initial_domain[0], self.initial_domain[1], self.__distribute_like__)
 
 
 class NaturalSearchSpace(NumeralSearchSpace):
@@ -36,4 +36,4 @@ class NaturalSearchSpace(NumeralSearchSpace):
         return super().__domain_filter__(c_domain, context)
 
     def __copy__(self):
-        return NaturalSearchSpace(self.initial_domain[0], self.initial_domain[1], self.__distribute_like)
+        return NaturalSearchSpace(self.initial_domain[0], self.initial_domain[1], self.__distribute_like__)
