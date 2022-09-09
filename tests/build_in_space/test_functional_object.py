@@ -1,5 +1,3 @@
-from pstats import Stats
-from sre_parse import State
 from search_space import dsl as ss
 from tests.config import validate_replay_count
 
@@ -35,6 +33,9 @@ class Stars:
         return f'the start {self.name} has {self.years} years old and {self.diameter} km of diameter'
 
     def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, Stars):
+            return False
+
         return self.years == __o.years and self.diameter == __o.diameter and self.name == __o.name
 
     def __ne__(self, __o: object) -> bool:
@@ -51,6 +52,9 @@ class StellarRock:
         return f'the stellar rock {self.name} has {self.years} years old and {self.diameter} km of diameter'
 
     def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, StellarRock):
+            return False
+
         return self.years == __o.years and self.diameter == __o.diameter and self.name == __o.name
 
     def __ne__(self, __o: object) -> bool:

@@ -49,7 +49,7 @@ class ClassFabricSearchSpace(CategoricalSearchSpace):
 
         self.abi = None
 
-    def __space__(self, abi_class):
+    def __space__(self, abi_class: ABI_Class):
         pass
 
     def __sampler__(self, domain, context):

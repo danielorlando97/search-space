@@ -4,7 +4,7 @@ from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
 from search_space.errors import InvalidSampler, NotEvaluateError, CircularDependencyDetected
-from .algebra_constraint.ast import AstRoot, SelfNode
+from .algebra_constraint import ast as ast_constraint
 from .algebra_constraint import visitors
 from .algebra_constraint import VisitorLayer
 
@@ -17,7 +17,7 @@ class SearchSpace(ast.SelfNode):
             distribute_like, search_space=self)
         self.initial_domain = initial_domain
         self.__distribute_like__ = distribute_like
-        self.ast_constraint = AstRoot()
+        self.ast_constraint = ast_constraint.AstRoot()
         self.visitor_layers: List[VisitorLayer] = visitor_layers
 
     def __sampler__(self, domain, context):
@@ -88,7 +88,7 @@ class SearchSpace(ast.SelfNode):
         return self
 
     def __build_constraint__(self, func):
-        return func(SelfNode())
+        return func(ast_constraint.SelfNode())
 
     def __or__(self, other):
         """
@@ -97,7 +97,7 @@ class SearchSpace(ast.SelfNode):
             return self.__ast_optimization__(other)
         if callable(other):
             return self.__ast_optimization__([other])
-        if type(other) == type(AstRoot()):
+        if type(other) == type(ast_constraint.AstRoot()):
             self.ast_constraint = other
             return self
 

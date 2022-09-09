@@ -5,7 +5,7 @@ from copy import copy
 from search_space.spaces.algebra_constraint import visitors
 from .numeral_space import NaturalSearchSpace
 from search_space.spaces.algebra_constraint import ast_index
-from search_space.spaces.algebra_constraint import ast
+from search_space.spaces.algebra_constraint import ast_constraint
 # TODO: check space types
 
 
@@ -48,7 +48,7 @@ class TensorSearchSpace(SearchSpace):
 
     def __build_constraint__(self, func):
 
-        return func(*([ast_index.SelfNode(i) for i in range(0, len(self.len_spaces))] + [ast.SelfNode()]))
+        return func(*([ast_index.SelfNode(i) for i in range(0, len(self.len_spaces))] + [ast_constraint.SelfNode()]))
 
     def __getitem__(self, index):
         if type(index) == type(list()):
