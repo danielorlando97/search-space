@@ -5,7 +5,7 @@ from copy import copy
 from search_space.spaces.algebra_constraint import visitors
 from .numeral_space import NaturalSearchSpace
 from search_space.spaces.algebra_constraint import ast_index
-from search_space.spaces.algebra_constraint import ast_constraint
+from search_space.spaces.algebra_constraint import ast as ast_constraint
 # TODO: check space types
 
 

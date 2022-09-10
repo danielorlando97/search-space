@@ -29,8 +29,8 @@ def when(param_type, frame=None):
 
 class Dispatcher(object):
     def __init__(self, param_name, fn):
-        frame = inspect.currentframe().f_back.f_back
-        top_level = frame.f_locals == frame.f_globals
+        # frame = inspect.currentframe().f_back.f_back
+        # top_level = frame.f_locals == frame.f_globals
         self.param_index = self.__argspec(fn).args.index(param_name)
         self.param_name = param_name
         self.targets = {}
