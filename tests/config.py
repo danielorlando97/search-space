@@ -12,3 +12,8 @@ if any(margin_time):
     margin_time = int(margin_time)
 else:
     margin_time = 1.5
+
+
+def replay_function(func):
+    for _ in range(validate_replay_count):
+        func()

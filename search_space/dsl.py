@@ -1,7 +1,0 @@
-from search_space.spaces.build_in_spaces import NaturalSearchSpace as N
-from search_space.spaces.build_in_spaces import ContinueSearchSpace as R
-from search_space.spaces.build_in_spaces import TensorSearchSpace as Tensor
-from search_space.spaces.build_in_spaces import ClassFabricSearchSpace, ABI_Class
-from search_space.spaces.build_in_spaces import CategoricalSearchSpace as Categorical
-from search_space.spaces.build_in_spaces import BooleanSearchSpace as Bool
-from search_space.spaces.build_in_spaces.auto_factory_class_space import custom_space, parameters_space_description
