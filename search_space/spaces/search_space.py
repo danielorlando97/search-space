@@ -11,14 +11,16 @@ from .algebra_constraint import VisitorLayer
 
 class SearchSpace(ast.SelfNode):
 
-    def __init__(self, initial_domain, distribute_like=UNIFORM, visitor_layers=[]) -> None:
+    def __init__(self, initial_domain=None) -> None:
         super().__init__()
-        self._distribution: Sampler = SamplerFactory().create_sampler(
-            distribute_like, search_space=self)
         self.initial_domain = initial_domain
-        self.__distribute_like__ = distribute_like
         self.ast_constraint = ast_constraint.AstRoot()
-        self.visitor_layers: List[VisitorLayer] = visitor_layers
+        self.visitor_layers: List[VisitorLayer] = []
+
+    def set_sampler(self, sampler):
+        self._distribution = sampler
+        self.__distribute_like__ = sampler.__distribute_name__
+        return self
 
     def __sampler__(self, domain, context):
         """
@@ -82,6 +84,12 @@ class SearchSpace(ast.SelfNode):
     def __ast_optimization__(self, ast_list):
         """
         """
+        if callable(ast_list):
+            ast_list = [ast_list]
+        if type(ast_list) == type(ast_constraint.AstRoot()):
+            self.ast_constraint = ast_list
+            return self
+
         for func in ast_list:
             self.ast_constraint.add_constraint(self.__build_constraint__(func))
 
@@ -89,19 +97,6 @@ class SearchSpace(ast.SelfNode):
 
     def __build_constraint__(self, func):
         return func(ast_constraint.SelfNode())
-
-    def __or__(self, other):
-        """
-        """
-        if type(other) == type(tuple()):
-            return self.__ast_optimization__(other)
-        if callable(other):
-            return self.__ast_optimization__([other])
-        if type(other) == type(ast_constraint.AstRoot()):
-            self.ast_constraint = other
-            return self
-
-        return super().__or__(self, other)
 
     def __hash__(self) -> int:
         return id(self)

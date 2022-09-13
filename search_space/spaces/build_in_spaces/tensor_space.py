@@ -11,7 +11,7 @@ from search_space.spaces.algebra_constraint import ast as ast_constraint
 
 class TensorSearchSpace(SearchSpace):
     def __init__(self, space_type: SearchSpace, shape_space: list) -> None:
-        super().__init__(None, None)
+        super().__init__()
         self.len_spaces = shape_space if type(
             shape_space) in [type(list()), type(tuple())] else [shape_space]
         self.type_space = space_type

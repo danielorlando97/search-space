@@ -64,10 +64,11 @@ class SamplerFactory(metaclass=Singleton):
             return self.db[distribute_name]()
 
         try:
-            return self.__instances[search_space]
+            return self.__instances[(search_space, distribute_name)]
         except KeyError:
-            self.__instances[search_space] = self.db[distribute_name]()
-            return self.__instances[search_space]
+            self.__instances[(search_space, distribute_name)
+                             ] = self.db[distribute_name]()
+            return self.__instances[(search_space, distribute_name)]
 
     def refresh_all_samplers(self):
         for sample in self.__instances.values():
@@ -81,6 +82,7 @@ def distribution(name=''):
     def f(classs):
         s = SamplerFactory()
         s.registry_sampler(name, classs)
+        classs.__distribute_name__ = name
         return classs
 
     return f

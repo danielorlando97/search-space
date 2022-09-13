@@ -32,3 +32,7 @@ class SpaceBuildingError(Exception):
 
 class CircularDependencyDetected(Exception):
     pass
+
+
+class TypeWithoutDefinedSpace(Exception):
+    pass

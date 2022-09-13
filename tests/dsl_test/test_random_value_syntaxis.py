@@ -66,7 +66,7 @@ def test_list_numeral():
         options = ["White", "Black", "Red"]
         n = RandomValue[str][10](options=options)
         assert len(n) == 10
-        assert [v for v in n if 10 <= v and v <= 100] == n
+        assert [v for v in n if v in options] == n
 
     replay_function(f)
 
