@@ -1,9 +1,12 @@
-from search_space import dsl as ss
+from search_space.spaces.build_in_spaces import BooleanSearchSpace as Bool
 from tests.config import validate_replay_count
+from search_space.sampler import SamplerFactory
+from search_space.sampler.distribution_names import UNIFORM
 
 
 def test_uniform_values():
-    n = ss.Bool()
+    n = Bool()
+    n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
 
     values = [n.get_sample()[0] for _ in range(validate_replay_count)]
     trust = [v for v in values if v]
@@ -14,7 +17,8 @@ def test_uniform_values():
 
 
 def test_context_consistence():
-    n = ss.Bool()
+    n = Bool()
+    n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
 
     v1, context = n.get_sample()
     values_list = [n.get_sample(context=context) for _ in range(20)]
@@ -25,7 +29,8 @@ def test_context_consistence():
 
 
 def test_natural_minimal():
-    n = ss.Bool()
+    n = Bool()
+    n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
 
     for _ in range(validate_replay_count):
         value, _ = n.get_sample()
@@ -41,14 +46,14 @@ def test_natural_minimal():
 #     ]
 
 #     for op, f in func:
-#         n = ss.N(0, 100) | f
+#         n = N(0, 100) | f
 #         for _ in range(validate_replay_count):
 #             value, _ = n.get_sample()
 #             assert f(value), f'Error with operator {op}'
 
 
 # def test_dsl_context_sensitive():
-#     m = ss.N(40, 60)
+#     m = N(40, 60)
 
 #     func = [
 #         ("Less", lambda x: x < m, lambda x, y: x < y),
@@ -58,7 +63,7 @@ def test_natural_minimal():
 #     ]
 
 #     for op, f, test in func:
-#         n = ss.N(0, 100) | f
+#         n = N(0, 100) | f
 #         for _ in range(validate_replay_count):
 #             value, context = n.get_sample()
 #             m_value, _ = m.get_sample(context=context)

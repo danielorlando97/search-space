@@ -1,9 +1,12 @@
-from search_space import dsl as ss
+from search_space.sampler.distribution_names import UNIFORM
+from search_space.sampler.factory import SamplerFactory
+from search_space.spaces.build_in_spaces import NaturalSearchSpace as N
 from tests.config import validate_replay_count
 
 
 def test_random_values():
-    n = ss.N(0, 100000000000)
+    n = N(0, 100000000000)
+    n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
 
     for _ in range(validate_replay_count):
         v1, _ = n.get_sample()
@@ -13,7 +16,8 @@ def test_random_values():
 
 
 def test_context_consistence():
-    n = ss.N(0, 100000000000)
+    n = N(0, 100000000000)
+    n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
 
     v1, context = n.get_sample()
     values_list = [n.get_sample(context=context) for _ in range(20)]
@@ -24,7 +28,8 @@ def test_context_consistence():
 
 
 def test_natural_minimal():
-    n = ss.N(10, 100)
+    n = N(10, 100)
+    n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
 
     for _ in range(validate_replay_count):
         value, _ = n.get_sample()
@@ -41,14 +46,17 @@ def test_dsl_constraint():
     ]
 
     for op, f in func:
-        n = ss.N(0, 100) | f
+        n = N(0, 100).__ast_optimization__(f)
+        n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
+
         for _ in range(validate_replay_count):
             value, _ = n.get_sample()
             assert f(value), f'Error with operator {op}'
 
 
 def test_dsl_context_sensitive():
-    m = ss.N(40, 60)
+    m = N(40, 60)
+    m.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=m))
 
     func = [
         ("Less", lambda x: x < m, lambda x, y: x < y),
@@ -58,7 +66,9 @@ def test_dsl_context_sensitive():
     ]
 
     for op, f, test in func:
-        n = ss.N(0, 100) | f
+        n = N(0, 100).__ast_optimization__(f)
+        n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
+
         for _ in range(validate_replay_count):
             value, context = n.get_sample()
             m_value, _ = m.get_sample(context=context)

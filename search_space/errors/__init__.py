@@ -36,3 +36,7 @@ class CircularDependencyDetected(Exception):
 
 class TypeWithoutDefinedSpace(Exception):
     pass
+
+
+class UndefinedSampler(Exception):
+    pass

@@ -1,9 +1,12 @@
-from search_space import dsl as ss
+from search_space.sampler.distribution_names import UNIFORM
+from search_space.sampler.factory import SamplerFactory
+from search_space.spaces.build_in_spaces import ContinueSearchSpace as R
 from tests.config import validate_replay_count
 
 
 def test_random_values():
-    n = ss.R(0, 100000000000)
+    n = R(0, 100000000000)
+    n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
 
     for _ in range(validate_replay_count):
         v1, _ = n.get_sample()
@@ -13,7 +16,8 @@ def test_random_values():
 
 
 def test_context_consistence():
-    n = ss.R(0, 100000000000)
+    n = R(0, 100000000000)
+    n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
 
     v1, context = n.get_sample()
     values_list = [n.get_sample(context=context) for _ in range(20)]
@@ -24,7 +28,8 @@ def test_context_consistence():
 
 
 def test_numeral_minimal():
-    n = ss.R(10, 100)
+    n = R(10, 100)
+    n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
 
     for _ in range(validate_replay_count):
         value, _ = n.get_sample()
@@ -32,13 +37,14 @@ def test_numeral_minimal():
 
 
 def test_real_minimal():
-    n = ss.R(0, 100000)
+    n = R(0, 100000)
+    n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
 
     for _ in range(validate_replay_count):
         l = [n.get_sample()[0] for _ in range(10)]
         l = [v for v in l if v % 1 != 0]
-        assert any(l), """a random variable in real space, 
-                          if the space is sufficiently large then it 
+        assert any(l), """a random variable in real space,
+                          if the space is sufficiently large then it
                           should be impossible to generate integers"""
 
 
@@ -51,14 +57,17 @@ def test_dsl_constraint():
     ]
 
     for op, f in func:
-        n = ss.R(0, 100) | f
+        n = R(0, 100).__ast_optimization__(f)
+        n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
+
         for _ in range(validate_replay_count):
             value, _ = n.get_sample()
             assert f(value), f'Error with operator {op}'
 
 
 def test_dsl_context_sensitive():
-    m = ss.R(40, 60)
+    m = R(40, 60)
+    m.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=m))
 
     func = [
         ("Less", lambda x: x < m, lambda x, y: x < y),
@@ -68,7 +77,9 @@ def test_dsl_context_sensitive():
     ]
 
     for op, f, test in func:
-        n = ss.R(0, 100) | f
+        n = R(0, 100).__ast_optimization__(f)
+        n.set_sampler(SamplerFactory().create_sampler(UNIFORM, search_space=n))
+
         for _ in range(validate_replay_count):
             value, context = n.get_sample()
             m_value, _ = m.get_sample(context=context)

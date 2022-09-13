@@ -3,7 +3,7 @@ from . import ast
 from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
-from search_space.errors import InvalidSampler, NotEvaluateError, CircularDependencyDetected
+from search_space.errors import InvalidSampler, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
 from .algebra_constraint import ast as ast_constraint
 from .algebra_constraint import visitors
 from .algebra_constraint import VisitorLayer
@@ -18,9 +18,16 @@ class SearchSpace(ast.SelfNode):
         self.visitor_layers: List[VisitorLayer] = []
 
     def set_sampler(self, sampler):
-        self._distribution = sampler
+        self.__distribution__ = sampler
         self.__distribute_like__ = sampler.__distribute_name__
         return self
+
+    @property
+    def _distribution(self):
+        if isinstance(self.__distribution__, ast.GetAttr):
+            raise UndefinedSampler(f'in {self.__class__.__name__}')
+
+        return self.__distribution__
 
     def __sampler__(self, domain, context):
         """
