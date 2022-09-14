@@ -76,12 +76,58 @@ Conclusiones
 En este punto, debes escribir las conclusiones que es necesario que el lector tenga en cuenta para comprender tu investigación y cómo se relaciona con tu estado del arte. Como ejemplo, puedes reseñar los campos y líneas de investigación del tema de tu investigación que no están explorados. De este modo, indicas qué dirección tomará tu trabajo.
  -->
 
+El espacio de búsqueda es una de las componentes principales de los sistemas
+de _AutoML_, independientemente de la naturaleza de los mismo. La gran mayoría
+de las herramientas de sector cuentan con una espacio de búsqueda muy definido,
+normalmente determinado por el tipo de problema al que dan solución o a las
+herramientas de _ML_ subyacente. En dichos casos, usualmente, llaman "description
+del espacio de búsqueda" a la caracterización de los hyperparámetros de los
+distintos modelos que se incluyen en dicha definición previa
+
+Como se muestra en las investigaciones previas realizadas por [5] casi ninguna
+de las herramientas del sector _AutoML_ cuenta con la capacidad real de describir,
+en su totalidad y de forma detallada, su espacio de búsqueda. Independientemente
+de esto, todo mecanismo y sintaxis que tenga como objetivo la descripción estructural
+del campo de investigación, tiene su lugar en el procesos investigación de la presente
+tesis.
+
+#### Marco Teórico
+
+##### _Espacio de Búsqueda_
+
+Subconjunto del universo tal que cada uno de sus elementos son soluciones factibles
+para una problema dado.
+
+##### _Descripción del Espacio de Búsqueda_
+
+Proceso mediante el cual, según las características del medio, se define una
+jerarquía de estructuras y datos de forma tal que el receptor de dicha descripción  
+pueda entender las dimensiones y características del espacio y sea capaz de generar
+muestras del mismo.
+
+En el casos específico del sector computacional el medio no suele ser un un lenguaje
+de programación de uso general, sino que las distintas herramientas de optimización, _ML_
+o _AutoML_, suele implementar _DSL's_ o _frameworks_ en los que las descripciones se
+pueda acercar un poco más al lenguaje natural que la lenguaje computacional subyacente
+
+##### _DSL_ (_Lenguaje de Dominio Específico_,_Domain Specific Language_ )
+
 # Referencias
 
-1 - Suilan Estevez-Velarde, Yoan Gutierrez, Andres Montoyo and Yudivian Almeida-Cruz. AutoML strategy based on grammatical evolution: A case study about knowledge discovery from text
+1 - Suilan Estevez-Velarde, Yoan Gutierrez, Andres Montoyo and Yudivian
+Almeida-Cruz. AutoML strategy based on grammatical evolution: A case
+study about knowledge discovery from text
 
-2 - Hutter, F., Kotthoff, L., & Vanschoren, J., editors (2018). Automated Machine Learning: Methods, Systems, Challenges. Springer (doi: 10.1007/978-3-030-05318-5). Recuperado de http://link.springer.com/978-3-030-05318-5, última visita Mayo del 2022.
+2 - Hutter, F., Kotthoff, L., & Vanschoren, J., editors (2018). Automated
+Machine Learning: Methods, Systems, Challenges. Springer
+(doi: 10.1007/978-3-030-05318-5). Recuperado de
+http://link.springer.com/978-3-030-05318-5, última visita Mayo del 2022.
 
 3 - Wikipedia
 
-4 - Sitio Oficial de la Biblioteca de Python AutoGOAL (https://autogoal.github.io), última visita Junio del 2022
+4 - Sitio Oficial de la Biblioteca de Python AutoGOAL
+(https://autogoal.github.io), última visita Junio del 2022
+
+5 - Estevanell-Valladares, Ernesto Luis; Estevez-Velarde, Suilan;
+Piad- Morffis, Alejandro; Gutiérrez, Yoan; Montoyo, Andrés; Almeida-Cruz,
+Yudivian. Towards the Democratization of Machine Learning using AutoGOAL

@@ -72,6 +72,7 @@ RandomValue = RandomValueClass()
 
 
 class SpaceDomain(Generic[T]):
+    sample: T
 
     def __init__(self, space) -> None:
         self.space: SearchSpace = space
@@ -83,6 +84,13 @@ class SpaceDomain(Generic[T]):
     def get_sample(self, context: SamplerContext = None) -> Tuple[T, SamplerContext]:
         return self.space.get_sample(context=context)
 
+    @property
+    def random_sample(self) -> T:
+        return self
+
+    def __getitem__(self, item) -> T:
+        pass
+
 
 class DomainFactory(TypeBuilder, Generic[T]):
     def __call__(self, constraint_fun=[], min=None, max=None, options=None, distribute_like=None) -> SpaceDomain[T]:
@@ -91,6 +99,9 @@ class DomainFactory(TypeBuilder, Generic[T]):
 
     def __getitem__(self, item) -> 'DomainFactory[List[T]]':
         return super().__getitem__(item)
+
+    def __or__(self, func_constraint):
+        return self.__call__(func_constraint)
 
 
 class DomainClass:

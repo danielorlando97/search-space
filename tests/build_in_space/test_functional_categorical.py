@@ -12,8 +12,9 @@ def test_random_values():
     for _ in range(validate_replay_count):
         v1, _ = n.get_sample()
         v2, _ = n.get_sample()
+        v3, _ = n.get_sample()
 
-        assert v1 != v2, "a random variable, if the space is sufficiently large then all sequential samples must be different"
+        assert v1 != v2 or v1 != v3 or v2 != v3, "a random variable, if the space is sufficiently large then all sequential samples must be different"
 
 
 def test_context_consistence():
