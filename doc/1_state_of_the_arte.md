@@ -112,6 +112,55 @@ pueda acercar un poco más al lenguaje natural que la lenguaje computacional sub
 
 ##### _DSL_ (_Lenguaje de Dominio Específico_,_Domain Specific Language_ )
 
+Según [6] un lenguaje específico de dominio es un lenguaje especializado
+que, combinado con una función de transformación, sirve para elevar el nivel de
+abstracción del software y facilitar el desarrollo de software. Los DSL cuentan con
+múltiples formas de representación e implementación, desde micro-modificaciones realizadas
+a lenguajes subyacentes, hasta proyectos a gran escala.
+
+#### Estado del Arte
+
+Aunque la investigación realizada en [6] se enfoca más en la clasificación de DSL que
+representas proyectos más grandes que aquellos que son objetos de estudio para esta
+investigación en concreto, estudiando las clasificaciones y características que plantea
+el autos pudo seleccionar varias que son acordes para describir el estado del arte
+de los DSL's que hasta el momento se dan la tarea de describir espacios de búsqueda
+
+A continuación se enumeran y detallan las características con las que se pretende
+describir el estado y las propiedades de los trabajos realizados en el área hasta el
+momento:
+
+- Estilo de la Sintaxis Concreta: Esta puede ser imperativa o funcional
+- Objetivo del Sistema Subyacente: En el caso particular del campo de interés de esta
+  investigación la mayoría de las herramientas se encuentra relacionadas con el _ML_ o
+  _AutoML_, pero dentro de ambos campos existen múltiples subdominios y razones por las que
+  sería de interés describir un dominio determinado
+- Activo Objetivo: Nombre con el que se describe el resultado esperado por las transformaciones
+  del dsl. En los casos analizados por [6] suelen ser archivos de textos, gráficos o llamadas
+  al sistema, pero en esta investigación el autor reinterpreto esta característica, debido a la
+  naturales del campo de investigación, pues como todos los trabajos del sector son DSL's
+  integrados en un lenguaje de propósito general los activos objetivos pasan a describir a
+  los efectos que provoca el empleo del mismo dentro de un programa, las instancias que
+  genera o las modificaciones que espera conseguir
+- Integración con el Lenguaje Subyacente: Lista de herramientas y características de las
+  que se valen los desarrolladores de cada uno de los DSL's para dar lugar a los mismo dentro
+  del lenguaje subyacente
+- Transformaciones Operativas: Esta parte abarca las características relacionadas con
+  la aplicación de una transformación DSL. Se distinguen la técnica, la ejecución,
+  la programación y la variabilidad
+- Características que Conduce el Diseño: Detrás de las descripciones de los espacios de
+  busqueda existe mucho carga teórica de diversas esferas no solo la computación y el _ML_,
+  sino que también juegan un papel importante la estadística, las probabilidades y otros muchos
+  campos de las matemáticas. Para la definición de los distintos DSL's los autores se inspiraron
+  en muchos de estos campos para dar expresividad a los mismo, dicha inspiración es la que se
+  intentara reflejar cuando se resalte esta detalle para cada uno de los trabajos previos
+- Capacidad de Generación y Definición: En este punto se realizará una comparación según tres
+  de los puntos fuertes de la solución presentada por este trabajo:
+  - Definición de dependencias y relaciones entre los componentes internos de una misma descripción
+  - Descripción y generación de espacio de búsqueda de dimensiones aleatorias, por ejemplo el espacio
+    de los vectores de dimension aleatoria
+  - Estructuras de controles de flujo para las descripción de espacios opcionales
+
 # Referencias
 
 1 - Suilan Estevez-Velarde, Yoan Gutierrez, Andres Montoyo and Yudivian
@@ -131,3 +180,21 @@ http://link.springer.com/978-3-030-05318-5, última visita Mayo del 2022.
 5 - Estevanell-Valladares, Ernesto Luis; Estevez-Velarde, Suilan;
 Piad- Morffis, Alejandro; Gutiérrez, Yoan; Montoyo, Andrés; Almeida-Cruz,
 Yudivian. Towards the Democratization of Machine Learning using AutoGOAL
+
+6 - Benoît Langlois, Consuela-Elena Jitia, Eric Jouenne. DSL Classification
+
+7 - Documentación de HyperOpt, Search Spaces Definition,
+http://hyperopt.github.io/hyperopt/getting-started/search_spaces/, última
+visita Sept del 2022.
+
+8 - Documentación Ray,Search Space API,
+https://docs.ray.io/en/latest/tune/api_docs/search_space.html, última
+visita Sept del 2022.
+
+9 - Chocolate, Search Space Representation,  
+https://chocolate.readthedocs.io/en/latest/api/space.html, última
+visita Sept del 2022.
+
+10 - Optuna, Pythonic Search Space,
+https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/002_configurations.html,
+última visita Sept del 2022.
