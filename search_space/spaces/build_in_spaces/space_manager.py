@@ -4,6 +4,8 @@ from search_space.utils.singleton import Singleton
 from search_space.spaces import SearchSpace
 from search_space.errors import TypeWithoutDefinedSpace
 
+# TODO: Change to Multiply definitions
+
 
 class SpacesManager(metaclass=Singleton):
     def __init__(self) -> None:

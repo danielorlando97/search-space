@@ -3,6 +3,7 @@
 - v1 -> v2 : Cambio de la interpretación de los constraint de lista de funciones a lista de AST's
 - v2 -> v3 : Definición de espacio minimalista donde todos los tipos básicos y herramientas están bajo un mismo domino
 - v3 -> v4 : Unificación de la interface bajo los dos únicos tipos Domain y RandomValue
+- v4 -> v5 : Optimización de los procesos y sintaxis bajo la filosofía de lo rápido-rápido y lo fácil-fácil
 
 ## Minmalista vs Unificada
 

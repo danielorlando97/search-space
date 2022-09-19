@@ -1,1 +1,1 @@
-from .search_space import SearchSpace
+from .search_space import SearchSpace, BasicSearchSpace

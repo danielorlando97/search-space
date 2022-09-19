@@ -2,8 +2,6 @@ from typing import Generic, Tuple, Type, TypeVar, List
 from search_space.spaces.build_in_spaces import TensorSearchSpace, SpacesManager, CategoricalSearchSpace
 from search_space.spaces import SearchSpace
 from search_space.context_manager import SamplerContext
-from search_space.sampler import SamplerFactory
-from search_space.sampler.distribution_names import UNIFORM
 T = TypeVar("T")
 
 
@@ -18,7 +16,12 @@ class TypeBuilder(Generic[T]):
     def space(self):
         return self._space if not self.is_tensor_type else self._space.type_space
 
-    def __call__(self, constraints=[], min=None, max=None, options=None, distribute_like=None):
+    def __call__(self, constraints=None, min=None, max=None, options=None, distribute_like=None):
+
+        kwarg = {}
+
+        if not distribute_like is None:
+            kwarg['distribute_like'] = distribute_like
 
         if not options is None:
             def f(x): return True
@@ -28,18 +31,23 @@ class TypeBuilder(Generic[T]):
                 def f(x): return f(x) and x < max
 
             options = [option for option in options if f(options)]
-            result = CategoricalSearchSpace(*options)
-
+            result = CategoricalSearchSpace(
+                *options, **kwarg)
         else:
-            result = self.space(min=min, max=max)
 
-        sampler = SamplerFactory().create_sampler(
-            distribute_like if not distribute_like is None else UNIFORM, search_space=result)
-        result = result.set_sampler(sampler)
+            if not min is None:
+                kwarg['min'] = min
+            if not max is None:
+                kwarg['max'] = max
+
+            result = self.space(**kwarg)
 
         if self.is_tensor_type:
             self._space.type_space = result
-            return self._space.__ast_optimization__(constraints)
+            result = self._space
+
+        if constraints is None:
+            return result
 
         return result.__ast_optimization__(constraints)
 
@@ -54,7 +62,12 @@ class TypeBuilder(Generic[T]):
 
 
 class RandomValueFunc(TypeBuilder, Generic[T]):
-    def __call__(self, constraint_fun=[], min=None, max=None, options=None, distribute_like=None, context: SamplerContext = None) -> T:
+    __space_memory = {}
+
+    def __init__(self, space: SearchSpace) -> None:
+        super().__init__(space)
+
+    def __call__(self, constraint_fun=None, min=None, max=None, options=None, distribute_like=None, context: SamplerContext = None) -> T:
         space = super().__call__(constraint_fun, min, max, options, distribute_like)
         return space.get_sample(context=context)[0]
 
@@ -78,7 +91,7 @@ class SpaceDomain(Generic[T]):
         self.space: SearchSpace = space
 
     def __or__(self, func_constraint):
-        self.space.__ast_optimization__(func_constraint)
+        self.space = self.space.__ast_optimization__(func_constraint)
         return self
 
     def get_sample(self, context: SamplerContext = None) -> Tuple[T, SamplerContext]:
@@ -93,7 +106,7 @@ class SpaceDomain(Generic[T]):
 
 
 class DomainFactory(TypeBuilder, Generic[T]):
-    def __call__(self, constraint_fun=[], min=None, max=None, options=None, distribute_like=None) -> SpaceDomain[T]:
+    def __call__(self, constraint_fun=None, min=None, max=None, options=None, distribute_like=None) -> SpaceDomain[T]:
         space = super().__call__(constraint_fun, min, max, options, distribute_like)
         return SpaceDomain[T](space)
 
@@ -101,7 +114,7 @@ class DomainFactory(TypeBuilder, Generic[T]):
         return super().__getitem__(item)
 
     def __or__(self, func_constraint):
-        return self.__call__(func_constraint)
+        return self.__call__(constraint_fun=func_constraint)
 
 
 class DomainClass:

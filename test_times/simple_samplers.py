@@ -6,8 +6,7 @@ from random import randint
 def simple_sample_test(a, b):
     print("Init Simple Test")
 
-    def dsl(): return RandomValue[int](
-        min=a, max=b)
+    def dsl(): return RandomValue[int](min=a, max=b)
 
     def best(): return randint(a, b)
 

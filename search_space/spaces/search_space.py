@@ -9,7 +9,69 @@ from .algebra_constraint import visitors
 from .algebra_constraint import VisitorLayer
 
 
-class SearchSpace(ast.SelfNode):
+class BasicSearchSpace(ast.SelfNode):
+    def __init__(self, initial_domain, distribute_like=UNIFORM) -> None:
+        super().__init__()
+        self.initial_domain = initial_domain
+        self.__distribute_like__ = distribute_like
+        self._distribution = SamplerFactory().create_sampler(
+            self.__distribute_like__, self)
+
+    def change_distribution(self, distribution):
+        self.__distribute_like__ = distribution
+        self._distribution = SamplerFactory().create_sampler(
+            self.__distribute_like__, self)
+
+    def get_sample(self, context=None, local_domain=None):
+
+        if not context is None:
+            cache_value = context.get_sampler_value(self)
+            if not cache_value is None:
+                return cache_value, context
+        else:
+            context = SamplerContext()
+
+        domain = self.initial_domain if local_domain is None else local_domain
+        sample = self.__sampler__(domain, context)
+        context.registry_sampler(self, sample)
+        return sample, context
+
+    def __sampler__(self, domain, context):
+        """
+        """
+        pass
+
+    def __advance_space__(self, ast):
+        """
+        """
+        pass
+
+    def __ast_optimization__(self, ast_list):
+        """
+        """
+
+        if type(ast_list) == type(ast_constraint.AstRoot()):
+            ast = ast_list
+        else:
+            ast = ast_constraint.AstRoot()
+
+            if callable(ast_list):
+                ast_list = [ast_list]
+
+            for func in ast_list:
+                self.ast_constraint.add_constraint(
+                    self.__build_constraint__(func))
+
+        return self.__advance_space__(ast)
+
+    def __build_constraint__(self, func):
+        return func(ast_constraint.SelfNode())
+
+    def __hash__(self) -> int:
+        return id(self)
+
+
+class SearchSpace(BasicSearchSpace):
 
     def __init__(self, initial_domain=None) -> None:
         super().__init__()
@@ -28,11 +90,6 @@ class SearchSpace(ast.SelfNode):
             raise UndefinedSampler(f'in {self.__class__.__name__}')
 
         return self.__distribution__
-
-    def __sampler__(self, domain, context):
-        """
-        """
-        pass
 
     def get_sample(self, context=None, local_domain=None):
 
@@ -101,9 +158,3 @@ class SearchSpace(ast.SelfNode):
             self.ast_constraint.add_constraint(self.__build_constraint__(func))
 
         return self
-
-    def __build_constraint__(self, func):
-        return func(ast_constraint.SelfNode())
-
-    def __hash__(self) -> int:
-        return id(self)
