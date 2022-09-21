@@ -5,16 +5,18 @@ from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
 from search_space.errors import InvalidSampler, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
 from .algebra_constraint import ast as ast_constraint
+from .algebra_constraint import ast_index as ast_index
 from .algebra_constraint import visitors
 from .algebra_constraint import VisitorLayer
+import inspect
 
 
-class BasicSearchSpace(ast.SelfNode):
+class BasicSearchSpace:
     def __init__(self, initial_domain, distribute_like=UNIFORM) -> None:
         super().__init__()
-        self.initial_domain = initial_domain
-        self.__distribute_like__ = distribute_like
-        self._distribution = SamplerFactory().create_sampler(
+        self.initial_domain: tuple = initial_domain
+        self.__distribute_like__: str = distribute_like
+        self._distribution: Sampler = SamplerFactory().create_sampler(
             self.__distribute_like__, self)
 
     def change_distribution(self, distribution):
@@ -59,13 +61,17 @@ class BasicSearchSpace(ast.SelfNode):
                 ast_list = [ast_list]
 
             for func in ast_list:
-                self.ast_constraint.add_constraint(
+                ast.add_constraint(
                     self.__build_constraint__(func))
 
         return self.__advance_space__(ast)
 
     def __build_constraint__(self, func):
-        return func(ast_constraint.SelfNode())
+
+        func_data = inspect.getfullargspec(func)
+        args = [ast_constraint.SelfNode()] + [ast_index.SelfNode(i)
+                                              for i in range(len(func_data.args) - 1)]
+        return func(*args)
 
     def __hash__(self) -> int:
         return id(self)
@@ -73,9 +79,8 @@ class BasicSearchSpace(ast.SelfNode):
 
 class SearchSpace(BasicSearchSpace):
 
-    def __init__(self, initial_domain=None) -> None:
-        super().__init__()
-        self.initial_domain = initial_domain
+    def __init__(self, initial_domain=None, distribute_like=UNIFORM) -> None:
+        super().__init__(initial_domain, distribute_like=distribute_like)
         self.ast_constraint = ast_constraint.AstRoot()
         self.visitor_layers: List[VisitorLayer] = []
 
@@ -83,13 +88,6 @@ class SearchSpace(BasicSearchSpace):
         self.__distribution__ = sampler
         self.__distribute_like__ = sampler.__distribute_name__
         return self
-
-    @property
-    def _distribution(self):
-        if isinstance(self.__distribution__, ast.GetAttr):
-            raise UndefinedSampler(f'in {self.__class__.__name__}')
-
-        return self.__distribution__
 
     def get_sample(self, context=None, local_domain=None):
 

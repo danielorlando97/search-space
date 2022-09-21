@@ -1,15 +1,37 @@
 from search_space.sampler.factory import SamplerFactory
-from search_space.spaces import SearchSpace
+from search_space.spaces import SearchSpace, BasicSearchSpace
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.spaces.algebra_constraint import visitors
 from search_space.spaces.build_in_spaces.space_manager import SpacesManager
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
 
+__all__ = [
+    "BasicCategoricalSearchSpace",
+    "CategoricalSearchSpace",
+    "BasicBooleanSearchSpace",
+    "BooleanSearchSpace"
+]
+
 
 @SpacesManager.registry(str)
+class BasicCategoricalSearchSpace(BasicSearchSpace):
+    def __init__(self, *domain, distribute_like=UNIFORM) -> None:
+        super().__init__(list(domain), distribute_like=distribute_like)
+
+    def __sampler__(self, domain, context):
+        return self._distribution.choice(domain)
+
+    def __advance_space__(self, ast):
+        advance_space = CategoricalSearchSpace(
+            *self.initial_domain, distribute_like=self.__distribute_like__)
+
+        advance_space.ast_constraint = ast
+        return advance_space
+
+
 class CategoricalSearchSpace(SearchSpace):
-    def __init__(self, *domain) -> None:
-        super().__init__(list(domain))
+    def __init__(self, *domain, distribute_like=UNIFORM) -> None:
+        super().__init__(list(domain), distribute_like=distribute_like)
         self.visitor_layers.append(visitors.DomainModifierVisitor())
 
     def __sampler__(self, domain, context):
@@ -27,9 +49,24 @@ class CategoricalSearchSpace(SearchSpace):
 
 
 @SpacesManager.registry(bool)
+class BasicBooleanSearchSpace(BasicSearchSpace):
+    def __init__(self, distribute_like=UNIFORM) -> None:
+        super().__init__((), distribute_like=distribute_like)
+
+    def __sampler__(self, domain, context):
+        return self._distribution.get_boolean()
+
+    def __advance_space__(self, ast):
+        advance_space = BooleanSearchSpace(
+            distribute_like=self.__distribute_like__)
+
+        advance_space.ast_constraint = ast
+        return advance_space
+
+
 class BooleanSearchSpace(CategoricalSearchSpace):
-    def __init__(self) -> None:
-        super().__init__(False, True)
+    def __init__(self, distribute_like=UNIFORM) -> None:
+        super().__init__(False, True, distribute_like=distribute_like)
 
     def __copy__(self):
         clone = BooleanSearchSpace()

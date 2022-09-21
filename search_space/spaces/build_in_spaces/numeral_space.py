@@ -7,6 +7,14 @@ from search_space.spaces.domains.natural_domain import NaturalDomain
 from .space_manager import SpacesManager
 
 
+__all__ = [
+    "BasicContinueSearchSpace",
+    "ContinueSearchSpace",
+    "BasicNaturalSearchSpace",
+    "NaturalSearchSpace"
+]
+
+
 class NumeralSearchSpace(SearchSpace):
 
     def __init__(self, min, max, distribute_like=UNIFORM) -> None:

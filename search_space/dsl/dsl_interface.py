@@ -1,5 +1,5 @@
 from typing import Generic, Tuple, Type, TypeVar, List
-from search_space.spaces.build_in_spaces import TensorSearchSpace, SpacesManager, CategoricalSearchSpace
+from search_space.spaces.build_in_spaces import TensorSearchSpace, SpacesManager, BasicCategoricalSearchSpace
 from search_space.spaces import SearchSpace
 from search_space.context_manager import SamplerContext
 T = TypeVar("T")
@@ -31,7 +31,7 @@ class TypeBuilder(Generic[T]):
                 def f(x): return f(x) and x < max
 
             options = [option for option in options if f(options)]
-            result = CategoricalSearchSpace(
+            result = BasicCategoricalSearchSpace(
                 *options, **kwarg)
         else:
 

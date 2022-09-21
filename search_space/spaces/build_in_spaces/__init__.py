@@ -1,5 +1,5 @@
-from .numeral_space import NaturalSearchSpace, ContinueSearchSpace
-from .categorical_search_space import BooleanSearchSpace, CategoricalSearchSpace
+from .numeral_space import *
+from .categorical_search_space import *
 from .tensor_space import TensorSearchSpace
 
 
