@@ -88,7 +88,7 @@ Como se muestra en las investigaciones previas realizadas por [5] casi ninguna
 de las herramientas del sector _AutoML_ cuenta con la capacidad real de describir,
 en su totalidad y de forma detallada, su espacio de búsqueda. Independientemente
 de esto, todo mecanismo y sintaxis que tenga como objetivo la descripción estructural
-del campo de investigación, tiene su lugar en el procesos investigación de la presente
+del campo de investigación, tiene su lugar en el procesos investigativo de la presente
 tesis.
 
 #### Marco Teórico
@@ -105,25 +105,137 @@ jerarquía de estructuras y datos de forma tal que el receptor de dicha descripc
 pueda entender las dimensiones y características del espacio y sea capaz de generar
 muestras del mismo.
 
-En el casos específico del sector computacional el medio no suele ser un un lenguaje
+En el casos específico del sector computacional el medio no suele ser un lenguaje
 de programación de uso general, sino que las distintas herramientas de optimización, _ML_
 o _AutoML_, suele implementar _DSL's_ o _frameworks_ en los que las descripciones se
-pueda acercar un poco más al lenguaje natural que la lenguaje computacional subyacente
+pueda acercar un poco más al lenguaje natural.
 
 ##### _DSL_ (_Lenguaje de Dominio Específico_,_Domain Specific Language_ )
 
-Según [6] un lenguaje específico de dominio es un lenguaje especializado
-que, combinado con una función de transformación, sirve para elevar el nivel de
-abstracción del software y facilitar el desarrollo de software. Los DSL cuentan con
-múltiples formas de representación e implementación, desde micro-modificaciones realizadas
-a lenguajes subyacentes, hasta proyectos a gran escala.
+Según [6] un lenguaje específico de dominio es un lenguaje especializado que sirve
+para elevar el nivel de abstracción del software y facilitar el desarrollo del mismo.
+Los DSL cuentan con múltiples formas de representación e implementación, desde
+micro-modificaciones realizadas a lenguajes subyacentes, hasta proyectos a gran escala.
+
+Para la presente investigación solo son de interés aquellos _DSLs_ que se construyen e
+incorporan a un lenguaje subyacente, elevando el nivel de abstracción y la expresividad
+del código con respecto a un domino específico.
+
+##### _DSLs_ orientados a descripciones
+
+Los _DSLs_ pertenecientes al domino de la presente investigación tiene como objetivo
+la descripción de una serie de conceptos para su posterior explotación. Esto supone que
+los mismos cuenten con una ejecución separada en dos fases, que puede recordar a las
+tradicionales estabas de los programas (_compilación_ y _ejecución_), pues en un
+primer momento los desarrolladores escriben toda una serie de reglas y descripciones
+que posteriormente serán utilizadas para la ejecución del propósito final.
+
+Debido al hecho de que estas herramientas, como se señalo anteriormente, representa un
+pequeño engranaje en softwares mucho mas grandes, entonces generalmente las dos fases
+antes descritas suele tener lugar en al momento de la ejecución del sistema como un todo.
+Por tanto depende en gran medida de las características del sistema general, el que se
+pueda pensar en estos 'componentes descriptivos' como una herramienta de dos fases o
+en un único componente
+
+Precisamente los sistemas que son objeto de estudio de esta tesis presentan las
+características necesarias para pensar en sus _DSLs_ como mecanismos de dos fases.
+Esos sistemas de búsquedas, _ML_ y _AutoML_ suelen tener un alto costo temporal de
+explotación e investigación del espacio, razón por la cual podemos considerar un costo
+fijo todas las declaraciones e instancias iniciales necesarias para orquestar toda
+la búsqueda y luego tener un segundo análisis temporal sobre la dilatación de dicho
+sondeo del elemento optimo.
+
+En estos casos específicos el autor considera razonable hablar de las dos fases de
+estos _DSLs_ como _tiempo de compilación del DSL_ y _tiempo de ejecución del DSL_
+
+##### Tiempo de compilación del _DSL_
+
+Definimos el tiempo de compilación de un _DSL_ como todas las operaciones puntuales que se
+realizan para orquestar la infraestructura que dará soporte a la ejecución del objetivo
+final del mismo. Dicha infraestructura debería permanecer inmutable en su mayoría en
+durante todos los procesos posteriores a la "compilación" del _DSL_.
+
+##### Tiempo de ejecución del _DSL_
+
+Definimos el tiempo de ejecución del _DSL_ como todas las operaciones que realiza
+la herramienta, posteriores a la "compilación" del mismo, para lograr su objetivo básico y
+principal.
+
+Véase por ejemplo el proceso de ejecución del módulo _Grammar_ de _AutoGOAL_, el cual es
+la componente descriptiva del sistema. En un primer momento se analizan todas las descripciones
+aportados para inferir una gramática libre del contexto que describa el espacio de todos los
+programas factibles, proceso que se pudiera interpretar como la "compilación del sistema". Y
+posteriormente, de forma iterativa, se generan nuevas instancias de dicha gramática para ser
+evaluadas y realizar otras operaciones ajenas al componente descriptivo. Si se interpreta que
+el objetivo final del modulo _Gramar_ es la generación de soluciones factibles, entonces se
+podrían decir que una vez que inicia una ejecución de _AutoGOAL_, luego de la "compilación"
+de sus descripciones, su _DSL_ se ejecuta múltiples veces hasta que el sistema encuentra una
+respuesta al problema planteado.
+
+##### Python para _DSL_
+
+Como el resultado de la presente tesis es un _DSL_ atado a un lenguaje de propósito general
+subyacente. Dicho lenguaje de contar con una serie de características especiales,
+que permita a el autor modificar la semántica de su sintaxis original. Y aunque la gran mayoría
+de los sistemas de la actualidad que podrían estar interesados en la explotación de la solución
+propuesta están escritos en _Python_. La elección de dicho lenguaje como lenguaje subyacente
+para la implementación de la propuesta planteada no se encuentra influenciada por dicha
+situación, sino que además _Python_ cuenta con potentes y cómoda herramientas para modificar  
+la semántica de su sintaxis y desarrollar la metaprogramación.
 
 #### Estado del Arte
+
+En función del marco teórico en que se desarrollo la investigación y teniendo en cuenta
+que el estado del arte respecto a la descripción de espacios de búsqueda, en este momento,
+se encuentra concentrado en los sistemas _AutoML_ y bibliotecas de optimización, entonces se
+realizo una selección y estudio de las herramientas del sector, que contarán con algún
+mecanismo para expresar la dimension o estructura de su espacio de búsqueda. Dicha
+herramienta debía ser, un mecanismo integrado con el lenguaje de propósito general
+subyacente, en los que el objetivo final de cada descripción fuera la generación de
+muestras. El listado final quedo integrado por:
+
+- AutoGOAL [4]: Biblioteca de _AutoML_, escrita en _Python_, transversal a la naturaleza
+  de los problemas y de las herramientas subyacentes. Mediante su módulo _Grammar_ ofrece
+  un listados de tipos y abstracciones con las que los desarrolladores pueden describir
+  su espacio de búsqueda.
+- HyperOpt [7]: Biblioteca de _Python_ que intenta resolver el problema de la optimización
+  paramétrica siendo independiente a la función en cuestión. La misma define una sintaxis y
+  una lista de funciones para expresar la definición de cada uno de los parámetro de la
+  función en cuestión
+- Ray AI Runtime (AIR) [8]: Ray es un marco unificado para escalar aplicaciones de IA y Python.
+  Y AIR es su conjunto de herramientas de código abierto para crear aplicaciones de IA, en
+  la cual incluye una lista de funciones con las que los desarrolladores pueden expresar
+  las dimensiones de los distintos hiperparámetros
+- Chocolate [9]: Chocolate es un marco de optimización completamente asíncrono que depende
+  únicamente de una base de datos para compartir información entre los trabajadores. Chocolate
+  ha sido diseñado y optimizado para la optimización de hiperparámetros, donde cada evaluación
+  de funciones tarda mucho en completarse y es difícil de paralelizar. Y como tal define una
+  sintaxis y una lista de funciones para definir los dominós de dichos hiperparámetros
+- Optuna [10]: Optuna es un marco de software de optimización automática de hiperparámetros,
+  especialmente diseñado para el aprendizaje automático. El cual define aporta una
+  infraestructura predefinida para segur la evolución de dichos hiperparámetros asi como
+  una lista de funciones para describir las características de los mismos
+- AutoGloun [11]: Biblioteca de _AutoML_, escrita en _Python_, que permite utilizar y ampliar
+  AutoML de forma sencilla, centrándose en el ensamblaje automatizado de pilas, el aprendizaje
+  profundo y las aplicaciones del mundo real que abarcan datos de imágenes, textos y tablas.
+  Aprovechando el ajuste automático de hiperparámetros, la selección/ensamblaje de modelos,
+  la búsqueda de arquitecturas y el procesamiento de datos. Mejorar/ajustar fácilmente sus
+  modelos y pipelines de datos a medida, o personalizar AutoGluon para su caso de uso. Para
+  dicha personalización la biblioteca combina la definición de una sintaxis para la descripción
+  estructural de los hiperparámetros con una lista de tipos para expresar la dimension de los
+  mismo
+- AutoSklearn [12]: Biblioteca de _AutoML_, escrita en _Python_, sustentados sobre conjunto de
+  herramientas de aprendizaje automático de scikit-learn. Permite a los desarrolladores personalizar
+  sus modelos ofreciendo una lista de tipos con los que restringir los distintos dominios de cada
+  hiperparámetro, junto con una sintaxis específica para la declaración de los mismo
+- TPOT [13]: TPOT es una herramienta de aprendizaje automático en Python que optimiza los procesos
+  de aprendizaje automático mediante programación genética. Este define una sintaxis para describir
+  la lista de modelos a explorar y sus distintos hiperparámetros
 
 Aunque la investigación realizada en [6] se enfoca más en la clasificación de DSL que
 representas proyectos más grandes que aquellos que son objetos de estudio para esta
 investigación en concreto, estudiando las clasificaciones y características que plantea
-el autos pudo seleccionar varias que son acordes para describir el estado del arte
+el autor pudo seleccionar varias que son acordes para describir el estado del arte
 de los DSL's que hasta el momento se dan la tarea de describir espacios de búsqueda
 
 A continuación se enumeran y detallan las características con las que se pretende
@@ -197,4 +309,15 @@ visita Sept del 2022.
 
 10 - Optuna, Pythonic Search Space,
 https://optuna.readthedocs.io/en/stable/tutorial/10_key_features/002_configurations.html,
+última visita Sept del 2022.
+
+11 - AutoGloun, Custom Model,
+https://auto.gluon.ai/dev/tutorials/index.html?highlight=search%20space,
+última visita Sept del 2022.
+
+12 - Auto-Sklearn,
+https://automl.github.io/auto-sklearn/master/examples/80_extending/example_restrict_number_of_hyperparameters.html?highlight=hyperparamete,
+última visita Sept del 2022.
+
+13 TPOT, http://epistasislab.github.io/tpot/using/#customizing-tpots-operators-and-parameters,
 última visita Sept del 2022.
