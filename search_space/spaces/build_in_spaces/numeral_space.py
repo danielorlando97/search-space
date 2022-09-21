@@ -28,18 +28,14 @@ class NumeralSearchSpace(SearchSpace):
 @SpacesManager.registry(float)
 class BasicContinueSearchSpace(BasicSearchSpace):
     def __init__(self, min=0, max=100000, distribute_like=UNIFORM) -> None:
-        super().__init__((min, max), distribute_like)
+        super().__init__(ContinuosDomain(min, max), distribute_like)
 
-    def __sampler__(self, domain, context):
-        return self._distribution.get_float(domain[0], domain[1])
+    # def __advance_space__(self, ast):
+    #     advance_space = ContinueSearchSpace(
+    #         self.initial_domain, distribute_like=self.__distribute_like__)
 
-    def __advance_space__(self, ast):
-        _min, _max = self.initial_domain
-        advance_space = ContinueSearchSpace(
-            _min, _max, distribute_like=self.__distribute_like__)
-
-        advance_space.ast_constraint = ast
-        return advance_space
+    #     advance_space.ast_constraint = ast
+    #     return advance_space
 
 
 class ContinueSearchSpace(NumeralSearchSpace):
@@ -62,18 +58,15 @@ class ContinueSearchSpace(NumeralSearchSpace):
 @SpacesManager.registry(int)
 class BasicNaturalSearchSpace(BasicSearchSpace):
     def __init__(self, min=0, max=100000, distribute_like=UNIFORM) -> None:
-        super().__init__((min, max), distribute_like)
+        super().__init__(NaturalDomain(min, max), distribute_like)
 
-    def __sampler__(self, domain, context):
-        return self._distribution.get_float(domain[0], domain[1])
+    # def __advance_space__(self, ast):
+    #     _min, _max = self.initial_domain.limits
+    #     advance_space = NaturalSearchSpace(
+    #         _min, _max, distribute_like=self.__distribute_like__)
 
-    def __advance_space__(self, ast):
-        _min, _max = self.initial_domain
-        advance_space = NaturalSearchSpace(
-            _min, _max, distribute_like=self.__distribute_like__)
-
-        advance_space.ast_constraint = ast
-        return advance_space
+    #     advance_space.ast_constraint = ast
+    #     return advance_space
 
 
 class NaturalSearchSpace(NumeralSearchSpace):

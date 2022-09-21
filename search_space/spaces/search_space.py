@@ -1,9 +1,10 @@
+from email.policy import default
 from typing import List
 from . import ast
 from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
-from search_space.errors import InvalidSampler, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
+from search_space.errors import DetectedRuntimeDependency, InvalidSampler, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
 from .algebra_constraint import ast as ast_constraint
 from .algebra_constraint import ast_index as ast_index
 from .algebra_constraint import visitors
@@ -11,13 +12,16 @@ from .algebra_constraint import VisitorLayer
 import inspect
 
 
-class BasicSearchSpace:
-    def __init__(self, initial_domain, distribute_like=UNIFORM) -> None:
+class BasicSearchSpace(ast.SelfNode):
+    def __init__(self, initial_domain, distribute_like=UNIFORM, sampler=None) -> None:
         super().__init__()
-        self.initial_domain: tuple = initial_domain
+        self.initial_domain = initial_domain
         self.__distribute_like__: str = distribute_like
         self._distribution: Sampler = SamplerFactory().create_sampler(
-            self.__distribute_like__, self)
+            self.__distribute_like__, self) if sampler is None else sampler
+
+        self.visitor_layers: List[VisitorLayer] = [
+            visitors.DomainModifierVisitor()]
 
     def change_distribution(self, distribution):
         self.__distribute_like__ = distribution
@@ -39,38 +43,69 @@ class BasicSearchSpace:
         return sample, context
 
     def __sampler__(self, domain, context):
-        """
-        """
-        pass
+        return domain.get_sample(self._distribution)
 
     def __advance_space__(self, ast):
-        """
-        """
-        pass
+        return SearchSpace(
+            domain=self.initial_domain,
+            distribute_like=self.__distribute_like__,
+            sampler=self._distribution,
+            ast=ast
+        )
+
+    def __domain_optimization__(self, domain, ast_result):
+        for visitor in reversed(self.visitor_layers):
+            if not visitor.do_domain_optimization:
+                continue
+            # All visitors modifier the ast except the last one
+            # The last one return the restricted domain
+            ast_result, domain = visitor.domain_optimization(
+                ast_result, domain)
+
+        return domain, ast_result
 
     def __ast_optimization__(self, ast_list):
         """
         """
 
-        if type(ast_list) == type(ast_constraint.AstRoot()):
+        if type(ast_list) == type(ast_constraint.AstRoot([])):
             ast = ast_list
         else:
-            ast = ast_constraint.AstRoot()
+            ast = ast_constraint.AstRoot([])
 
             if callable(ast_list):
                 ast_list = [ast_list]
 
+            temp_ast = ast_constraint.AstRoot([])
             for func in ast_list:
-                ast.add_constraint(
-                    self.__build_constraint__(func))
+                new_ast = self.__build_constraint__(func)
+                temp_ast.add_constraint(new_ast)
 
-        return self.__advance_space__(ast)
+            for new_ast in temp_ast.asts:
+                new_ast = ast_constraint.AstRoot([new_ast])
+                try:
+                    self.initial_domain, _ = self.__domain_optimization__(
+                        self.initial_domain, new_ast)
+
+                except DetectedRuntimeDependency:
+                    ast.add_constraint(new_ast.asts)
+
+        if len(ast.asts) > 0:
+            return self.__advance_space__(ast)
+        return self
 
     def __build_constraint__(self, func):
 
         func_data = inspect.getfullargspec(func)
-        args = [ast_constraint.SelfNode()] + [ast_index.SelfNode(i)
-                                              for i in range(len(func_data.args) - 1)]
+        args = [ast_constraint.SelfNode()]
+
+        defaults = [] if func_data.defaults is None else func_data.defaults
+
+        args += [ast_index.SelfNode(i)
+                 for i in range(len(func_data.args) - 1 - len(defaults))]
+
+        args += [item.space for item in defaults]
+
         return func(*args)
 
     def __hash__(self) -> int:
@@ -79,15 +114,9 @@ class BasicSearchSpace:
 
 class SearchSpace(BasicSearchSpace):
 
-    def __init__(self, initial_domain=None, distribute_like=UNIFORM) -> None:
-        super().__init__(initial_domain, distribute_like=distribute_like)
-        self.ast_constraint = ast_constraint.AstRoot()
-        self.visitor_layers: List[VisitorLayer] = []
-
-    def set_sampler(self, sampler):
-        self.__distribution__ = sampler
-        self.__distribute_like__ = sampler.__distribute_name__
-        return self
+    def __init__(self, domain, distribute_like, sampler, ast) -> None:
+        super().__init__(domain, distribute_like, sampler)
+        self.ast_constraint: ast_constraint.AstRoot = ast
 
     def get_sample(self, context=None, local_domain=None):
 
@@ -103,6 +132,7 @@ class SearchSpace(BasicSearchSpace):
 
         domain = self.initial_domain if local_domain is None else local_domain
         domain, ast_result = self.__domain_filter__(domain, context)
+
         while True:
             sample = self.__sampler__(domain, context.create_child())
             try:
@@ -143,16 +173,6 @@ class SearchSpace(BasicSearchSpace):
 
         # return sample
 
-    def __ast_optimization__(self, ast_list):
-        """
-        """
-        if callable(ast_list):
-            ast_list = [ast_list]
-        if type(ast_list) == type(ast_constraint.AstRoot()):
-            self.ast_constraint = ast_list
-            return self
-
-        for func in ast_list:
-            self.ast_constraint.add_constraint(self.__build_constraint__(func))
-
+    def __advance_space__(self, ast: ast_constraint.AstRoot):
+        self.ast_constraint.asts += ast.asts
         return self

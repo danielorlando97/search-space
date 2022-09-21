@@ -40,3 +40,7 @@ class TypeWithoutDefinedSpace(Exception):
 
 class UndefinedSampler(Exception):
     pass
+
+
+class DetectedRuntimeDependency(Exception):
+    pass

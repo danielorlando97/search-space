@@ -1,3 +1,4 @@
+from search_space.errors import DetectedRuntimeDependency
 from search_space.utils import visitor
 from search_space.spaces.algebra_constraint import ast
 from . import VisitorLayer
@@ -9,16 +10,33 @@ class DomainModifierVisitor(VisitorLayer):
     def do_transform_to_check_sample(self):
         return False
 
+    @property
+    def context(self):
+        try:
+            if self._context != None:
+                return self._context
+        except AttributeError:
+            pass
+
+        raise DetectedRuntimeDependency()
+
+    def domain_optimization(self, node, domain):
+        self.domain, self._context = domain, None
+        return self.visit(node)
+
+    def transform_to_modifier(self, node, domain, context):
+        self.domain, self._context = domain, context
+        return self.visit(node)
+
     @visitor.on("node")
-    def transform_to_modifier(self, node, domain=None, context=None):
+    def visit(self, node):
         pass
 
     @visitor.when(ast.AstRoot)
-    def transform_to_modifier(self, node: ast.AstRoot, domain, context):
-        self.domain = domain
+    def visit(self, node: ast.AstRoot):
 
         for n in node.asts:
-            self.transform_to_modifier(n, context=context)
+            self.visit(n)
 
         return node, self.domain
 
@@ -29,32 +47,39 @@ class DomainModifierVisitor(VisitorLayer):
     #################################################################
 
     @visitor.when(ast.LessOp)
-    def transform_to_modifier(self, node, domain=None, context=None):
-        _ = self.transform_to_modifier(node.target, context=context)
-        limit = self.transform_to_modifier(node.other, context=context)
+    def visit(self, node):
+        _ = self.visit(node.target)
+        limit = self.visit(node.other)
 
         self.domain = self.domain < limit
 
     @visitor.when(ast.LessOrEqualOp)
-    def transform_to_modifier(self, node, domain=None, context=None):
-        _ = self.transform_to_modifier(node.target, context=context)
-        limit = self.transform_to_modifier(node.other, context=context)
+    def visit(self, node):
+        _ = self.visit(node.target)
+        limit = self.visit(node.other)
 
         self.domain = self.domain <= limit
 
     @visitor.when(ast.GreatOp)
-    def transform_to_modifier(self, node, domain=None, context=None):
-        _ = self.transform_to_modifier(node.target, context=context)
-        limit = self.transform_to_modifier(node.other, context=context)
+    def visit(self, node):
+        _ = self.visit(node.target)
+        limit = self.visit(node.other)
 
         self.domain = self.domain > limit
 
     @visitor.when(ast.GreatOrEqualOp)
-    def transform_to_modifier(self, node, domain=None, context=None):
-        _ = self.transform_to_modifier(node.target, context=context)
-        limit = self.transform_to_modifier(node.other, context=context)
+    def visit(self, node):
+        _ = self.visit(node.target)
+        limit = self.visit(node.other)
 
         self.domain = self.domain >= limit
+
+    @visitor.when(ast.NotEqualOp)
+    def visit(self, node):
+        _ = self.visit(node.target)
+        limit = self.visit(node.other)
+
+        self.domain = self.domain != limit
 
     #################################################################
     #                                                               #
@@ -63,12 +88,13 @@ class DomainModifierVisitor(VisitorLayer):
     #################################################################
 
     @visitor.when(ast.SelfNode)
-    def transform_to_modifier(self, node, domain=None, context=None):
+    def visit(self, node):
         pass
 
     @visitor.when(ast.NaturalValue)
-    def transform_to_modifier(self, node, domain=None, context=None):
+    def visit(self, node):
+
         try:
-            return node.target.get_sample(context=context)[0]
+            return node.target.get_sample(context=self.context)[0]
         except AttributeError:
             return node.target

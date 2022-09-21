@@ -9,6 +9,10 @@ check_natural_value = check_params_type(
 class IndexNode:
     precedence = 0.5
 
+    @property
+    def is_index_node(self):
+        return True
+
     #################################################################
     #                                                               #
     #                     Class Operations                          #
@@ -276,3 +280,11 @@ class SelfNode(IndexNode):
     def __init__(self, shape_index) -> None:
         super().__init__()
         self.shape_index = shape_index
+
+    def change_to_reference(self, space):
+        self.space = space
+        return self
+
+    @property
+    def is_index_node(self):
+        return not isinstance(self.space, GetAttr)

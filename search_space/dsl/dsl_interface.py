@@ -85,8 +85,6 @@ RandomValue = RandomValueClass()
 
 
 class SpaceDomain(Generic[T]):
-    sample: T
-
     def __init__(self, space) -> None:
         self.space: SearchSpace = space
 
@@ -103,6 +101,9 @@ class SpaceDomain(Generic[T]):
 
     def __getitem__(self, item) -> T:
         pass
+
+    def __contains__(self, item):
+        return item.change_to_reference(self.space)
 
 
 class DomainFactory(TypeBuilder, Generic[T]):

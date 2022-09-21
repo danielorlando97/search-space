@@ -109,6 +109,22 @@ len_space = Domain[int](min=1, max=9)
 custom_instance = RandomValue[CustomClass](lambda x, y: (y in len_space, x.natural < y))
 ```
 
+:-( in solo devuelve bool. So:
+
+```python
+from search_space.dsl import Domain, RandomValue
+
+
+@space
+class CustomClass
+    natural = Domain[int] | (lambda x: x < 10)
+    space = Domain[int][10] | (lambda x, i, y = natural: (x[i] < y))
+
+
+len_space = Domain[int](min=1, max=9)
+custom_instance = RandomValue[CustomClass](lambda x, y: (y in len_space, x.natural < y))
+```
+
 ## Sintaxis para Customs Space
 
 ### Lista de Problemas
