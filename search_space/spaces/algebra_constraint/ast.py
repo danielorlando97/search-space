@@ -297,8 +297,12 @@ class AstRoot(UniversalVariableNode):
         if other is None:
             return self
 
-        n = AstRoot()
-        n.asts = self.asts + other.asts
+        n = AstRoot([])
+
+        if type(other) in [type(list()), tuple()]:
+            n.asts = self.asts + other
+        else:
+            n.asts = self.asts + other.asts
 
         return n
 

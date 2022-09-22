@@ -1,6 +1,6 @@
 from search_space.context_manager.sampler_context import SamplerContext
 from search_space.errors import InvalidSpaceConstraint, NotEvaluateError
-from search_space.spaces import SearchSpace
+from search_space.spaces import BasicSearchSpace
 from copy import copy
 from search_space.spaces.algebra_constraint import visitors
 from .numeral_space import NaturalSearchSpace
@@ -9,46 +9,41 @@ from search_space.spaces.algebra_constraint import ast as ast_constraint
 # TODO: check space types
 
 
-class TensorSearchSpace(SearchSpace):
-    def __init__(self, space_type: SearchSpace, shape_space: list) -> None:
-        super().__init__()
+class TensorSearchSpace(BasicSearchSpace):
+
+    #################################################################
+    #                                                               #
+    #                     Space Initialize                          #
+    #                                                               #
+    #################################################################
+
+    def __init__(self, shape_space: list) -> None:
+        super().__init__((), None)
         self.len_spaces = shape_space if type(
             shape_space) in [type(list()), type(tuple())] else [shape_space]
-        self.type_space = space_type
+
         self.samplers = {}
+        self.ast_constraint = ast_constraint.AstRoot([])
 
-    def __domain_filter__(self, domain, context):
-        shape = []
-        for ls in self.len_spaces:
-            try:
-                shape.append(ls.get_sample(context)[0])
-            except AttributeError:
-                shape.append(ls)
+    def set_type(self, space: BasicSearchSpace):
+        self.type_space = space
 
-        self.__current_shape = shape
+        for size in self.len_spaces:
+            if isinstance(size, BasicSearchSpace):
+                break
+        else:
+            self.iter_virtual_list(
+                self.len_spaces, [], lambda index: self[index])
 
-        return super().__domain_filter__(domain, context)
+    def iter_virtual_list(self, shape, index, func):
+        if len(shape) == 0:
+            return func(index)
 
-    def __sampler__(self, domain, context):
+        result = []
+        for i in range(shape[0]):
+            result.append(self.iter_virtual_list(shape[1:], index + [i], func))
 
-        def f(shape, index):
-            if len(shape) == 0:
-                return self[index].get_sample(context, local_domain=domain)[0]
-
-            result = []
-            for i in range(shape[0]):
-                result.append(f(shape[1:], index + [i]))
-
-            return result
-
-        return f(self.__current_shape, [])
-
-    def __check_sample__(self, sample, ast_result, context):
-        return sample
-
-    def __build_constraint__(self, func):
-
-        return func(*([ast_index.SelfNode(i) for i in range(0, len(self.len_spaces))] + [ast_constraint.SelfNode()]))
+        return result
 
     def __getitem__(self, index):
         if type(index) == type(list()):
@@ -62,9 +57,46 @@ class TensorSearchSpace(SearchSpace):
                 visitors.EvalAstChecked(),
                 visitors.IndexAstModifierVisitor(self, index)
             ]
-            self.samplers[index].ast_constraint = self.ast_constraint
+            self.samplers[index].__ast_optimization__(self.ast_constraint.asts)
 
         return self.samplers[index]
+
+    #################################################################
+    #                                                               #
+    #                     Ast Optimization                          #
+    #                                                               #
+    #################################################################
+
+    def __ast_optimization__(self, ast_list):
+
+        self.ast_constraint += ast_list
+
+        for key, space in self.samplers.items():
+            self.samplers[key] = space | ast_list
+
+        return self
+
+    #################################################################
+    #                                                               #
+    #                     Sample Generate                           #
+    #                                                               #
+    #################################################################
+
+    def __sampler__(self, domain, context: SamplerContext):
+
+        shape = []
+        for ls in self.len_spaces:
+            try:
+                shape.append(ls.get_sample(context)[0])
+            except AttributeError:
+                shape.append(ls)
+
+        context = context.create_child()
+        return self.iter_virtual_list(
+            shape, [], lambda index: self[index].get_sample(context)[0])
+
+    def __check_sample__(self, sample, ast_result, context):
+        return sample
 
     def __check_index__(self, index):
         for i, size in enumerate(self.__current_shape):

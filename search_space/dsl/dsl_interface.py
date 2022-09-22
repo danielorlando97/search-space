@@ -14,7 +14,7 @@ class TypeBuilder(Generic[T]):
 
     @property
     def space(self):
-        return self._space if not self.is_tensor_type else self._space.type_space
+        return self._space if not self.is_tensor_type else self.__space
 
     def __call__(self, constraints=None, min=None, max=None, options=None, distribute_like=None):
 
@@ -43,7 +43,7 @@ class TypeBuilder(Generic[T]):
             result = self.space(**kwarg)
 
         if self.is_tensor_type:
-            self._space.type_space = result
+            self._space.set_type(result)
             result = self._space
 
         if constraints is None:
@@ -53,16 +53,21 @@ class TypeBuilder(Generic[T]):
 
     def __getitem__(self, item):
         try:
+            item = item.space
+        except AttributeError:
+            pass
+
+        try:
             self._space.len_spaces.append(item)
         except AttributeError:
-            self._space = TensorSearchSpace(self._space, [item])
+            self.__space = self._space
+            self._space = TensorSearchSpace([item])
 
         self.is_tensor_type = True
         return self
 
 
 class RandomValueFunc(TypeBuilder, Generic[T]):
-    __space_memory = {}
 
     def __init__(self, space: SearchSpace) -> None:
         super().__init__(space)
