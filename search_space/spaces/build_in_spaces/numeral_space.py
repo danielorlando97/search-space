@@ -9,9 +9,7 @@ from .space_manager import SpacesManager
 
 __all__ = [
     "BasicContinueSearchSpace",
-    "ContinueSearchSpace",
     "BasicNaturalSearchSpace",
-    "NaturalSearchSpace"
 ]
 
 

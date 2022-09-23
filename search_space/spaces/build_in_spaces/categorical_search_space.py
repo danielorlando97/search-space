@@ -7,9 +7,7 @@ from search_space.spaces.domains.categorical_domain import CategoricalDomain
 
 __all__ = [
     "BasicCategoricalSearchSpace",
-    "CategoricalSearchSpace",
     "BasicBooleanSearchSpace",
-    "BooleanSearchSpace"
 ]
 
 

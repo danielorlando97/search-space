@@ -1,6 +1,7 @@
 from search_space.errors import DetectedRuntimeDependency
 from search_space.utils import visitor
 from search_space.spaces.algebra_constraint import ast
+from search_space.spaces.algebra_constraint.functions_and_predicates import FunctionNode, AdvancedFunctionNode
 from . import VisitorLayer
 from search_space.utils.singleton import Singleton
 
@@ -98,3 +99,15 @@ class DomainModifierVisitor(VisitorLayer):
             return node.target.get_sample(context=self.context)[0]
         except AttributeError:
             return node.target
+
+    @visitor.when(FunctionNode)
+    def visit(self, node: FunctionNode):
+        new_args = []
+        for arg in node.args:
+            new_args.append(self.visit(arg))
+
+        new_kw = {}
+        for name, arg in node.kwargs:
+            new_kw[name] = self.visit(arg)
+
+        return node.func(*new_args, **new_kw)
