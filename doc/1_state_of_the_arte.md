@@ -6,76 +6,6 @@
         tutor: Lic. Frank Sadan Naranjo
         co-tutor: Doc. Alejandro Piad Morffis
 
-<!--
-
-Prototype
-
-Introduce Example, that AutoGOAL can't resolver
-
-What is Search Space?
-What is DSL? Classification By Reference, and selected features
-
-Reference Description and Classification
-Table
-Conclusion
-
--->
-
-## Marco Teórico
-
-<!--
-DSL
-Metodologías  Bottom-Up Top-Down
--->
-
-## Estado del Arte
-
-<!--
-¿Quiénes ya han tratado el mismo tema?
-¿Cuáles son sus hipótesis y teorías?
-¿Qué bibliografía existe en mi área de estudio?
-¿Qué avances se han hecho en el estudio de la temática?
-¿Cómo se trabajó sobre este tema a lo largo del tiempo?
-
-
-Tema: Tratamiento del realismo mágico en la literatura latinoamericana actual.
-Límites espaciotemporales: Latinoamérica (o autores latinoamericanos), siglo XXI.
-Palabras clave: Realismo mágico, literatura siglo XXI, autores latinoamericanos modernos.
-Subtemas: recuperación de corrientes literarias, temas del realismo mágico, funciones del realismo mágico.
-
-Ficha Bibliografica
-Referencias de los textos: Hazlas según las normativas que exijan tu trabajo (APA, Vancouver, etc.).
-Tema: Reseña de qué trata cada texto.
-Tesis: Describe brevemente la postura del autor de cada documento recuperado.
-Propósito: Sintetiza qué se quiere demostrar en estos textos.
-Ideas centrales: Enumera los puntos principales que desarrolla cada autor.
-Conceptos claves: Trata de manera breve los conceptos esenciales para los trabajos recolectados.
-Conclusiones: Explica cuál es la conclusión a la que llega cada autor con su texto.
-
-
-Resúmenes para redactar Estados del Arte
-Otro elemento para organizar la información que irá en un estado del arte son los resúmenes. Estos pueden tener, por ejemplo, la siguiente estructura:
-
-Un párrafo introductorio, que incluya el título del texto, su autor y año de publicación. Asimismo, debe reseñar el tema general, la tesis y el propósito que se tratan.
-El desarrollo de las ideas principales de los documentos. En cada párrafo de tus resúmenes explica cada una de las ideas fundamentales tratadas por los textos.
-Una conclusión. Es decir, breve exposición de los resultados más importantes a los que se llega.
-
-
-Introducción
-Aquí se presenta el tema; el objetivo general y la pregunta de investigación del trabajo en el que el estado del arte se enmarca. Sirve, en consecuencia, para guiar al lector acerca de los motivos e interrogantes que guían la redacción de ese estado del arte.
-
-Desarrollo del Estado del Arte
-En esta sección es que debe volcarse toda la información recuperada (y debidamente analizada) de la bibliografía. Es necesario que contenga los siguientes puntos:
-
-Una presentación a grandes rasgos de los resultados que obtuviste de la bibliografía de tu estado del arte. Clasifícalos según las temáticas y factores comunes.
-Explicación y comparación de tales temáticas y factores en común. Debes citar y dar las referencias adecuadas para cada texto.
-Identificación de las conclusiones generales que tengan incidencia para el trabajo.
-Estos aspectos de este segmento de tu proyecto no pueden faltar, además de que su correcta estructuración es clave.
-
-Conclusiones
-En este punto, debes escribir las conclusiones que es necesario que el lector tenga en cuenta para comprender tu investigación y cómo se relaciona con tu estado del arte. Como ejemplo, puedes reseñar los campos y líneas de investigación del tema de tu investigación que no están explorados. De este modo, indicas qué dirección tomará tu trabajo.
- -->
-
 El espacio de búsqueda es una de las componentes principales de los sistemas
 de _AutoML_, independientemente de la naturaleza de los mismo. La gran mayoría
 de las herramientas de sector cuentan con una espacio de búsqueda muy definido,
@@ -91,14 +21,14 @@ de esto, todo mecanismo y sintaxis que tenga como objetivo la descripción estru
 del campo de investigación, tiene su lugar en el procesos investigativo de la presente
 tesis.
 
-#### Marco Teórico
+## Marco Teórico
 
-##### _Espacio de Búsqueda_
+### _Espacio de Búsqueda_
 
 Subconjunto del universo tal que cada uno de sus elementos son soluciones factibles
 para una problema dado.
 
-##### _Descripción del Espacio de Búsqueda_
+### _Descripción del Espacio de Búsqueda_
 
 Proceso mediante el cual, según las características del medio, se define una
 jerarquía de estructuras y datos de forma tal que el receptor de dicha descripción  
@@ -110,7 +40,7 @@ de programación de uso general, sino que las distintas herramientas de optimiza
 o _AutoML_, suele implementar _DSL's_ o _frameworks_ en los que las descripciones se
 pueda acercar un poco más al lenguaje natural.
 
-##### _DSL_ (_Lenguaje de Dominio Específico_,_Domain Specific Language_ )
+### _DSL_ (_Lenguaje de Dominio Específico_,_Domain Specific Language_ )
 
 Según [6] un lenguaje específico de dominio es un lenguaje especializado que sirve
 para elevar el nivel de abstracción del software y facilitar el desarrollo del mismo.
@@ -121,7 +51,7 @@ Para la presente investigación solo son de interés aquellos _DSLs_ que se cons
 incorporan a un lenguaje subyacente, elevando el nivel de abstracción y la expresividad
 del código con respecto a un domino específico.
 
-##### _DSLs_ orientados a descripciones
+### _DSLs_ orientados a descripciones
 
 Los _DSLs_ pertenecientes al domino de la presente investigación tiene como objetivo
 la descripción de una serie de conceptos para su posterior explotación. Esto supone que
@@ -148,14 +78,14 @@ sondeo del elemento optimo.
 En estos casos específicos el autor considera razonable hablar de las dos fases de
 estos _DSLs_ como _tiempo de compilación del DSL_ y _tiempo de ejecución del DSL_
 
-##### Tiempo de compilación del _DSL_
+### Tiempo de compilación del _DSL_
 
 Definimos el tiempo de compilación de un _DSL_ como todas las operaciones puntuales que se
 realizan para orquestar la infraestructura que dará soporte a la ejecución del objetivo
 final del mismo. Dicha infraestructura debería permanecer inmutable en su mayoría en
 durante todos los procesos posteriores a la "compilación" del _DSL_.
 
-##### Tiempo de ejecución del _DSL_
+### Tiempo de ejecución del _DSL_
 
 Definimos el tiempo de ejecución del _DSL_ como todas las operaciones que realiza
 la herramienta, posteriores a la "compilación" del mismo, para lograr su objetivo básico y
@@ -172,7 +102,7 @@ podrían decir que una vez que inicia una ejecución de _AutoGOAL_, luego de la 
 de sus descripciones, su _DSL_ se ejecuta múltiples veces hasta que el sistema encuentra una
 respuesta al problema planteado.
 
-##### Python para _DSL_
+### Python para _DSL_
 
 Como el resultado de la presente tesis es un _DSL_ atado a un lenguaje de propósito general
 subyacente. Dicho lenguaje de contar con una serie de características especiales,
@@ -183,7 +113,67 @@ para la implementación de la propuesta planteada no se encuentra influenciada p
 situación, sino que además _Python_ cuenta con potentes y cómoda herramientas para modificar  
 la semántica de su sintaxis y desarrollar la metaprogramación.
 
-#### Estado del Arte
+Según [14], _Python_ es un lenguaje de programación de alto nivel y de propósito general.
+Python es de tipado dinámico y fuerte, pero existen bibliotecas, como _typing_, que haciendo
+uso de la metaprogramación y otras técnicas son capaces de modificar la semántica del
+lenguaje para ofrecer una experiencia de usuario similar a la de los lenguajes estéticamente
+tipados.
+
+Una de las características que hacen a este lenguaje tan flexible e ideal para la metaprogramción,
+es la filosofía bajo la que describe todos los procesos y transiciones de sus objetos. El
+interprete del lenguaje define una lista de "métodos mágicos", uno por cada operación básica
+de software, los cuales cuanta con sus propias implementaciones básicas, pero que pueden ser
+redefinidos en todo momento. Como señala [14], los "métodos mágicos" son los que comienzan y
+terminan con el doble guión bajo, entre los que se pueden citar por ejemplo; `__and__`,
+`__sub__`, `__div__`, `__mul__` y otra larga lista de funciones que hacen referencia
+a las operaciones aritméticas y de comparación, `__call__` método que describe el comportamiento
+de un objeto cuando se intenta usar como función, `__getattribute__` o `__getitem__`
+que describen los comportamientos cuando se intenta acceder a los miembros de una clase o a
+un elemento de una lista respectivamente. La lista es extremadamente larga y crece a medida
+que aparecen nuevos bibliotecas del lenguaje.
+
+[14] define el término metaprogramación como a la posibilidad de que un programa tenga conocimiento
+o se manipule a sí mismo. En _Python_ cada pequeño elemento del lenguaje representa un objeto.
+A diferencia de otros lenguajes, donde la declaración de funciones y clases no son más que
+punteros a direcciones de memoria donde se alojan sus respectivos códigos, en _Python_ cada
+definición tiene como resultado la instancia de una determinada clase que se referencia a partir
+del nombre de dicha definición y que desde el preciso momento de su definición dicha instancia
+puede ser modificada de todas las maneras que soporte el lenguaje y la semántica del contexto.
+
+El más popular ejemplo de lo antes expresado son los decoradores. Estos representan una de las
+cualidades de más alto nivel del paradigma funcional, las funciones de orden superior (funciones
+que esperan funciones como parámetros). Los decoradores ya no son una sintaxis novedosa en el
+mundo de los lenguajes de programación; pero la sencillez de estos en _Python_ sigue resaltando
+por encima del resto, pues según su filosofía, los decoradores no son más que una función
+simple donde el argumento es el objeto resultante de la definición subyacente. Esta es una
+increíble herramienta para escribir metaprogramas pues con solo una linea de código más por
+encima de una definición, ya sea de función o de clase, se puede transformar el objeto al que
+apunta el nombre de la definición que cualquier otra instancia. Esto permite por ejemplo
+simplificar la sintaxis para declarar una hierarquía de clases simple, donde la clase que hereda
+unicamente le interesa sobreescribir un método en particular, pues bastaría con decorar la
+una función "x" para que cuando se le intente ejecutar se cree la instancia clases "y"
+que tiene un método "z" que llama a la función "x"
+
+La más alta expresión de visión donde toda definición es la instancia de un objeto son la
+metaclases. Una metaclases es el clase que describe la naturaleza de las instancias
+resultantes de la declaración de nuevas clases. El lenguaje define la metaclases básica
+**type** y brinda las herramientas necesarias para personalizar la asignación de su respectiva
+metaclases para cada clase que el usuario define. El procesos de instanciación de una nueva
+clase definida por el usuarios pasa por un pipeline de 3 "métodos mágicos" que tiene origen en
+el método \_\_call\_\_ de la instancia de su metaclase. Esto es otra gran característica para
+la flexibilización de la semántica pues por ejemplo, bajo el nombre de una misma clase, en el
+momento de crear una nueva instancia, se podrían crear la infancia adecuada de toda una jerarquía
+según las características de los parámetros iniciales.
+
+Además la biblioteca estándar del lenguaje incluye el módulo _inspect_, que como indica [15],
+proporciona varias funciones útiles para ayudar a obtener información sobre objetos vivos
+como módulos, clases, métodos y funciones. Hay cuatro tipos principales de servicios que ofrece
+este módulo: comprobación de tipos, obtención del código fuente, inspección de clases y funciones,
+y examen de la pila del intérprete. Lo cual supone una inmensa fuente de metadatos que unido
+a todo lo antes expuestos transforman a este lenguaje en el ambiente ideal para el desarrollo de
+_DSLs_ y _framewors_ de gran expresividad.
+
+## Estado del Arte
 
 En función del marco teórico en que se desarrollo la investigación y teniendo en cuenta
 que el estado del arte respecto a la descripción de espacios de búsqueda, en este momento,
@@ -257,9 +247,16 @@ momento:
 - Integración con el Lenguaje Subyacente: Lista de herramientas y características de las
   que se valen los desarrolladores de cada uno de los DSL's para dar lugar a los mismo dentro
   del lenguaje subyacente
-- Transformaciones Operativas: Esta parte abarca las características relacionadas con
+
+<!-- - Transformaciones Operativas: Esta parte abarca las características relacionadas con
   la aplicación de una transformación DSL. Se distinguen la técnica, la ejecución,
-  la programación y la variabilidad
+  la programación y la variabilidad -->
+
+- Desacoplamientos Descripción - Generación: Describe el nivel de desacoplamiento entre
+  las herramientas que soportan las descripciones de los distintos espacios de búsqueda con
+  los distintos mecanismos para generar las muestras de dichas descripciones. Un diseño ideal
+  es aquel que permita para una misma definición probar varias formas de generar muestras.
+
 - Características que Conduce el Diseño: Detrás de las descripciones de los espacios de
   busqueda existe mucho carga teórica de diversas esferas no solo la computación y el _ML_,
   sino que también juegan un papel importante la estadística, las probabilidades y otros muchos
@@ -272,6 +269,52 @@ momento:
   - Descripción y generación de espacio de búsqueda de dimensiones aleatorias, por ejemplo el espacio
     de los vectores de dimension aleatoria
   - Estructuras de controles de flujo para las descripción de espacios opcionales
+
+| DSL                   | Estilo de la Sintaxis Concreta | Objetivo del Sistema Subyacente                                                    | Activo Objetivo                                                                                                                                                                                                                                                                                                                                 | Integración con el Lenguaje Subyacente                                                                                                                                                                                                                                                                                       | Desacoplamientos Descripción - Generación                                                                                                                                                              | Características que Conduce el Diseño                                                                                               | Capacidad de Generación y Definición                                                                                                                                                                                                                                                      |
+| --------------------- | ------------------------------ | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AutoGOAL              | Funcional                      | AutoML, Selección de Modelos, Optimización paramétrica                             | - En tiempo de compilación: Gramática Libre del Contexto. <br />- En tiempo de ejecución: Instancia de la clase Pipeline                                                                                                                                                                                                                        | Hace uso de descripción de tipos de los parámetros y resultados de las funciones de cada clase                                                                                                                                                                                                                               | Cada uno de los tipos básicos tiene su propia definición de su mecanismo generativo                                                                                                                    | Orientado por tipos que hacen referencia a la función de la variable en cuestión dentro del problema del AutoML                     | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias salvo el Pipeline principal<br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                         |
+| HyperOpt              | Funcional                      | Biblioteca de optimización paramétrica                                             | - En tiempo de compilación: Diccionario que iguala el nombre del parámetro en cuestión a su función generadora <br />- En tiempo de ejecución: Copia de dicho diccionario con las muestras generadas                                                                                                                                            | Hace uso de los diccionarios y funciones del lenguaje                                                                                                                                                                                                                                                                        | Asigna explícitamente las funciones generadoras a cada una se las variables                                                                                                                            | Orientado por las distintas distribuciones con las que se generan las muestras de las distintas variables aleatorias                | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias <br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                    |
+| Ray AI Runtime (AIR)  | Funcional                      | Marco unificado para escalar aplicaciones de IA y Python                           | - En tiempo de compilación: Diccionario que iguala el nombre del parámetro en cuestión a su función generadora <br />- En tiempo de ejecución: Copia de dicho diccionario con las muestras generadas                                                                                                                                            | Hace uso de los diccionarios y funciones del lenguaje                                                                                                                                                                                                                                                                        | Asigna explícitamente las funciones generadoras a cada una se las variables                                                                                                                            | Orientado por las distintas distribuciones con las que se generan las muestras de las distintas variables aleatorias                | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias <br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                    |
+| Chocolate             | Funcional                      | Biblioteca de optimización paramétrica                                             | - En tiempo de compilación: Diccionario que iguala el nombre del parámetro en cuestión a su función generadora <br />- En tiempo de ejecución: Copia de dicho diccionario con las muestras generadas                                                                                                                                            | Hace uso de los diccionarios y funciones del lenguaje                                                                                                                                                                                                                                                                        | Asigna explícitamente las funciones generadoras a cada una se las variables                                                                                                                            | Orientado por las distintas distribuciones con las que se generan las muestras de las distintas variables aleatorias                | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias<br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                     |
+| Optuna                | Imperativo                     | Biblioteca de optimización paramétrica                                             | - En tiempo de compilación: Orquesta la arquitectura necesaria para la optimización paramétrica. <br />- En tiempo de ejecución: Generación muestras para cada una de las variables definidas en el scope de la función                                                                                                                         | Basado en la inversión de dependencia inyecta el motor de generación a la función objetivo para que imperativamente genera las muestras necesarias                                                                                                                                                                           | Las descripciones se implementa de forma imperativa haciendo uso del scope de las funciones, las variables del lenguaje y las funciones implementadas por el generador de muestras                     | Orientado por las distintas distribuciones con las que se generan las muestras de las distintas variables aleatorias                | - Describe dependencias contextuales ordenado de forma topológica la generación de muestras <br />- Puede describir espacios de dimensiones aleatorias generando primero las dimensiones y luego las muestras <br />- Cuneta con las estructuras de control de flujo propias del lenguaje |
+| AutoGloun             | Funcional                      | AutoML, Selección de Modelos, Optimización paramétrica                             | - En tiempo de compilación: Diccionario que iguala el nombre del parámetro en cuestión a su función generadora. <br />- En tiempo de ejecución: Copia de dicho diccionario con las muestras generadas                                                                                                                                           | Hace uso de los diccionarios del lenguaje, junto a una lista de clases implementadas en el mismo                                                                                                                                                                                                                             | Cada uno de los tipos básicos tiene su propia definición de su mecanismo generativo                                                                                                                    | Orientado por tipos que hacen referencia a la función de la variable en cuestión dentro del problema del AutoML                     | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias <br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                    |
+| AutoSklearn           | Funcional                      | AutoML, Selección de Modelos, Optimización paramétrica                             | - En tiempo de compilación: Mediante la ejecución del método estático `get_hyperparameter_search_space` se crea una instancia de la clase `ConfigurationSpace` que contiene cada una de las descripciones. <br />- En tiempo de ejecución: Instancia de clasificador personalizado al que se le inyectan las muestras como parámetros iniciales | Hace uso de los métodos estáticos del lenguaje, para instanciar cada una de las clases que describirá el espacio de los parámetros iniciales. Para enlazar dichas clases con su posición entre los parámetros del constructor usa los metadatos de la función para realizar la asignación según los nombres de las variables | Cada uno de los tipos básicos tiene su propia definición de su mecanismo generativo                                                                                                                    | Orientado por tipos que hacen referencia a la su mecanismo generativo                                                               | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias <br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                    |
+| TPOT                  | Funcional                      | AutoML, Selección de Modelos, Optimización paramétrica                             | - En tiempo de compilación: Diccionario que enumera la lista de modelos seleccionables y describe las dimensiones de sus hiperparámetros . <br />- En tiempo de ejecución: Instancia de las distintas clases que pueden formar parte del pipeline final                                                                                         | Hace uso de descripción de la sintaxis de los diccionarios del lenguaje para describir su espacio                                                                                                                                                                                                                            | No hace referencia explicita a la distribución de sus hiperparámetros                                                                                                                                  | Orientado por los nombres de los algoritmos que forman parte del procesos de selección de modelos y los tipos de sus hiperparámetro | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias <br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                    |
+| Propuesta de Solución | Funcional                      | Biblioteca para describir y generar muestras de los distintos espacios de búsqueda | - En tiempo de compilación: Instancia los mecanismo generadores y construye los AST's que describen las dependencias y relaciones internas. <br />- En tiempo de ejecución: Muestra del espacio que cumple con todas las restricciones descritas                                                                                                | Hace uso de una clase principal que con la redefinición de alguno de sus operadores permite la descripción de restricciones mediante la sintaxis de funciones lambdas del lenguaje                                                                                                                                           | Cada una de las instancias de los tipos básicos y personalizados hacen referencio al nombre de su mecanismo generador, que posteriormente puede ser mapeado a cualquier clase generadora personalizada | Orientado por tipos originales de las muestras que se generarán                                                                     | - Puede describir dependencias contextuales<br />- Puede describir espacios de dimensiones aleatorias <br />- Cuenta con estructuras de control de flujo en sus descripciones                                                                                                             |
+
+Analizando el estado del arte mediante la comparación antes expuesta se
+resaltar varias puntos. La mayoría de las herramientas de la actualidad
+no resuelven ninguno de los problemas a los que el presente trabajo intenta
+dar respuesta. Todas las herramientas estudiadas interpretan que el mecanismo
+generativo es un elemento integrado de forma natural en las descripciones de
+los espacios de búsqueda, idea que el autor considera que no es el mejor
+diseño con respecto a la escalabilidad y modularidad de las implementaciones.
+Una cantidad considerable de los ejemplos de solución se apoyan en los diccionarios
+y la comparación textual entre los nombres de los argumentos con las llaves
+de dichos diccionarios o nombres que se le asignan a las distintas instancias de
+las clases básicas.
+
+Además cada uno de los **DSLs** analizado presentan diseños muy influenciado
+por el domino de la herramienta subyacente. En los casos en que el objetivo
+principal de la misma es la optimización paramétrica, las descripciones se
+encuentran constituidas por los nombres de las distribuciones de cada una de
+las variables aleatorias. Mientras que herramientas especializadas en la solución
+del problema del **AutoML**, las herramientas descriptivas se ven más influenciada
+por las funciones de estos parámetros dentro de los distintos algoritmos. Bajo este
+análisis una herramienta con el propósito principal de describir los espacios de
+búsqueda, como sería de propuesta de solución, debe presentar una sintaxis expresiva
+respeto a los tipos que serán generados como resultado final.
+
+Por último, se destaca el caso de la biblioteca _Optuna_ que siendo la herramienta
+que se decanta por una filosofía imperativa, cuenta con mecanismo para dar respuesta
+a los problemas que dieron lugar a la presenta investigación. Pese a la flexibilidad
+y la potencia de la propuesta no es la sintaxis ideal para las descripciones, como se
+evidencia en la elección del resto de los sistemas. Las descripciones resultantes de
+estas sintaxis, pese la amplia gama de dominios maestrear, a medida que los espacios
+se complejizan las implementaciones se torna muy verbosa y relativamente poco legibles.
+Además esta en esta propuesta se resolverían todas las restricciones y dependencias
+en tiempo de ejecución, mientras que una sintaxis funcional da espacios a realizar
+múltiples optimizaciones para minimizar el computo en tiempo de ejecución.
 
 # Referencias
 
@@ -319,5 +362,9 @@ https://auto.gluon.ai/dev/tutorials/index.html?highlight=search%20space,
 https://automl.github.io/auto-sklearn/master/examples/80_extending/example_restrict_number_of_hyperparameters.html?highlight=hyperparamete,
 última visita Sept del 2022.
 
-13 TPOT, http://epistasislab.github.io/tpot/using/#customizing-tpots-operators-and-parameters,
+13 - TPOT, http://epistasislab.github.io/tpot/using/#customizing-tpots-operators-and-parameters,
 última visita Sept del 2022.
+
+14 - Block Online Real Python, https://realpython.com, última visita Sept del 2022.
+
+15 - Documentación Online Oficial de Python, https://docs.python.org/3, última visita Sept del 2022.
