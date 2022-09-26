@@ -9,7 +9,7 @@
 ## Resumen
 
 _AutoGOAL_ es uno de las bibliotecas del estado del arte que analiza la
-problemática del AutoML. La misma se distingue del resto, pues su elección
+problemática del AutoML. Esta se distingue del resto pues su elección
 y diseño de la estrategia de búsqueda, _Evolución Gramatical Probabilística_
 (**Probabilistic Grammatical Evolution**, **PGE**), le permite ser
 independiente a la naturaleza del problema.
@@ -17,19 +17,19 @@ independiente a la naturaleza del problema.
 **PGE** requiere de la definición previa de una gramática, sobre la cual
 realizar el procesos de búsqueda y optimización, por tanto la biblioteca
 puede analizar todos los problemas cuyo espacio de búsqueda pueda ser
-expresada como una de dichas gramáticas. Las herramientas existentes previo
-al desarrollo de la presente tesis se limitaban a la definición e
+expresada como una de dichas gramáticas. Las herramientas existentes
+previas al desarrollo de la presente tesis se limitaban a la definición e
 inferencia de gramáticas libres del contexto
 
 Este documento define una serie de políticas y reglas para ampliar el poder
 descriptivo de herramientas como _AutoGOAL_ hasta la generación de gramáticas
 sensibles al contextos sin dependencias circulares. Como resultado del
 procesos investigativo se desarrollo una nueva biblioteca con la implementación
-de las pautas antes mencionadas, ando lugar a la definición de un **DSL**
+de las pautas antes mencionadas, dando lugar a la definición de un **DSL**
 (_Lenguaje de Dominio Específico_,_Domain Specific Language_ ) capas de
-describir, con una filosofía _Down-Top_, la composición de los distintos
+describir, con una filosofía _Bottom-Up_, la composición de los distintos
 espacios de búsqueda y las diferentes dependencias entre los componentes
-del mismo, para posteriormente generar muestras perteneciente a dichos espacios
+del mismo, para posteriormente generar muestras de este
 
 ## Introducción
 
@@ -45,8 +45,8 @@ de aplicaciones de aprendizaje automático. A diferencia del proceso de diseño
 manual, el _AutoML_ permite explorar inteligentemente las mejores combinaciones
 de algoritmos e hiperparámetros para la construcción de posibles soluciones.
 Se han creado varias bibliotecas que aprovechan las tecnologías de _ML_
-existentes y emplean técnicas _AutoML_ basadas en ellas, ofreciendo una
-forma óptima o semi óptima de combinar dichas tecnologías para dar solución de
+existentes para aplicar técnicas _AutoML_ y asi ofrecer una forma óptima
+o semi óptima de combinar dichas tecnologías para dar solución de
 los distintos problemas que puedan ser resueltos con las mismas.
 
 La mayoría de estas tecnologías se centran en una familia específica de
@@ -56,8 +56,7 @@ en escenarios prácticos, los investigadores necesitan combinar tecnologías de
 diferentes marcos que no siempre están diseñados para interactuar entre sí,
 por lo que, en muchos escenarios la herramienta ideal de _AutoML_ es aquella
 que sea transversal a la naturaleza del problema y, extensible y flexible para
-agregar y combinar las herramientas aunque en principio no fueran pensadas para
-trabajar juntas. Dichas características describen y define a
+agregar y combinar dichas herramientas. Esta características describen y define a
 _Automatic Generation, Optimization And Artificial Learning_ (_AutoGOAL_).
 
 _AutoGOAL_ se autodefine en su documentación oficial[4] como:
@@ -70,11 +69,11 @@ _AutoGOAL_ se autodefine en su documentación oficial[4] como:
     de todos los programas posibles"
 
 Para que el usuario pueda describir el espacio de todos los programas posibles,
-la biblioteca se apoya en un de sus submódulos principales _Grammar_. El mismo
+la biblioteca se apoya en un de sus submódulos principales, _Grammar_. El mismo
 proporciona una abstracción de lo que se define como un algoritmo y un conjunto
 de tipos (números, booleanos, etc.), para poder definir la naturaleza de los
 valores de entrada, salida e hiperparámetros de los algoritmos que formen parte
-de los distintos programas dentro del espacio de interés para un problema dado.
+del espacio de interés del usuario.
 
 Con la lista de implementaciones del usuario se infiere una gramática libre
 del contexto que describe el lenguaje de todos los potenciales programas validos
@@ -111,7 +110,7 @@ se puede definir el modelo tal cual, asignar a cada hiperparámetro la descripci
 más extensa de su dominio y en el interior del algoritmo controlar que los mismos
 cumplan con dichas reglas contextuales o de lo contrario lanzar un excepción en
 tiempo de ejecución. O por el contrario, teniendo en cuanta dichas dependencias,
-que el usuario defina un algoritmo para por cada combinación de subdominios compatibles
+que el usuario defina un algoritmo por cada combinación de subdominios compatibles
 de los hiperparámetros.
 
 En la práctica, debido a las limitaciones de la biblioteca para describir dichas
@@ -125,8 +124,8 @@ nuevo problema a resolver, el desarrollo de una herramienta capas de describir d
 la forma más expresiva y simple posible la estructura interna de los
 distintos espacios de búsqueda, las dependencias y relaciones existentes entre sus
 componentes, y con la capacidad de generar muestras, dada una descripción
-previa, de forma tal que cada uno de sus componentes, del espacio descrito,
-reajuste su domino al contexto específico del procesos generativo en cuestión.
+previa, de forma tal que cada uno de los dominio internos se reajuste al contexto
+específico del procesos generativo en cuestión.
 
 En respuesta este nuevo problema el presente documento plantea el desarrollo de una
 nueva biblioteca que cuente con todas las arquitecturas y herramientas necesarias para
@@ -144,8 +143,8 @@ Toda esta investigación y desarrollo se realizó con el objetivo de crear una
 herramienta con la que se pueda describir al detalle, en un lenguaje de alto nivel,
 los distintos espacios de búsqueda. Descripciones que debían ser,
 por las características de la biblioteca, escalables, mantenibles, expresivas,
-independientes de los procesos y algoritmos para la generación de muestras, pero a
-su vez capaz de transmitirle estos los distintos dominios dinámicos para
+independientes de los procesos y algoritmos de generación de muestras, pero a
+su vez capaz de transmitirle a estos los distintos dominios dinámicos para
 cada contextos en cuestión.
 
 Luego en un plano más generar se esperaba darle respuesta a las limitaciones
@@ -153,12 +152,16 @@ de _AutoGOAL_ que dieron lugar al problema inicial y que el resultado final sea
 de utilidad en todos aquellos escenarios donde sea de interés describir espacios
 aleatorios y generar muestras del mismo, como pueden ser los algoritmos genéticos,
 donde puede ser interesante que la descripción de la población sea lo más expresiva
-posible, o técnicas como las pruebas de propiedades, donde se prueban varias entradas
-aleatorias para un algoritmo dado y las pruebas realizadas a los resultados son
-independientes de los valores iniciales.
+posible.
 
-A continuación se describe todo el proceso de investigación y desarrollo dividido
-por secciones de la siguiente manera: ....
+El documento continua con la descripción del procesos investigativo y de desarrollo
+dividido en otros tres capítulos. Primero el _Estado del Arte_ donde se analizará
+el marco teórico en que se realizaron las implementaciones y los trabajos realizados
+en el sector hasta la fecha. Continuando con un segundo capitulo, _Propuesta de Solución_,
+donde se detalla la propuesta planteada, partido de los objetivos iniciales y como
+se cumplieron los mismo, hasta llegar al detalle de como se logró esto. Finalizando
+con el capitulo de _Evaluación_, donde apoyado en ejemplos se evidenciara la efectividad
+y expresividad de la propuesta.
 
 # Referencias
 
@@ -166,6 +169,6 @@ por secciones de la siguiente manera: ....
 
 2 - Hutter, F., Kotthoff, L., & Vanschoren, J., editors (2018). Automated Machine Learning: Methods, Systems, Challenges. Springer (doi: 10.1007/978-3-030-05318-5). Recuperado de http://link.springer.com/978-3-030-05318-5, última visita Mayo del 2022.
 
-3 - Wikipedia
+3 - Hopcroft, John E.; Ullman, Jeffrey D. (1979). Introduction to Automata Theory, Languages, and Computation (1st ed.). Addison-Wesley. ISBN 81-7808-347-7.. See Chapter 7 "Turing Machines." A book centered around the machine-interpretation of "languages", NP-Completeness, etc.
 
 4 - Sitio Oficial de la Biblioteca de Python AutoGOAL (https://autogoal.github.io), última visita Junio del 2022

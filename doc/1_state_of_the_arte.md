@@ -11,7 +11,7 @@ de _AutoML_, independientemente de la naturaleza de los mismo. La gran mayoría
 de las herramientas de sector cuentan con una espacio de búsqueda muy definido,
 normalmente determinado por el tipo de problema al que dan solución o a las
 herramientas de _ML_ subyacente. En dichos casos, usualmente, llaman "description
-del espacio de búsqueda" a la caracterización de los hyperparámetros de los
+del espacio de búsqueda" a la delimitación de los hyperparámetros de los
 distintos modelos que se incluyen en dicha definición previa
 
 Como se muestra en las investigaciones previas realizadas por [5] casi ninguna
@@ -58,10 +58,11 @@ la descripción de una serie de conceptos para su posterior explotación. Esto s
 los mismos cuenten con una ejecución separada en dos fases, que puede recordar a las
 tradicionales estabas de los programas (_compilación_ y _ejecución_), pues en un
 primer momento los desarrolladores escriben toda una serie de reglas y descripciones
-que posteriormente serán utilizadas para la ejecución del propósito final.
+que posteriormente serán utilizadas para la ejecución o ejecuciones en búsqueda de un
+propósito final.
 
 Debido al hecho de que estas herramientas, como se señalo anteriormente, representa un
-pequeño engranaje en softwares mucho mas grandes, entonces generalmente las dos fases
+pequeño engranaje en softwares mucho más grandes, entonces generalmente las dos fases
 antes descritas suele tener lugar en al momento de la ejecución del sistema como un todo.
 Por tanto depende en gran medida de las características del sistema general, el que se
 pueda pensar en estos 'componentes descriptivos' como una herramienta de dos fases o
@@ -82,7 +83,7 @@ estos _DSLs_ como _tiempo de compilación del DSL_ y _tiempo de ejecución del D
 
 Definimos el tiempo de compilación de un _DSL_ como todas las operaciones puntuales que se
 realizan para orquestar la infraestructura que dará soporte a la ejecución del objetivo
-final del mismo. Dicha infraestructura debería permanecer inmutable en su mayoría en
+final del mismo. Dicha infraestructura debería permanecer inmutable en su mayoría
 durante todos los procesos posteriores a la "compilación" del _DSL_.
 
 ### Tiempo de ejecución del _DSL_
@@ -93,7 +94,7 @@ principal.
 
 Véase por ejemplo el proceso de ejecución del módulo _Grammar_ de _AutoGOAL_, el cual es
 la componente descriptiva del sistema. En un primer momento se analizan todas las descripciones
-aportados para inferir una gramática libre del contexto que describa el espacio de todos los
+aportadas para inferir una gramática libre del contexto que describa el espacio de todos los
 programas factibles, proceso que se pudiera interpretar como la "compilación del sistema". Y
 posteriormente, de forma iterativa, se generan nuevas instancias de dicha gramática para ser
 evaluadas y realizar otras operaciones ajenas al componente descriptivo. Si se interpreta que
@@ -109,13 +110,13 @@ subyacente. Dicho lenguaje de contar con una serie de características especiale
 que permita a el autor modificar la semántica de su sintaxis original. Y aunque la gran mayoría
 de los sistemas de la actualidad que podrían estar interesados en la explotación de la solución
 propuesta están escritos en _Python_. La elección de dicho lenguaje como lenguaje subyacente
-para la implementación de la propuesta planteada no se encuentra influenciada por dicha
+para la implementación de la propuesta planteada no se encuentra influenciada solo por dicha
 situación, sino que además _Python_ cuenta con potentes y cómoda herramientas para modificar  
 la semántica de su sintaxis y desarrollar la metaprogramación.
 
 Según [14], _Python_ es un lenguaje de programación de alto nivel y de propósito general.
 Python es de tipado dinámico y fuerte, pero existen bibliotecas, como _typing_, que haciendo
-uso de la metaprogramación y otras técnicas son capaces de modificar la semántica del
+uso de la metaprogramación y otras técnicas, son capaces de modificar la semántica del
 lenguaje para ofrecer una experiencia de usuario similar a la de los lenguajes estéticamente
 tipados.
 
@@ -129,16 +130,17 @@ terminan con el doble guión bajo, entre los que se pueden citar por ejemplo; `_
 a las operaciones aritméticas y de comparación, `__call__` método que describe el comportamiento
 de un objeto cuando se intenta usar como función, `__getattribute__` o `__getitem__`
 que describen los comportamientos cuando se intenta acceder a los miembros de una clase o a
-un elemento de una lista respectivamente. La lista es extremadamente larga y crece a medida
+un indice determinado respectivamente. La lista es extremadamente larga y crece a medida
 que aparecen nuevos bibliotecas del lenguaje.
 
-[14] define el término metaprogramación como a la posibilidad de que un programa tenga conocimiento
-o se manipule a sí mismo. En _Python_ cada pequeño elemento del lenguaje representa un objeto.
-A diferencia de otros lenguajes, donde la declaración de funciones y clases no son más que
-punteros a direcciones de memoria donde se alojan sus respectivos códigos, en _Python_ cada
-definición tiene como resultado la instancia de una determinada clase que se referencia a partir
-del nombre de dicha definición y que desde el preciso momento de su definición dicha instancia
-puede ser modificada de todas las maneras que soporte el lenguaje y la semántica del contexto.
+En [14] se define el término metaprogramación como a la posibilidad de que un programa tenga
+conocimiento o se manipule a sí mismo. En _Python_ cada pequeño elemento del lenguaje
+representa un objeto. A diferencia de otros lenguajes, donde la declaración de funciones y
+clases no son más que punteros a direcciones de memoria donde se alojan sus respectivos códigos,
+en _Python_ cada definición tiene como resultado la instancia de una determinada clase que se
+referencia a partir del nombre de dicha definición y que desde el preciso momento de su
+definición dicha instancia puede ser modificada de todas las maneras que soporte el lenguaje
+y la semántica del contexto.
 
 El más popular ejemplo de lo antes expresado son los decoradores. Estos representan una de las
 cualidades de más alto nivel del paradigma funcional, las funciones de orden superior (funciones
@@ -149,21 +151,21 @@ simple donde el argumento es el objeto resultante de la definición subyacente. 
 increíble herramienta para escribir metaprogramas pues con solo una linea de código más por
 encima de una definición, ya sea de función o de clase, se puede transformar el objeto al que
 apunta el nombre de la definición que cualquier otra instancia. Esto permite por ejemplo
-simplificar la sintaxis para declarar una hierarquía de clases simple, donde la clase que hereda
-unicamente le interesa sobreescribir un método en particular, pues bastaría con decorar la
+simplificar la sintaxis para declarar una jerarquía de clases simple, donde la clase que hereda
+únicamente le interesa sobreescribir un método en particular, pues bastaría con decorar la
 una función "x" para que cuando se le intente ejecutar se cree la instancia clases "y"
 que tiene un método "z" que llama a la función "x"
 
-La más alta expresión de visión donde toda definición es la instancia de un objeto son la
-metaclases. Una metaclases es el clase que describe la naturaleza de las instancias
+La más alta expresión de esta filosofía, donde toda definición es la instancia de un objeto,
+son las metaclases. Una metaclase es el clase que describe la naturaleza de las instancias
 resultantes de la declaración de nuevas clases. El lenguaje define la metaclases básica
-**type** y brinda las herramientas necesarias para personalizar la asignación de su respectiva
-metaclases para cada clase que el usuario define. El procesos de instanciación de una nueva
-clase definida por el usuarios pasa por un pipeline de 3 "métodos mágicos" que tiene origen en
-el método \_\_call\_\_ de la instancia de su metaclase. Esto es otra gran característica para
-la flexibilización de la semántica pues por ejemplo, bajo el nombre de una misma clase, en el
-momento de crear una nueva instancia, se podrían crear la infancia adecuada de toda una jerarquía
-según las características de los parámetros iniciales.
+**type** y brinda las herramientas necesarias para crear nuevas y personalizar la asignación
+de su respectiva metaclases para cada clase que el usuario define. El procesos de instanciación
+de una nueva clase definida por el usuarios pasa por un pipeline de 3 "métodos mágicos" que
+tiene origen en el método `__call__` de la instancia de su metaclase. Esto es otra gran
+característica para la flexibilización de la semántica pues por ejemplo, bajo el nombre de una
+misma clase, en el momento de crear una nueva instancia, se podrían crear la instancia adecuada
+de toda una jerarquía según las características de los parámetros iniciales.
 
 Además la biblioteca estándar del lenguaje incluye el módulo _inspect_, que como indica [15],
 proporciona varias funciones útiles para ayudar a obtener información sobre objetos vivos
@@ -180,7 +182,7 @@ que el estado del arte respecto a la descripción de espacios de búsqueda, en e
 se encuentra concentrado en los sistemas _AutoML_ y bibliotecas de optimización, entonces se
 realizo una selección y estudio de las herramientas del sector, que contarán con algún
 mecanismo para expresar la dimension o estructura de su espacio de búsqueda. Dicha
-herramienta debía ser, un mecanismo integrado con el lenguaje de propósito general
+herramienta debía ser; un mecanismo integrado con el lenguaje de propósito general
 subyacente, en los que el objetivo final de cada descripción fuera la generación de
 muestras. El listado final quedo integrado por:
 
@@ -202,8 +204,8 @@ muestras. El listado final quedo integrado por:
   de funciones tarda mucho en completarse y es difícil de paralelizar. Y como tal define una
   sintaxis y una lista de funciones para definir los dominós de dichos hiperparámetros
 - Optuna [10]: Optuna es un marco de software de optimización automática de hiperparámetros,
-  especialmente diseñado para el aprendizaje automático. El cual define aporta una
-  infraestructura predefinida para segur la evolución de dichos hiperparámetros asi como
+  especialmente diseñado para el aprendizaje automático. El cual inyecta la instancia de una
+  clase predefinida para seguir la evolución de dichos hiperparámetros asi como
   una lista de funciones para describir las características de los mismos
 - AutoGloun [11]: Biblioteca de _AutoML_, escrita en _Python_, que permite utilizar y ampliar
   AutoML de forma sencilla, centrándose en el ensamblaje automatizado de pilas, el aprendizaje
@@ -223,11 +225,10 @@ muestras. El listado final quedo integrado por:
   la lista de modelos a explorar y sus distintos hiperparámetros
 
 Aunque la investigación realizada en [6] se enfoca más en la clasificación de DSL que
-representas proyectos más grandes que aquellos que son objetos de estudio para esta
-investigación en concreto, estudiando las clasificaciones y características que plantea
+representas proyectos más grandes que aquellos que son objeto de estudio para esta
+investigación en concreto, estudiando las clasificaciones y características que plantea,
 el autor pudo seleccionar varias que son acordes para describir el estado del arte
-de los DSL's que hasta el momento se dan la tarea de describir espacios de búsqueda
-
+de los DSL's que hasta el momento se dan la tarea de describir espacios de búsqueda.
 A continuación se enumeran y detallan las características con las que se pretende
 describir el estado y las propiedades de los trabajos realizados en el área hasta el
 momento:
@@ -238,10 +239,9 @@ momento:
   _AutoML_, pero dentro de ambos campos existen múltiples subdominios y razones por las que
   sería de interés describir un dominio determinado
 - Activo Objetivo: Nombre con el que se describe el resultado esperado por las transformaciones
-  del dsl. En los casos analizados por [6] suelen ser archivos de textos, gráficos o llamadas
+  del _DSL_. En los casos analizados por [6] suelen ser archivos de textos, gráficos o llamadas
   al sistema, pero en esta investigación el autor reinterpreto esta característica, debido a la
-  naturales del campo de investigación, pues como todos los trabajos del sector son DSL's
-  integrados en un lenguaje de propósito general los activos objetivos pasan a describir a
+  naturales del campo de investigación, y por tanto los activos objetivos pasan a describir a
   los efectos que provoca el empleo del mismo dentro de un programa, las instancias que
   genera o las modificaciones que espera conseguir
 - Integración con el Lenguaje Subyacente: Lista de herramientas y características de las
@@ -254,11 +254,11 @@ momento:
 
 - Desacoplamientos Descripción - Generación: Describe el nivel de desacoplamiento entre
   las herramientas que soportan las descripciones de los distintos espacios de búsqueda con
-  los distintos mecanismos para generar las muestras de dichas descripciones. Un diseño ideal
+  los mecanismos para generar las muestras de dichas descripciones. Un diseño ideal
   es aquel que permita para una misma definición probar varias formas de generar muestras.
 
 - Características que Conduce el Diseño: Detrás de las descripciones de los espacios de
-  busqueda existe mucho carga teórica de diversas esferas no solo la computación y el _ML_,
+  búsqueda existe mucho carga teórica de diversas esferas no solo la computación y el _ML_,
   sino que también juegan un papel importante la estadística, las probabilidades y otros muchos
   campos de las matemáticas. Para la definición de los distintos DSL's los autores se inspiraron
   en muchos de estos campos para dar expresividad a los mismo, dicha inspiración es la que se
@@ -272,15 +272,15 @@ momento:
 
 | DSL                   | Estilo de la Sintaxis Concreta | Objetivo del Sistema Subyacente                                                    | Activo Objetivo                                                                                                                                                                                                                                                                                                                                 | Integración con el Lenguaje Subyacente                                                                                                                                                                                                                                                                                       | Desacoplamientos Descripción - Generación                                                                                                                                                              | Características que Conduce el Diseño                                                                                               | Capacidad de Generación y Definición                                                                                                                                                                                                                                                      |
 | --------------------- | ------------------------------ | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AutoGOAL              | Funcional                      | AutoML, Selección de Modelos, Optimización paramétrica                             | - En tiempo de compilación: Gramática Libre del Contexto. <br />- En tiempo de ejecución: Instancia de la clase Pipeline                                                                                                                                                                                                                        | Hace uso de descripción de tipos de los parámetros y resultados de las funciones de cada clase                                                                                                                                                                                                                               | Cada uno de los tipos básicos tiene su propia definición de su mecanismo generativo                                                                                                                    | Orientado por tipos que hacen referencia a la función de la variable en cuestión dentro del problema del AutoML                     | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias salvo el Pipeline principal<br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                         |
+| AutoGOAL              | Funcional                      | AutoML, Selección de Modelos, Optimización paramétrica                             | - En tiempo de compilación: Gramática Libre del Contexto. <br />- En tiempo de ejecución: Instancia de la clase Pipeline                                                                                                                                                                                                                        | Hace uso de descripción de tipos de los parámetros y resultados de las funciones de cada clase                                                                                                                                                                                                                               | Cada uno de los tipos básicos tiene su propia definición de su mecanismo generativo                                                                                                                    | Orientado por tipos que hacen referencia a la función de la variables dentro del problema del AutoML                                | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias salvo el Pipeline principal<br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                         |
 | HyperOpt              | Funcional                      | Biblioteca de optimización paramétrica                                             | - En tiempo de compilación: Diccionario que iguala el nombre del parámetro en cuestión a su función generadora <br />- En tiempo de ejecución: Copia de dicho diccionario con las muestras generadas                                                                                                                                            | Hace uso de los diccionarios y funciones del lenguaje                                                                                                                                                                                                                                                                        | Asigna explícitamente las funciones generadoras a cada una se las variables                                                                                                                            | Orientado por las distintas distribuciones con las que se generan las muestras de las distintas variables aleatorias                | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias <br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                    |
 | Ray AI Runtime (AIR)  | Funcional                      | Marco unificado para escalar aplicaciones de IA y Python                           | - En tiempo de compilación: Diccionario que iguala el nombre del parámetro en cuestión a su función generadora <br />- En tiempo de ejecución: Copia de dicho diccionario con las muestras generadas                                                                                                                                            | Hace uso de los diccionarios y funciones del lenguaje                                                                                                                                                                                                                                                                        | Asigna explícitamente las funciones generadoras a cada una se las variables                                                                                                                            | Orientado por las distintas distribuciones con las que se generan las muestras de las distintas variables aleatorias                | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias <br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                    |
 | Chocolate             | Funcional                      | Biblioteca de optimización paramétrica                                             | - En tiempo de compilación: Diccionario que iguala el nombre del parámetro en cuestión a su función generadora <br />- En tiempo de ejecución: Copia de dicho diccionario con las muestras generadas                                                                                                                                            | Hace uso de los diccionarios y funciones del lenguaje                                                                                                                                                                                                                                                                        | Asigna explícitamente las funciones generadoras a cada una se las variables                                                                                                                            | Orientado por las distintas distribuciones con las que se generan las muestras de las distintas variables aleatorias                | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias<br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                     |
-| Optuna                | Imperativo                     | Biblioteca de optimización paramétrica                                             | - En tiempo de compilación: Orquesta la arquitectura necesaria para la optimización paramétrica. <br />- En tiempo de ejecución: Generación muestras para cada una de las variables definidas en el scope de la función                                                                                                                         | Basado en la inversión de dependencia inyecta el motor de generación a la función objetivo para que imperativamente genera las muestras necesarias                                                                                                                                                                           | Las descripciones se implementa de forma imperativa haciendo uso del scope de las funciones, las variables del lenguaje y las funciones implementadas por el generador de muestras                     | Orientado por las distintas distribuciones con las que se generan las muestras de las distintas variables aleatorias                | - Describe dependencias contextuales ordenado de forma topológica la generación de muestras <br />- Puede describir espacios de dimensiones aleatorias generando primero las dimensiones y luego las muestras <br />- Cuneta con las estructuras de control de flujo propias del lenguaje |
-| AutoGloun             | Funcional                      | AutoML, Selección de Modelos, Optimización paramétrica                             | - En tiempo de compilación: Diccionario que iguala el nombre del parámetro en cuestión a su función generadora. <br />- En tiempo de ejecución: Copia de dicho diccionario con las muestras generadas                                                                                                                                           | Hace uso de los diccionarios del lenguaje, junto a una lista de clases implementadas en el mismo                                                                                                                                                                                                                             | Cada uno de los tipos básicos tiene su propia definición de su mecanismo generativo                                                                                                                    | Orientado por tipos que hacen referencia a la función de la variable en cuestión dentro del problema del AutoML                     | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias <br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                    |
+| Optuna                | Imperativo                     | Biblioteca de optimización paramétrica                                             | - En tiempo de compilación: Orquesta la arquitectura necesaria para la optimización paramétrica. <br />- En tiempo de ejecución: Generación muestras para cada una de las variables definidas en el scope de la función                                                                                                                         | Basado en la inversión de dependencia inyecta el motor de generación a la función objetivo para que imperativamente genera las muestras necesarias                                                                                                                                                                           | Las descripciones se implementa de forma imperativa haciendo uso del scope de las funciones, las variables del lenguaje y las funciones implementadas por el generador de muestras                     | Orientado por las distintas distribuciones con las que se generan las muestras de las distintas variables aleatorias                | - Describe dependencias contextuales ordenado de forma topológica la generación de muestras <br />- Puede describir espacios de dimensiones aleatorias generando primero las dimensiones y luego las muestras <br />- Cuenta con las estructuras de control de flujo propias del lenguaje |
+| AutoGloun             | Funcional                      | AutoML, Selección de Modelos, Optimización paramétrica                             | - En tiempo de compilación: Diccionario que iguala el nombre del parámetro en cuestión a la instancia de su clase generadora. <br />- En tiempo de ejecución: Copia de dicho diccionario con las muestras generadas                                                                                                                             | Hace uso de los diccionarios del lenguaje, junto a una lista de clases implementadas en el mismo                                                                                                                                                                                                                             | Cada uno de los tipos básicos tiene su propia definición de su mecanismo generativo                                                                                                                    | Orientado por tipos que hacen referencia a la función de la variable en cuestión dentro del problema del AutoML                     | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias <br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                    |
 | AutoSklearn           | Funcional                      | AutoML, Selección de Modelos, Optimización paramétrica                             | - En tiempo de compilación: Mediante la ejecución del método estático `get_hyperparameter_search_space` se crea una instancia de la clase `ConfigurationSpace` que contiene cada una de las descripciones. <br />- En tiempo de ejecución: Instancia de clasificador personalizado al que se le inyectan las muestras como parámetros iniciales | Hace uso de los métodos estáticos del lenguaje, para instanciar cada una de las clases que describirá el espacio de los parámetros iniciales. Para enlazar dichas clases con su posición entre los parámetros del constructor usa los metadatos de la función para realizar la asignación según los nombres de las variables | Cada uno de los tipos básicos tiene su propia definición de su mecanismo generativo                                                                                                                    | Orientado por tipos que hacen referencia a la su mecanismo generativo                                                               | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias <br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                    |
 | TPOT                  | Funcional                      | AutoML, Selección de Modelos, Optimización paramétrica                             | - En tiempo de compilación: Diccionario que enumera la lista de modelos seleccionables y describe las dimensiones de sus hiperparámetros . <br />- En tiempo de ejecución: Instancia de las distintas clases que pueden formar parte del pipeline final                                                                                         | Hace uso de descripción de la sintaxis de los diccionarios del lenguaje para describir su espacio                                                                                                                                                                                                                            | No hace referencia explicita a la distribución de sus hiperparámetros                                                                                                                                  | Orientado por los nombres de los algoritmos que forman parte del procesos de selección de modelos y los tipos de sus hiperparámetro | - No puede describir dependencias contextuales<br />- No puede describir espacios de dimensiones aleatorias <br />- No cuenta con estructuras de control de flujo en sus descripciones                                                                                                    |
-| Propuesta de Solución | Funcional                      | Biblioteca para describir y generar muestras de los distintos espacios de búsqueda | - En tiempo de compilación: Instancia los mecanismo generadores y construye los AST's que describen las dependencias y relaciones internas. <br />- En tiempo de ejecución: Muestra del espacio que cumple con todas las restricciones descritas                                                                                                | Hace uso de una clase principal que con la redefinición de alguno de sus operadores permite la descripción de restricciones mediante la sintaxis de funciones lambdas del lenguaje                                                                                                                                           | Cada una de las instancias de los tipos básicos y personalizados hacen referencio al nombre de su mecanismo generador, que posteriormente puede ser mapeado a cualquier clase generadora personalizada | Orientado por tipos originales de las muestras que se generarán                                                                     | - Puede describir dependencias contextuales<br />- Puede describir espacios de dimensiones aleatorias <br />- Cuenta con estructuras de control de flujo en sus descripciones                                                                                                             |
+| Propuesta de Solución | Funcional                      | Biblioteca para describir y generar muestras de los distintos espacios de búsqueda | - En tiempo de compilación: Instancia los mecanismo generadores y construye los AST's que describen las dependencias y relaciones internas. <br />- En tiempo de ejecución: Muestra del espacio que cumple con todas las restricciones descritas                                                                                                | Hace uso de descripción de tipos de los parámetros, en las que apoyado en una clase principal con la redefinición de alguno de sus operadores permite la descripción de restricciones mediante la sintaxis de funciones lambdas del lenguaje                                                                                 | Cada una de las instancias de los tipos básicos y personalizados hacen referencio al nombre de su mecanismo generador, que posteriormente puede ser mapeado a cualquier clase generadora personalizada | Orientado por tipos originales de las muestras que se generarán                                                                     | - Puede describir dependencias contextuales<br />- Puede describir espacios de dimensiones aleatorias <br />- Cuenta con estructuras de control de flujo en sus descripciones                                                                                                             |
 
 Analizando el estado del arte mediante la comparación antes expuesta se
 resaltar varias puntos. La mayoría de las herramientas de la actualidad
@@ -309,12 +309,13 @@ Por último, se destaca el caso de la biblioteca _Optuna_ que siendo la herramie
 que se decanta por una filosofía imperativa, cuenta con mecanismo para dar respuesta
 a los problemas que dieron lugar a la presenta investigación. Pese a la flexibilidad
 y la potencia de la propuesta no es la sintaxis ideal para las descripciones, como se
-evidencia en la elección del resto de los sistemas. Las descripciones resultantes de
-estas sintaxis, pese la amplia gama de dominios maestrear, a medida que los espacios
-se complejizan las implementaciones se torna muy verbosa y relativamente poco legibles.
-Además esta en esta propuesta se resolverían todas las restricciones y dependencias
-en tiempo de ejecución, mientras que una sintaxis funcional da espacios a realizar
-múltiples optimizaciones para minimizar el computo en tiempo de ejecución.
+evidencia en la elección del resto de los sistemas que se decantan por el paradigma
+funcional. Las descripciones resultantes de estas sintaxis, pese la amplia gama de
+dominios que puede generar, a medida que los espacios se complejizan las implementaciones
+se torna muy verbosa y relativamente poco legibles. Además esta en esta propuesta se
+resolverían todas las restricciones y dependencias en tiempo de ejecución, mientras
+que una sintaxis funcional da espacios a realizar múltiples optimizaciones para
+minimizar el computo en tiempo de ejecución.
 
 # Referencias
 
