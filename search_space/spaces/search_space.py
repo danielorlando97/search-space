@@ -1,3 +1,4 @@
+from copy import copy
 from typing import List
 from . import ast
 from search_space.sampler import SamplerFactory, Sampler
@@ -52,10 +53,11 @@ class BasicSearchSpace(ast.SelfNode):
         """
         """
 
+        ast = ast_constraint.AstRoot([])
+
         if type(ast_list) == type(ast_constraint.AstRoot([])):
-            ast = ast_list
+            temp_ast = ast_list
         else:
-            ast = ast_constraint.AstRoot([])
 
             if callable(ast_list):
                 ast_list = [ast_list]
@@ -65,15 +67,17 @@ class BasicSearchSpace(ast.SelfNode):
                 new_ast = self.__build_constraint__(func)
                 temp_ast.add_constraint(new_ast)
 
-            for new_ast in temp_ast.asts:
-                new_ast = ast_constraint.AstRoot([new_ast])
-                try:
-                    self.initial_domain, _ = self.__domain_optimization__(
-                        self.initial_domain, new_ast)
-
-                    self._clean_asts.add_constraint(new_ast.asts)
-                except DetectedRuntimeDependency:
-                    ast.add_constraint(new_ast.asts)
+        for new_ast in temp_ast.asts:
+            opt_ast = ast_constraint.AstRoot([new_ast])
+            new_ast = ast_constraint.AstRoot([new_ast])
+            try:
+                for _domain, _ast in self.__domain_optimization__(self.initial_domain, new_ast):
+                    self.initial_domain, opt_ast = _domain, _ast
+                self._clean_asts.add_constraint(opt_ast.asts)
+            except DetectedRuntimeDependency:
+                ast.add_constraint(opt_ast.asts)
+            except NotEvaluateError:
+                pass
 
         if len(ast.asts) > 0:
             return self.__advance_space__(ast)
@@ -102,7 +106,7 @@ class BasicSearchSpace(ast.SelfNode):
             ast_result, domain = visitor.domain_optimization(
                 ast_result, domain)
 
-        return domain, ast_result
+            yield domain, ast_result
 
     def __advance_space__(self, ast):
         return SearchSpace(
@@ -146,7 +150,7 @@ class BasicSearchSpace(ast.SelfNode):
                 context.registry_sampler(self, sample)
                 return sample, context
 
-            except InvalidSampler:
+            except InvalidSampler as e:
                 pass
 
     def __domain_filter__(self, domain, context):
@@ -167,6 +171,7 @@ class SearchSpace(BasicSearchSpace):
         self._clean_asts: ast_constraint.AstRoot = clean_asts
 
     def __domain_filter__(self, domain, context):
+        domain = copy(domain)
         ast_result = self.ast_constraint
         for visitor in reversed(self.visitor_layers):
             if not visitor.do_transform_to_modifier:

@@ -50,7 +50,7 @@ class SamplerContext:
         self.context[search_space] = value
 
     def registry_init_sampler_process(self, search_space):
-        self.context[search_space] = True
+        self.sampling_status[search_space] = True
 
     def check_sampling_status(self, search_space):
         try:

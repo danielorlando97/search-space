@@ -7,6 +7,9 @@ class NaturalDomain:
     def __init__(self, _min, _max) -> None:
         self.min, self.max = _min, _max
 
+    def __copy__(self):
+        return NaturalDomain(self.min, self.max)
+
     def get_sample(self, sampler: Sampler):
         return sampler.get_int(self.min, self.max)
 

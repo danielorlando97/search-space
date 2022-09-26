@@ -1,4 +1,4 @@
-from search_space.errors import CircularDependencyDetected, NotEvaluateError
+from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError
 from search_space.utils.singleton import Singleton
 from . import ast
 from search_space.utils import visitor
@@ -13,23 +13,28 @@ class IndexAstModifierVisitor(VisitorLayer):
         self.space = space
         self.index_solution = IndexSolutionVisitor()
 
+    def domain_optimization(self, node, domain):
+        self.context = None
+        return self.visit(node), domain
+
     def transform_to_modifier(self, node, domain=None, context=None):
+        self.context = context
         return self.visit(node, context=context), domain
 
     def transform_to_check_sample(self, node, sample, context=None):
+        self.context = context
         return self.visit(node, context=context)
 
     @visitor.on("node")
-    def visit(self, node, current_index=[], context=None):
+    def visit(self, node, current_index=[]):
         pass
 
     @visitor.when(ast.AstRoot)
-    def visit(self, node, current_index=[], context=None):
-        result = ast.AstRoot()
+    def visit(self, node, current_index=[]):
+        result = ast.AstRoot([])
 
         for n in node.asts:
-            result.add_constraint(
-                self.visit(n, [], context=context))
+            result.add_constraint(self.visit(n, []))
 
         return result
 
@@ -40,11 +45,9 @@ class IndexAstModifierVisitor(VisitorLayer):
     #################################################################
 
     @visitor.when(ast.UniversalVariableBinaryOperation)
-    def visit(self, node, current_index, context):
-        a = self.visit(
-            node.target, current_index, context=context)
-        b = self.visit(
-            node.other, current_index, context=context)
+    def visit(self, node, current_index):
+        a = self.visit(node.target, current_index)
+        b = self.visit(node.other, current_index)
 
         return type.__call__(node.__class__, a, b)
 
@@ -56,20 +59,23 @@ class IndexAstModifierVisitor(VisitorLayer):
 
 # TODO: refactor to x[(i, j)]
     @visitor.when(ast.GetItem)
-    def visit(self, node, current_index, context):
-        index = self.visit(node.other, current_index, context)
-        return self.visit(node.target, [index.target] + current_index, context)
+    def visit(self, node, current_index):
+        index = self.visit(node.other, current_index)
+        return self.visit(node.target, [index.target] + current_index)
 
     @visitor.when(ast.SelfNode)
-    def visit(self, node, current_index, context):
+    def visit(self, node, current_index):
         if len(current_index) == 0:
-            return node
+            return ast.NotEvaluate()
 
         if tuple(current_index) == self.current_index:
             return node
 
         try:
-            value = self.space[current_index].get_sample(context=context)
+            if self.context is None:
+                return ast.NaturalValue(self.space[current_index])
+
+            value = self.space[current_index].get_sample(context=self.context)
         except NotEvaluateError:
             return ast.NotEvaluate()
         except CircularDependencyDetected:
@@ -78,10 +84,10 @@ class IndexAstModifierVisitor(VisitorLayer):
         return ast.NaturalValue(value)
 
     @visitor.when(ast.NaturalValue)
-    def visit(self, node, current_index, context):
+    def visit(self, node, current_index):
         if isinstance(node.target, ast_index.IndexNode):
             result = self.index_solution.visit(
-                self.current_index, node.target, context)
+                self.current_index, node.target, self.context)
             if type(result) == type(bool()):
                 return ast.NaturalValue(self.current_index[-len(current_index) - 1])
             else:
@@ -100,6 +106,7 @@ class IndexAstModifierVisitor(VisitorLayer):
 
 
 class IndexSolutionVisitor(metaclass=Singleton):
+
     @visitor.on("node")
     def visit(self, index, node, context):
         pass
@@ -123,10 +130,14 @@ class IndexSolutionVisitor(metaclass=Singleton):
 
     @visitor.when(ast_index.NaturalValue)
     def visit(self, index, node: ast_index.NaturalValue, context):
-        try:
+
+        if hasattr(node.target, 'get_sample'):
+            if context is None:
+                raise DetectedRuntimeDependency()
+
             return node.target.get_sample(context=context)[0]
-        except AttributeError:
-            return node.target
+
+        return node.target
 
     #################################################################
     #                                                               #

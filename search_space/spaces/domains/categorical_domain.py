@@ -8,6 +8,9 @@ class CategoricalDomain:
         self.list = _list
         self.maps = []
 
+    def __copy__(self):
+        return CategoricalDomain(self.list)
+
     def get_sample(self, sampler: Sampler):
         return sampler.choice(self.list)
 
