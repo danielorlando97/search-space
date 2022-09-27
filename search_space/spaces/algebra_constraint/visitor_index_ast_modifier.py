@@ -19,7 +19,7 @@ class IndexAstModifierVisitor(VisitorLayer):
 
     def transform_to_modifier(self, node, domain=None, context=None):
         self.context = context
-        return self.visit(node, context=context), domain
+        return self.visit(node), domain
 
     def transform_to_check_sample(self, node, sample, context=None):
         self.context = context
@@ -34,7 +34,7 @@ class IndexAstModifierVisitor(VisitorLayer):
         result = ast.AstRoot([])
 
         for n in node.asts:
-            result.add_constraint(self.visit(n, []))
+            result.add_constraint(self.visit(n, None))
 
         return result
 
@@ -60,11 +60,15 @@ class IndexAstModifierVisitor(VisitorLayer):
 # TODO: refactor to x[(i, j)]
     @visitor.when(ast.GetItem)
     def visit(self, node, current_index):
+        current_index = [] if current_index is None else current_index
         index = self.visit(node.other, current_index)
         return self.visit(node.target, [index.target] + current_index)
 
     @visitor.when(ast.SelfNode)
     def visit(self, node, current_index):
+        if current_index is None:
+            return node
+
         if len(current_index) == 0:
             return ast.NotEvaluate()
 

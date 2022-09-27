@@ -1,4 +1,4 @@
-from search_space.errors import DetectedRuntimeDependency, NotEvaluateError
+from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError
 from search_space.utils import visitor
 from search_space.spaces.algebra_constraint import ast
 from search_space.spaces.algebra_constraint.functions_and_predicates import FunctionNode, AdvancedFunctionNode
@@ -81,6 +81,13 @@ class DomainModifierVisitor(VisitorLayer):
         limit = self.visit(node.other)
 
         self.domain = self.domain != limit
+
+    @visitor.when(ast.EqualOp)
+    def visit(self, node):
+        _ = self.visit(node.target)
+        limit = self.visit(node.other)
+
+        self.domain = self.domain == limit
 
     #################################################################
     #                                                               #

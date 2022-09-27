@@ -63,8 +63,12 @@ class TensorSearchSpace(BasicSearchSpace):
                 f"shape error, the index {index} in dimension {self._current_shape}")
 
         for i, shape in zip(index, self._current_shape):
-            if i >= shape:
-                raise NotEvaluateError()
+            try:
+                if i < 0 or i >= shape:
+                    raise NotEvaluateError()
+            except TypeError:
+                if i.start < 0 or i.stop >= shape:
+                    raise NotEvaluateError()
 
     def __getitem__(self, index):
         self._check_limits(index)
@@ -77,7 +81,7 @@ class TensorSearchSpace(BasicSearchSpace):
         except KeyError:
             self.samplers[index] = copy(self.type_space)
             self.samplers[index].visitor_layers += [
-                # visitors.EvalAstChecked(),
+                visitors.EvalAstChecked(),
                 visitors.IndexAstModifierVisitor(self, index)
             ]
             self.samplers[index].__ast_optimization__(self.ast_constraint)

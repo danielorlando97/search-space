@@ -114,7 +114,8 @@ class BasicSearchSpace(ast.SelfNode):
             distribute_like=self.__distribute_like__,
             sampler=self._distribution,
             ast=ast,
-            clean_asts=self._clean_asts
+            clean_asts=self._clean_asts,
+            layers=self.visitor_layers
         )
 
     #################################################################
@@ -165,10 +166,11 @@ class BasicSearchSpace(ast.SelfNode):
 
 class SearchSpace(BasicSearchSpace):
 
-    def __init__(self, domain, distribute_like, sampler, ast, clean_asts) -> None:
+    def __init__(self, domain, distribute_like, sampler, ast, clean_asts, layers) -> None:
         super().__init__(domain, distribute_like, sampler)
         self.ast_constraint: ast_constraint.AstRoot = ast
         self._clean_asts: ast_constraint.AstRoot = clean_asts
+        self.visitor_layers = layers
 
     def __domain_filter__(self, domain, context):
         domain = copy(domain)
