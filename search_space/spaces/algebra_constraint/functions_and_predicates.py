@@ -11,7 +11,7 @@ class FunctionNode(UniversalVariableNode):
 
 class AdvancedFunctionNode(FunctionNode):
     def __init__(self, target, func, args, kwargs, cls=None) -> None:
-        super().__init__(cls, func, args, kwargs)
+        super().__init__(func, args, kwargs)
         self.cls = cls
         self.args_target, self.kw_target = target
 

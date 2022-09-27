@@ -18,6 +18,15 @@ class TensorIndexPointer:
         return self.tensor.samplers[self.index].get_sample(context, local_domain)
 
 
+class TensorSlicePointer:
+    def __init__(self, index, tensor) -> None:
+        self.index = index
+        self.tensor: TensorSearchSpace = tensor
+
+    def get_sample(self, context=None, local_domain=None):
+        return self.tensor.samplers[self.index].get_sample(context, local_domain)
+
+
 class TensorSearchSpace(BasicSearchSpace):
 
     #################################################################
@@ -70,12 +79,7 @@ class TensorSearchSpace(BasicSearchSpace):
                 if i.start < 0 or i.stop >= shape:
                     raise NotEvaluateError()
 
-    def __getitem__(self, index):
-        self._check_limits(index)
-
-        if type(index) == type(list()):
-            index = tuple(index)
-
+    def _create_sampler_by_index(self, index):
         try:
             self.samplers[index]
         except KeyError:
@@ -86,13 +90,41 @@ class TensorSearchSpace(BasicSearchSpace):
             ]
             self.samplers[index].__ast_optimization__(self.ast_constraint)
 
-        return TensorIndexPointer(index, self)
+    def _flatter_index(self, index, i=0, result=[]):
+        if i >= len(index):
+            self._create_sampler_by_index(result)
+            return tuple(result)
+
+        if isinstance(i, int):
+            return self._flatter_index(index, i + 1, result + [i])
+
+        response = []
+        for j in range(*index[i].indices(self._current_shape[i])):
+            response.append(self._flatter_index(index, i + 1, result + [j]))
+
+        return response
+
+    def __getitem__(self, index):
+        self._check_limits(index)
+        if type(index) == type(list()):
+            index = tuple(index)
+
+        for i in index:
+            if isinstance(i, slice):
+                break
+        else:
+            self._create_sampler_by_index(index)
+            return TensorIndexPointer(index, self)
+
+        flatter_index = self._flatter_index(index)
+        return TensorSlicePointer(flatter_index, self)
 
     #################################################################
     #                                                               #
     #                     Ast Optimization                          #
     #                                                               #
     #################################################################
+
     def __domain_optimization__(self, domain, ast_result):
         raise DetectedRuntimeDependency()
 

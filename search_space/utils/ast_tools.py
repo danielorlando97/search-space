@@ -35,3 +35,12 @@ def check_params_type(typ_fun, class_fun):
             return func(*new_args, **kws)
         return f
     return ff
+
+
+def index_list(shape):
+    dp = [[i] for i in range(shape[0])]
+
+    for dim in range(1, len(shape)):
+        dp = [current_index + [i] for current_index in dp for i in range(dim)]
+
+    return dp

@@ -1,8 +1,10 @@
+from random import sample
 from token import EXACT_TOKEN_TYPES
 from search_space.spaces.algebra_constraint.visitor_index_ast_modifier import IndexSolutionVisitor
 from search_space.utils import visitor
 from search_space.spaces.algebra_constraint import ast
 from search_space.errors import InvalidSampler, NotEvaluateError
+from search_space.utils.ast_tools import index_list
 from . import VisitorLayer
 from search_space.utils.singleton import Singleton
 from search_space.spaces.algebra_constraint.functions_and_predicates import FunctionNode, AdvancedFunctionNode
@@ -127,7 +129,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             raise NotEvaluateError()
         except TypeError:
             raise InvalidSampler(
-                f"inconsistent sampler => {a} isn't indexed")
+                f"inconsistent sampler => sample isn't indexed")
 
     @ visitor.when(ast.NaturalValue)
     def visit(self, node, current_index=[]):
@@ -157,3 +159,58 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             new_kw[name] = self.visit(arg)
 
         return node.func(*new_args, **new_kw)
+
+
+class SimpleIndexChecker:
+    def __init__(self, sample, context) -> None:
+        self.sample = sample
+        self.index_node = []
+        self.index_solution = IndexSolutionVisitor()
+        self.dim = ()
+        self.index_list = []
+        self._maps = []
+        self.context = context
+
+    def add_dim(self, node):
+        self.index_node.append(node)
+
+        pivot, self.dim = self.sample, []
+        for i in range(len(self.index_node)):
+            pivot, value = pivot[0], len(pivot)
+            self.dim.append(value)
+
+    def __iter__(self):
+        if len(self.index_node) > self.dim:
+
+            self.index_list = index_list(self.dim)
+        return self.index_list.__iter__()
+
+    def __cmp_value__(self, index):
+        result = [self.sample]
+        for i in index:
+            ii = self.index_solution.visit(
+                index, self.index_node[i], self.context)
+
+            for
+            result = result[i]
+
+        for f in self._maps:
+            result = f(result)
+
+        return [result]
+
+    def __op_exec__(self, other, predicate):
+        for index in self:
+            try:
+                values = other.__cmp_value__(index)
+            except AttributeError:
+                values = [other]
+
+            for current_value in self.__cmp_value__(index):
+                for other_value in values:
+                    if not predicate(current_value, other_value):
+                        return False
+        return True
+
+    def __eq__(self, __o: object) -> bool:
+        return self.__op_exec__(__o, lambda c, o: c == o)
