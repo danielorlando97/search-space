@@ -8,28 +8,30 @@
 
 ## Resumen
 
-_AutoGOAL_ es uno de las bibliotecas del estado del arte que analiza la
-problemática del AutoML. Esta se distingue del resto pues su elección
-y diseño de la estrategia de búsqueda, _Evolución Gramatical Probabilística_
-(**Probabilistic Grammatical Evolution**, **PGE**), le permite ser
-independiente a la naturaleza del problema.
+_AutoGOAL_ es una de las bibliotecas del estado del arte que analiza la
+problemática del AutoML. Esta se distingue del resto por ser transversal
+a la naturaleza del problema, característica que es consecuencia directa
+de su elección y diseño de la estrategia de búsqueda,
+_Evolución Gramatical Probabilística_
+(**Probabilistic Grammatical Evolution**, **PGE**).
 
-**PGE** requiere de la definición previa de una gramática, sobre la cual
-realizar el procesos de búsqueda y optimización, por tanto la biblioteca
-puede analizar todos los problemas cuyo espacio de búsqueda pueda ser
-expresada como una de dichas gramáticas. Las herramientas existentes
-previas al desarrollo de la presente tesis se limitaban a la definición e
-inferencia de gramáticas libres del contexto
+**PGE** realiza el proceso de búsqueda y optimización a partir de una
+gramática previamente definida. Por tanto, mientras mejor sea la
+capacidad de la biblioteca para describir espacios de búsqueda y generar
+sus respectivas gramáticas, más amplio será el conjunto de los problemas
+que esta podrá intentar resolver. Las herramientas existentes previas al
+desarrollo de la presente tesis se limitaban a la definición e inferencia
+de gramáticas libres del contexto
 
-Este documento define una serie de políticas y reglas para ampliar el poder
-descriptivo de herramientas como _AutoGOAL_ hasta la generación de gramáticas
-sensibles al contextos sin dependencias circulares. Como resultado del
-procesos investigativo se desarrollo una nueva biblioteca con la implementación
-de las pautas antes mencionadas, dando lugar a la definición de un **DSL**
-(_Lenguaje de Dominio Específico_,_Domain Specific Language_ ) capas de
-describir, con una filosofía _Bottom-Up_, la composición de los distintos
-espacios de búsqueda y las diferentes dependencias entre los componentes
-del mismo, para posteriormente generar muestras de este
+En este documento se presenta una nueva herramienta, que al integrarse con
+_AutoGOAL_ podría ampliar el poder descriptivo de este hasta la
+generación de gramáticas sensibles al contextos sin dependencias circulares.
+Dicha nueva biblioteca define un **DSL**
+(_Lenguaje de Dominio Específico_,_Domain Specific Language_ ) capaz de
+describir, con una filosofía _Bottom-Up_, la composición de los
+espacios de búsqueda y las relaciones y restricciones entre sus
+componentes internos, para posteriormente generar muestras apoyándose en  
+dichas descripciones
 
 ## Introducción
 
@@ -37,26 +39,27 @@ El _aprendizaje automático_ (_machine learning_, ML) es uno de los más famosos
 y poderosos campos de la inteligencia artificial. Sin embargo, es un campo
 donde el tiempo de aprendizaje e investigación es muy superior al de desarrollo
 y donde la experiencia de los investigadores juega un papel fundamental tanto
-en los resultados finales como de la efectividad del procesos investigativo.
+en los resultados finales como en la efectividad del procesos investigativo.
 
-El _AutoML_ (_Automated Machine Learning_), según [2], es un campo de investigación
+_AutoML_ (_Automated Machine Learning_), según [2], es un campo de investigación
 que persigue la automatización incremental de todas las fases del desarrollo
 de aplicaciones de aprendizaje automático. A diferencia del proceso de diseño
-manual, el _AutoML_ permite explorar inteligentemente las mejores combinaciones
+manual, _AutoML_ permite explorar inteligentemente las mejores combinaciones
 de algoritmos e hiperparámetros para la construcción de posibles soluciones.
+
 Se han creado varias bibliotecas que aprovechan las tecnologías de _ML_
 existentes para aplicar técnicas _AutoML_ y asi ofrecer una forma óptima
-o semi óptima de combinar dichas tecnologías para dar solución de
-los distintos problemas que puedan ser resueltos con las mismas.
-
-La mayoría de estas tecnologías se centran en una familia específica de
-algoritmos (como las redes neuronales) o en un entorno de problema específico
-(como el aprendizaje supervisado a partir de datos tabulares). Sin embargo,
-en escenarios prácticos, los investigadores necesitan combinar tecnologías de
-diferentes marcos que no siempre están diseñados para interactuar entre sí,
-por lo que, en muchos escenarios la herramienta ideal de _AutoML_ es aquella
-que sea transversal a la naturaleza del problema y, extensible y flexible para
-agregar y combinar dichas herramientas. Esta características describen y define a
+o semi óptima de combinar dichas tecnologías para dar solución a
+los problemas que puedan ser resueltos con las mismas. La mayoría de dichas  
+herramientas se centran en una familia específica de algoritmos (como las
+redes neuronales) o en un entorno de problema específico (como el
+aprendizaje supervisado a partir de datos tabulares). Sin embargo, en
+escenarios prácticos, los investigadores necesitan combinar tecnologías de
+diferentes marcos que no siempre están diseñados para interactuar entre sí.
+En muchos escenarios la herramienta ideal de _AutoML_ es aquella que sea
+transversal a la naturaleza del problema, flexible para combinar herramientas
+en principio incompatibles y extensible para agregar nuevas tecnologías o
+implementaciones propias. Estas características describen y definen a
 _Automatic Generation, Optimization And Artificial Learning_ (_AutoGOAL_).
 
 _AutoGOAL_ se autodefine en su documentación oficial[4] como:
@@ -75,25 +78,23 @@ de tipos (números, booleanos, etc.), para poder definir la naturaleza de los
 valores de entrada, salida e hiperparámetros de los algoritmos que formen parte
 del espacio de interés del usuario.
 
-Con la lista de implementaciones del usuario se infiere una gramática libre
+Con la lista de descripciones del usuario se infiere una gramática libre
 del contexto que describe el lenguaje de todos los potenciales programas validos
-que se pueden construir anidando los algoritmos aportados. Gracias a toda esta
-ingeniería de tipos y las interfaces que se brindan para describir el espacio
-de búsqueda, al momento de inferir la gramática se puedan analizar
-los tipos de entrada y salida de todos los algoritmos y asi excluir
-los programas donde se intente secuenciar dos implementaciones tales que
+que se pueden construir combinando los algoritmos aportados. Al momento de inferir
+la gramática se analizan los tipos de entrada y salida de todos los algoritmos y se
+excluyen los programas donde se intente secuenciar dos implementaciones tales que
 la salida de una no sea consistente con la entrada de la siguiente. De esta
 manera se logra descarta una gran cantidad de secuencias invalidas, incluso
 antes de empezar a buscar, pero como se puede ver en los resultados de [1]
 todavía quedan algunas instancias invalidas.
 
-En muchos problemas las instancias invalidad en una ejecución de _AutoGOAL_
-se pueden deber a parámetros iniciales de la ejecución, como tiempo de espera o
-capacidad de memoria, dichas instancias al intentar ejecutarse superan los límites
-prefijados y automáticamente son descartadas. Como para la biblioteca un algoritmo
-es una función de la cual solo conoce sus tipos de entrada y salida, prever el
-fallo de las instancias antes descritas previo a su ejecución, es equiva- \
-lente al _Halting Problem_, problema que _Alan Turing_ demostró en 1936 que es
+En muchos casos las instancias invalidas son consecuencias de los
+parámetros iniciales de la búsqueda, como el tiempo de espera o la capacidad de memoria.
+En estos casos durante la ejecución de la instancia en cuestión se superan los límites
+prefijados y automáticamente es descartada como posible solución. Como para la
+biblioteca un algoritmo es una función de la cual solo conoce sus tipos de entrada y
+salida, prever el fallo de las instancias antes descritas previo a su ejecución,
+es equivalente al _Halting Problem_, problema que _Alan Turing_ demostró en 1936 que es
 indecidible en una máquinas de _Turing_ [3].
 
 Sin embargo existe otro conjunto de instancias invalidas relacionadas a la validez y
@@ -120,18 +121,18 @@ ser bastante tediosos y poco escalable. Provocando consigo una dilatación del
 tiempo de ejecución de _AutoGOAL_.
 
 Dichas limitaciones dieron lugar a que los autores de la biblioteca propusieran
-nuevo problema a resolver, el desarrollo de una herramienta capas de describir de
+nuevo problema a resolver, el desarrollo de una herramienta capaz de describir de
 la forma más expresiva y simple posible la estructura interna de los
 distintos espacios de búsqueda, las dependencias y relaciones existentes entre sus
 componentes, y con la capacidad de generar muestras, dada una descripción
 previa, de forma tal que cada uno de los dominio internos se reajuste al contexto
 específico del procesos generativo en cuestión.
 
-En respuesta este nuevo problema el presente documento plantea el desarrollo de una
+En respuesta a este nuevo problema el presente documento plantea el desarrollo de una
 nueva biblioteca que cuente con todas las arquitecturas y herramientas necesarias para
-crear un _DSL_ capas de describir los distintos espacios de búsquedas bajo una
-filosofía _"de abajo a arriba"_ (_Bottom-Up_), mediante el cual apoyado en la definición
-de algunos tipos básicos el usuario pueda ser capas de componer la estructura interna de
+crear un _DSL_ capaz de describir los distintos espacios de búsquedas bajo una
+filosofía _"de abajo hacia arriba"_ (_Bottom-Up_), mediante el cual apoyado en la definición
+de algunos tipos básicos el usuario pueda ser capaz de componer la estructura interna de
 su espacio de interés. Dicha herramienta cuenta además con una sintaxis, inspirado en el
 paradigma funcional, para declararles restricciones y relaciones a cada uno de los
 distintos subespacios, declaraciones que dan lugar a la definición de varios _AST's_
@@ -140,28 +141,25 @@ visitados al momento del muestreo, para acotar los distintos subdominos y valida
 uno de las selecciones internas.
 
 Toda esta investigación y desarrollo se realizó con el objetivo de crear una
-herramienta con la que se pueda describir al detalle, en un lenguaje de alto nivel,
+herramienta con la que se pueda describir detalladamente, en un lenguaje de alto nivel,
 los distintos espacios de búsqueda. Descripciones que debían ser,
 por las características de la biblioteca, escalables, mantenibles, expresivas,
 independientes de los procesos y algoritmos de generación de muestras, pero a
 su vez capaz de transmitirle a estos los distintos dominios dinámicos para
 cada contextos en cuestión.
 
-Luego en un plano más generar se esperaba darle respuesta a las limitaciones
+Luego en un plano más general se esperaba darle respuesta a las limitaciones
 de _AutoGOAL_ que dieron lugar al problema inicial y que el resultado final sea
 de utilidad en todos aquellos escenarios donde sea de interés describir espacios
 aleatorios y generar muestras del mismo, como pueden ser los algoritmos genéticos,
 donde puede ser interesante que la descripción de la población sea lo más expresiva
 posible.
 
-El documento continua con la descripción del procesos investigativo y de desarrollo
-dividido en otros tres capítulos. Primero el _Estado del Arte_ donde se analizará
+El documento esta organizado en tres capítulos. Un primer capítulo donde se analiza
 el marco teórico en que se realizaron las implementaciones y los trabajos realizados
-en el sector hasta la fecha. Continuando con un segundo capitulo, _Propuesta de Solución_,
-donde se detalla la propuesta planteada, partido de los objetivos iniciales y como
-se cumplieron los mismo, hasta llegar al detalle de como se logró esto. Finalizando
-con el capitulo de _Evaluación_, donde apoyado en ejemplos se evidenciara la efectividad
-y expresividad de la propuesta.
+en el sector hasta la fecha. Otro donde se detalla la propuesta, objetivos, alcance e
+implementación. Y por último un capítulo donde apoyado en ejemplos se evidenciara
+la efectividad y expresividad de la propuesta.
 
 # Referencias
 
