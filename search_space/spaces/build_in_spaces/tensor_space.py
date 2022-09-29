@@ -3,22 +3,41 @@ from search_space.errors import DetectedRuntimeDependency, InvalidSampler, Inval
 from search_space.spaces import BasicSearchSpace
 from copy import copy
 from search_space.spaces.algebra_constraint import visitors
-from .numeral_space import NaturalSearchSpace
-from search_space.spaces.algebra_constraint import ast_index
 from search_space.spaces.algebra_constraint import ast as ast_constraint
 # TODO: check space types
 
 
-class TensorIndexPointer:
+class TensorSlicePointer:
+
     def __init__(self, index, tensor) -> None:
         self.index = index
         self.tensor: TensorSearchSpace = tensor
 
     def get_sample(self, context=None, local_domain=None):
-        return self.tensor.samplers[self.index].get_sample(context, local_domain)
+        if context is None:
+            context = SamplerContext()
+
+        sample = self._sample(context, local_domain, self.index)
+        context.registry_sampler(self, sample)
+
+        return sample, context
+
+    def _sample(self, context, local_domain, index):
+        if type(index) == type(tuple()):
+            return self.tensor.samplers[index].get_sample(context, local_domain)[0]
+
+        result = []
+        for item in index:
+            result.append(self._sample(context, local_domain, item))
+
+        return result
+
+    def __hash__(self) -> int:
+        return id(self)
 
 
-class TensorSlicePointer:
+class TensorIndexPointer:
+
     def __init__(self, index, tensor) -> None:
         self.index = index
         self.tensor: TensorSearchSpace = tensor
@@ -92,11 +111,12 @@ class TensorSearchSpace(BasicSearchSpace):
 
     def _flatter_index(self, index, i=0, result=[]):
         if i >= len(index):
+            result = tuple(result)
             self._create_sampler_by_index(result)
-            return tuple(result)
+            return result
 
-        if isinstance(i, int):
-            return self._flatter_index(index, i + 1, result + [i])
+        if isinstance(index[i], int):
+            return self._flatter_index(index, i + 1, result + tuple(index[i]))
 
         response = []
         for j in range(*index[i].indices(self._current_shape[i])):
@@ -164,13 +184,16 @@ class TensorSearchSpace(BasicSearchSpace):
     def __domain_filter__(self, domain, context):
         return domain, self.ast_constraint
 
+    # TODO: Check list
+
     def __check_sample__(self, sample, ast_result, context):
-        self.iter_virtual_list(
-            self._current_shape, [],
-            lambda index: visitors.ValidateSampler().check_sample_by_index(
-                ast_result, sample, context, index
-            )
-        )
+        return sample
+        # self.iter_virtual_list(
+        #     self._current_shape, [],
+        #     lambda index: visitors.ValidateSampler().check_sample_by_index(
+        #         ast_result, sample, context, index
+        #     )
+        # )
 
     def __check_index__(self, index):
         for i, size in enumerate(self._current_shape):

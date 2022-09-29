@@ -1,4 +1,6 @@
+from threading import currentThread
 from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError
+from search_space.spaces.algebra_constraint.functions_and_predicates import FunctionNode
 from search_space.utils.singleton import Singleton
 from . import ast
 from search_space.utils import visitor
@@ -87,26 +89,43 @@ class IndexAstModifierVisitor(VisitorLayer):
 
         return ast.NaturalValue(value)
 
+    def _index_solution(self, target, current_index):
+        if not isinstance(target, ast_index.IndexNode):
+            return target
+
+        result = self.index_solution.visit(
+            self.current_index, target, self.context)
+
+        if type(result) == type(bool()):
+            return self.current_index[-len(current_index) - 1]
+
+        return result
+
     @visitor.when(ast.NaturalValue)
     def visit(self, node, current_index):
-        if isinstance(node.target, ast_index.IndexNode):
-            result = self.index_solution.visit(
-                self.current_index, node.target, self.context)
-            if type(result) == type(bool()):
-                return ast.NaturalValue(self.current_index[-len(current_index) - 1])
-            else:
-                return ast.NaturalValue(result)
 
-        # if not any(current_index):
-        #     return node
+        if isinstance(node.target, slice):
+            start, stop, steep = (
+                self._index_solution(node.target.start, current_index),
+                self._index_solution(node.target.stop, current_index),
+                self._index_solution(node.target.step, current_index)
+            )
 
-        # try:
-        #     return ast.NaturalValue(self.space.__get_index__(current_index, self.context))
-        # except AttributeError:
-        #     for i in reversed(current_index):
-        #         node.target = node.target[i]
+            return ast.NaturalValue(slice(start, stop, steep))
 
-        return node
+        return ast.NaturalValue(self._index_solution(node.target, current_index))
+
+    @visitor.when(FunctionNode)
+    def visit(self, node: FunctionNode, current_index):
+        new_args = []
+        for arg in node.args:
+            new_args.append(self.visit(arg, current_index))
+
+        new_kw = {}
+        for name, arg in node.kwargs:
+            new_kw[name] = self.visit(arg, current_index)
+
+        return FunctionNode(node.func, new_args, new_kw)
 
 
 class IndexSolutionVisitor(metaclass=Singleton):

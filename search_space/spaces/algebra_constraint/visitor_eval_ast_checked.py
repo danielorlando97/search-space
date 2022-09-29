@@ -1,5 +1,7 @@
+from secrets import choice
 from token import EXACT_TOKEN_TYPES
 from search_space.errors import CircularDependencyDetected, InvalidSpaceDefinition, NotEvaluateError
+from search_space.spaces.algebra_constraint.functions_and_predicates import FunctionNode
 from search_space.utils.singleton import Singleton
 from . import ast
 from search_space.utils import visitor
@@ -87,6 +89,24 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
     def visit(self, node):
         return self.visit(node.target)
 
+    @visitor.when(FunctionNode)
+    def visit(self, node: FunctionNode):
+        tag_set = set()
+        for arg in node.args:
+            tag_set.add(self.visit(arg))
+
+        for name, arg in node.kwargs:
+            tag_set.add(self.visit(arg))
+
+        if (
+            len(tag_set) == 3
+            or self.SELF in tag_set
+            or self.NOT_EVAL in tag_set
+        ):
+            raise NotEvaluateError()
+
+        return self.NATURAL
+
     @visitor.when(ast.SelfNode)
     def visit(self, node):
         return self.SELF
@@ -95,7 +115,8 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
     def visit(self, node):
         if not self.context is None:
             try:
-                return node.target.get_sample(context=self.context)[0]
+                _ = node.target.get_sample(context=self.context)
+                return self.NATURAL
             except AttributeError:
                 pass
             except CircularDependencyDetected:

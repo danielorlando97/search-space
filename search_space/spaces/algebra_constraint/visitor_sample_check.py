@@ -149,68 +149,68 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             pass
 
     @ visitor.when(FunctionNode)
-    def visit(self, node: FunctionNode):
+    def visit(self, node: FunctionNode, current_index):
         new_args = []
         for arg in node.args:
-            new_args.append(self.visit(arg))
+            new_args.append(self.visit(arg, current_index))
 
         new_kw = {}
         for name, arg in node.kwargs:
-            new_kw[name] = self.visit(arg)
+            new_kw[name] = self.visit(arg, current_index)
 
         return node.func(*new_args, **new_kw)
 
 
-class SimpleIndexChecker:
-    def __init__(self, sample, context) -> None:
-        self.sample = sample
-        self.index_node = []
-        self.index_solution = IndexSolutionVisitor()
-        self.dim = ()
-        self.index_list = []
-        self._maps = []
-        self.context = context
+# class SimpleIndexChecker:
+#     def __init__(self, sample, context) -> None:
+#         self.sample = sample
+#         self.index_node = []
+#         self.index_solution = IndexSolutionVisitor()
+#         self.dim = ()
+#         self.index_list = []
+#         self._maps = []
+#         self.context = context
 
-    def add_dim(self, node):
-        self.index_node.append(node)
+#     def add_dim(self, node):
+#         self.index_node.append(node)
 
-        pivot, self.dim = self.sample, []
-        for i in range(len(self.index_node)):
-            pivot, value = pivot[0], len(pivot)
-            self.dim.append(value)
+#         pivot, self.dim = self.sample, []
+#         for i in range(len(self.index_node)):
+#             pivot, value = pivot[0], len(pivot)
+#             self.dim.append(value)
 
-    def __iter__(self):
-        if len(self.index_node) > self.dim:
+#     def __iter__(self):
+#         if len(self.index_node) > self.dim:
 
-            self.index_list = index_list(self.dim)
-        return self.index_list.__iter__()
+#             self.index_list = index_list(self.dim)
+#         return self.index_list.__iter__()
 
-    def __cmp_value__(self, index):
-        result = [self.sample]
-        for i in index:
-            ii = self.index_solution.visit(
-                index, self.index_node[i], self.context)
+#     def __cmp_value__(self, index):
+#         result = [self.sample]
+#         for i in index:
+#             ii = self.index_solution.visit(
+#                 index, self.index_node[i], self.context)
 
-            for
-            result = result[i]
+#             for
+#             result = result[i]
 
-        for f in self._maps:
-            result = f(result)
+#         for f in self._maps:
+#             result = f(result)
 
-        return [result]
+#         return [result]
 
-    def __op_exec__(self, other, predicate):
-        for index in self:
-            try:
-                values = other.__cmp_value__(index)
-            except AttributeError:
-                values = [other]
+#     def __op_exec__(self, other, predicate):
+#         for index in self:
+#             try:
+#                 values = other.__cmp_value__(index)
+#             except AttributeError:
+#                 values = [other]
 
-            for current_value in self.__cmp_value__(index):
-                for other_value in values:
-                    if not predicate(current_value, other_value):
-                        return False
-        return True
+#             for current_value in self.__cmp_value__(index):
+#                 for other_value in values:
+#                     if not predicate(current_value, other_value):
+#                         return False
+#         return True
 
-    def __eq__(self, __o: object) -> bool:
-        return self.__op_exec__(__o, lambda c, o: c == o)
+#     def __eq__(self, __o: object) -> bool:
+#         return self.__op_exec__(__o, lambda c, o: c == o)
