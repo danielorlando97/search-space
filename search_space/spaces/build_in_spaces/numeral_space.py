@@ -20,7 +20,7 @@ class NumeralSearchSpace(SearchSpace):
         self.visitor_layers.append(visitors.DomainModifierVisitor())
 
     def __sampler__(self, domain, context):
-        return domain.get_sample(self._distribution)
+        return domain.get_sample(self._distribution), context
 
 
 @SpacesManager.registry(float)

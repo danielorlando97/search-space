@@ -1,11 +1,15 @@
+from copy import copy
 import inspect
+from token import EXACT_TOKEN_TYPES
+from search_space.context_manager.sampler_context import SamplerContext
 from search_space.spaces.algebra_constraint import visitors
 from search_space.spaces import BasicSearchSpace
 import imp
 from typing import List, Type
 from search_space.utils.singleton import Singleton
 from search_space.spaces import SearchSpace
-from search_space.errors import TypeWithoutDefinedSpace
+from search_space.spaces.algebra_constraint import ast as ast_constraint
+
 # TODO: Change to Multiply definitions
 
 
@@ -29,7 +33,7 @@ class SpacesManager(metaclass=Singleton):
         try:
             return self.__spaces[_type]
         except KeyError:
-            return SpaceFactory(_type)
+            return _SpaceFactory(_type)
 
 
 class FunctionParamInfo:
@@ -50,14 +54,17 @@ class FunctionParamInfo:
             return None
 
         try:
-            return self.default.get_sample(context=context)[0]
+            _ = self.default.get_sample
         except AttributeError:
             return self.default
 
+        return self.default.get_sample(context=context)[0]
+
 
 class ClassFunction:
-    def __init__(self, func) -> None:
+    def __init__(self, func, context, sub_space: list) -> None:
         self.func = func
+        self.context = context
 
         func_data = inspect.getfullargspec(func)
         self.params: List[FunctionParamInfo] = []
@@ -74,7 +81,15 @@ class ClassFunction:
                 pass
 
         if not func_data.defaults is None:
-            for i, value in enumerate(func_data.defaults):
+            for i, value in enumerate(reversed(func_data.defaults)):
+                try:
+                    value = [s for s in sub_space
+                             if hash(s) == hash(value.space)][0]
+                except IndexError:
+                    pass
+                except TypeError:
+                    pass
+
                 self.params[-1 - i].default = value
 
         for arg in self.params:
@@ -92,7 +107,7 @@ class ClassFunction:
                     new_args.append(args[args_index])
                     args_index += 1
                 else:
-                    new_args.append(arg.get_sample())
+                    new_args.append(arg.get_sample(context=self.context))
         return new_args
 
     def __call__(self, *args, **kwds):
@@ -100,25 +115,73 @@ class ClassFunction:
         return self.func(*new_args)
 
 
-class SpaceFactory(BasicSearchSpace):
+class _SpaceFactory:
     def __init__(self, _type) -> None:
+        self.type = _type
+
+    def __call__(self, *args, **kwds):
+        return SpaceFactory(self.type)
+
+
+class SpaceFactory(BasicSearchSpace):
+    def __init__(self, _type, distribute_like=None) -> None:
         super().__init__(_type, None)
 
-        # self.visitor_layers.append(visitors.Member)
+        self.ast_constraint = ast_constraint.AstRoot([])
+        self.type = _type
+        self._sub_space = {}
 
-    def __sampler__(self, domain, context):
-        class_func = ClassFunction(domain.__init__)
+        for name, member in self.type.__dict__.items():
+            try:
+                if isinstance(member.space, BasicSearchSpace):
+                    self._sub_space[name] = copy(member.space)
+                    self._sub_space[name].set_hash(hash(member.space))
+                    self._sub_space[name].visitor_layers += [
+                        visitors.EvalAstChecked(),
+                        visitors.MemberAstModifierVisitor(self, name)
+                    ]
+
+                    print(name, hash(member.space))
+
+            except AttributeError:
+                pass
+
+    def __sampler__(self, domain, context: SamplerContext):
+        instance_context = context.create_child()
+        sub_space_list = list(self._sub_space.values())
+
+        class_func = ClassFunction(
+            self.type.__init__, instance_context, sub_space_list)
         class_instance = domain(*class_func.sample_params())
 
         # there's propably a better way to do this
         for name, method in inspect.getmembers(class_instance, inspect.ismethod):
-            setattr(class_instance, name, ClassFunction(method))
+            setattr(class_instance, name,
+                    ClassFunction(method, instance_context, sub_space_list))
 
-        return class_instance
+        return class_instance, instance_context
 
-    def __call__(self, *args, **kwds):
+    def __ast_optimization__(self, ast_list):
+
+        super().__ast_optimization__(ast_list)
+
+        for key, space in self._sub_space.items():
+            self._sub_space[key] = space.__ast_optimization__(ast_list)
+
         return self
 
+    def __advance_space__(self, ast: ast_constraint.AstRoot):
+        self._clean_asts.asts += ast.asts
+        return self
+
+    def __getitem__(self, index):
+        return self._sub_space[index]
+
+    def layers_append(self, *args):
+        super().layers_append(*args)
+
+        for space in self._sub_space.values():
+            space.layers_append(*args)
 
 # class TestA:
 #     def __init__(self, a: int, b: float = Domain[float]()) -> None:

@@ -66,6 +66,13 @@ class IndexAstModifierVisitor(VisitorLayer):
         index = self.visit(node.other, current_index)
         return self.visit(node.target, [index.target] + current_index)
 
+    @visitor.when(ast.GetAttr)
+    def visit(self, node, current_index):
+        name = self.visit(node.other, current_index)
+        target = self.visit(node.target, current_index)
+
+        return ast.GetAttr(target, name)
+
     @visitor.when(ast.SelfNode)
     def visit(self, node, current_index):
         if current_index is None:

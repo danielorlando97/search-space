@@ -103,10 +103,11 @@ class TensorSearchSpace(BasicSearchSpace):
             self.samplers[index]
         except KeyError:
             self.samplers[index] = copy(self.type_space)
-            self.samplers[index].visitor_layers += [
+            self.samplers[index].layers_append(
                 visitors.EvalAstChecked(),
                 visitors.IndexAstModifierVisitor(self, index)
-            ]
+            )
+
             self.samplers[index].__ast_optimization__(self.ast_constraint)
 
     def _flatter_index(self, index, i=0, result=[]):
@@ -179,7 +180,7 @@ class TensorSearchSpace(BasicSearchSpace):
         self._current_shape = tuple(shape)
         context = context.create_child()
         return self.iter_virtual_list(
-            shape, [], lambda index: self[index].get_sample(context)[0])
+            shape, [], lambda index: self[index].get_sample(context)[0]), context
 
     def __domain_filter__(self, domain, context):
         return domain, self.ast_constraint

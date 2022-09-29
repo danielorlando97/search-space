@@ -1,3 +1,4 @@
+from doctest import Example
 from random import sample
 from token import EXACT_TOKEN_TYPES
 from search_space.spaces.algebra_constraint.visitor_index_ast_modifier import IndexSolutionVisitor
@@ -115,6 +116,26 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         b = self.visit(node.other, current_index)
         return self.visit(node.target, current_index + [b])
 
+    @visitor.when(ast.GetAttr)
+    def visit(self, node: ast.GetAttr, current_index=[]):
+
+        b = self.visit(node.other, current_index)
+        a = self.visit(node.target, current_index)
+
+        try:
+            space = a.__class__.__dict__[b]
+        except KeyError:
+            raise InvalidSampler(
+                f"inconsistent sampler => {a} don't has {b} member")
+
+        try:
+            sampler = space.get_sample
+        except AttributeError:
+            raise InvalidSampler(
+                f"inconsistent sampler => {a}.{b} isn't search space")
+
+        return sampler(context=self.context)[0]
+
     @ visitor.when(ast.SelfNode)
     def visit(self, node, current_index=[]):
         if len(current_index) == 0:
@@ -135,9 +156,9 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     def visit(self, node, current_index=[]):
         if isinstance(node.target, ast_index.IndexNode):
             result = self.index_solution.visit(
-                self.current_index, node.target, self.context)
+                current_index, node.target, self.context)
             if type(result) == type(bool()):
-                return self.current_index[-len(current_index) - 1]
+                return current_index[-len(current_index) - 1]
             else:
                 return result
 

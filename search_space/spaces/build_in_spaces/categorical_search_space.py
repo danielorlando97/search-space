@@ -31,7 +31,7 @@ class CategoricalSearchSpace(SearchSpace):
         self.visitor_layers.append(visitors.DomainModifierVisitor())
 
     def __sampler__(self, domain, context):
-        return domain.get_sample(self._distribution)
+        return domain.get_sample(self._distribution), context
 
     def __domain_filter__(self, domain, context):
         c_domain = CategoricalDomain(domain)

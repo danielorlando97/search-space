@@ -12,7 +12,7 @@ from .algebra_constraint import VisitorLayer
 import inspect
 
 
-class BasicSearchSpace(ast.SelfNode):
+class BasicSearchSpace:
 
     #################################################################
     #                                                               #
@@ -21,27 +21,43 @@ class BasicSearchSpace(ast.SelfNode):
     #################################################################
 
     def __init__(self, initial_domain, distribute_like=UNIFORM, sampler=None) -> None:
-        super().__init__()
+        # super().__init__()
         self.initial_domain = initial_domain
         self.__distribute_like__: str = distribute_like
-        self._distribution: Sampler = SamplerFactory().create_sampler(
-            self.__distribute_like__, self) if sampler is None else sampler
 
         self.visitor_layers: List[VisitorLayer] = [
             visitors.DomainModifierVisitor()]
-
+        self._inner_hash = None
         self._clean_asts = ast_constraint.AstRoot([])
+
+        self._distribution: Sampler = SamplerFactory().create_sampler(
+            self.__distribute_like__, self) if sampler is None else sampler
 
     def change_distribution(self, distribution):
         self.__distribute_like__ = distribution
         self._distribution = SamplerFactory().create_sampler(
             self.__distribute_like__, self)
 
+    def layers_append(self, *args):
+        self.visitor_layers += list(args)
+
+    def set_hash(self, v):
+        self._inner_hash = v
+
     def __hash__(self) -> int:
-        return id(self)
+        if self._inner_hash is None:
+            return id(self)
+
+        return self._inner_hash
 
     def __copy__(self):
-        return type(self)(*self.initial_domain.limits, distribute_like=self.__distribute_like__)
+        try:
+            domain = self.initial_domain.limits
+        except AttributeError:
+            domain = self.initial_domain,
+
+        result = type(self)(*domain, distribute_like=self.__distribute_like__)
+        return result
 
     #################################################################
     #                                                               #
@@ -95,6 +111,11 @@ class BasicSearchSpace(ast.SelfNode):
 
         args += [item.space for item in defaults]
 
+        for i, a in enumerate(args):
+            try:
+                print(func_data.args[i], hash(a))
+            except:
+                pass
         return func(*args)
 
     def __domain_optimization__(self, domain, ast_result):
@@ -109,14 +130,17 @@ class BasicSearchSpace(ast.SelfNode):
             yield domain, ast_result
 
     def __advance_space__(self, ast):
-        return SearchSpace(
+        ss = SearchSpace(
             domain=self.initial_domain,
             distribute_like=self.__distribute_like__,
             sampler=self._distribution,
             ast=ast,
             clean_asts=self._clean_asts,
-            layers=self.visitor_layers
+            layers=self.visitor_layers,
         )
+
+        ss.set_hash(hash(self))
+        return ss
 
     #################################################################
     #                                                               #
@@ -144,9 +168,9 @@ class BasicSearchSpace(ast.SelfNode):
         domain, ast_result = self.__domain_filter__(domain, context)
 
         while True:
-            sample = self.__sampler__(domain, context)
+            sample, sample_context = self.__sampler__(domain, context)
             try:
-                self.__check_sample__(sample, ast_result, context)
+                self.__check_sample__(sample, ast_result, sample_context)
 
                 context.registry_sampler(self, sample)
                 return sample, context
@@ -158,7 +182,7 @@ class BasicSearchSpace(ast.SelfNode):
         return domain, self._clean_asts
 
     def __sampler__(self, domain, context):
-        return domain.get_sample(self._distribution)
+        return domain.get_sample(self._distribution), context
 
     def __check_sample__(self, sample, ast_result, context):
         visitors.ValidateSampler().transform_to_check_sample(ast_result, sample, context)
@@ -166,15 +190,21 @@ class BasicSearchSpace(ast.SelfNode):
 
 class SearchSpace(BasicSearchSpace):
 
-    def __init__(self, domain, distribute_like, sampler, ast, clean_asts, layers) -> None:
+    def __init__(self, domain, distribute_like, sampler, ast, clean_asts, layers, _hash=None) -> None:
         super().__init__(domain, distribute_like, sampler)
         self.ast_constraint: ast_constraint.AstRoot = ast
         self._clean_asts: ast_constraint.AstRoot = clean_asts
         self.visitor_layers = layers
 
+    def __ast_init_filter__(self):
+        return self.ast_constraint
+
+    def __ast_result_filter__(self, result):
+        return result + self._clean_asts
+
     def __domain_filter__(self, domain, context):
         domain = copy(domain)
-        ast_result = self.ast_constraint
+        ast_result = self.__ast_init_filter__()
         for visitor in reversed(self.visitor_layers):
             if not visitor.do_transform_to_modifier:
                 continue
@@ -184,7 +214,7 @@ class SearchSpace(BasicSearchSpace):
             ast_result, domain = visitor.transform_to_modifier(
                 ast_result, domain, context)
 
-        return domain, ast_result + self._clean_asts
+        return domain, self.__ast_result_filter__(ast_result)
 
     def __advance_space__(self, ast: ast_constraint.AstRoot):
         self.ast_constraint.asts += ast.asts

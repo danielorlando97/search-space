@@ -1,4 +1,5 @@
-from search_space.errors import CircularDependencyDetected, NotEvaluateError
+from xml import dom
+from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError
 from . import ast
 from search_space.utils import visitor
 from search_space.spaces.algebra_constraint import ast
@@ -10,23 +11,39 @@ class MemberAstModifierVisitor(VisitorLayer):
         self.member = member
         self.space = space
 
+    @property
+    def context(self):
+        try:
+            if self._context != None:
+                return self._context
+        except AttributeError:
+            pass
+
+        raise DetectedRuntimeDependency()
+
+    def domain_optimization(self, node, domain):
+        self._context = None
+        return self.visit(node), domain
+
     def transform_to_modifier(self, node, domain=None, context=None):
-        return self.visit(node, context=context), domain
+        self._context = context
+        return self.visit(node), domain
 
     def transform_to_check_sample(self, node, sample, context=None):
+        self._context = context
         return self.visit(node, context=context)
 
     @visitor.on("node")
-    def visit(self, node, context=None):
+    def visit(self, node):
         pass
 
     @visitor.when(ast.AstRoot)
-    def visit(self, node, context=None):
-        result = ast.AstRoot()
+    def visit(self, node):
+        result = ast.AstRoot([])
 
         for n in node.asts:
             result.add_constraint(
-                self.visit(n, context=context))
+                self.visit(n))
 
         return result
 
@@ -37,9 +54,9 @@ class MemberAstModifierVisitor(VisitorLayer):
     #################################################################
 
     @visitor.when(ast.UniversalVariableBinaryOperation)
-    def visit(self, node, context):
-        a = self.visit(node.target, context=context)
-        b = self.visit(node.other,  context=context)
+    def visit(self, node):
+        a = self.visit(node.target)
+        b = self.visit(node.other)
 
         return type.__call__(node.__class__, a, b)
 
@@ -49,10 +66,17 @@ class MemberAstModifierVisitor(VisitorLayer):
     #                                                               #
     #################################################################
 
+    @visitor.when(ast.GetItem)
+    def visit(self, node):
+        index = self.visit(node.other)
+        target = self.visit(node.target)
+
+        return ast.GetItem(target, index)
+
     @visitor.when(ast.GetAttr)
-    def visit(self, node: ast.GetAttr, context):
-        target = self.visit(node.target, context)
-        other = self.visit(node.other, context)
+    def visit(self, node: ast.GetAttr):
+        target = self.visit(node.target)
+        other = self.visit(node.other)
 
         if target.is_self and isinstance(other, ast.NaturalValue):
             if other.target == self.member:
@@ -63,12 +87,16 @@ class MemberAstModifierVisitor(VisitorLayer):
         return ast.GetAttr(target, other)
 
     @visitor.when(ast.SelfNode)
-    def visit(self, node, context):
+    def visit(self, node):
         return node
 
     @visitor.when(ast.NaturalValue)
-    def visit(self, node,  context):
+    def visit(self, node):
         try:
-            return ast.NaturalValue(node.target.get_sample(context=context)[0])
+            return ast.NaturalValue(node.target.get_sample(context=self.context)[0])
         except AttributeError:
-            return ast.NaturalValue(node.target)
+            pass
+        except TypeError:
+            pass
+
+        return ast.NaturalValue(node.target)
