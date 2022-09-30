@@ -54,6 +54,7 @@ class TypeBuilder(Generic[T]):
     def __getitem__(self, item):
         try:
             item = item.space
+            item.space_name = item.space_name + '_tensor_size'
         except AttributeError:
             pass
 

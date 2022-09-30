@@ -82,12 +82,23 @@ class ClassFunction:
 
         if not func_data.defaults is None:
             for i, value in enumerate(reversed(func_data.defaults)):
+
                 try:
-                    value = [s for s in sub_space
-                             if hash(s) == hash(value.space)][0]
+                    value = value.space
+                except AttributeError:
+                    pass
+
+                try:
+                    value = [s for s in sub_space if hash(s) == hash(value)][0]
                 except IndexError:
                     pass
                 except TypeError:
+                    pass
+
+                try:
+                    if not value.space_name.startswith(f'{self.params[-1 -i].name}:'):
+                        value.space_name = f'{self.params[-1 -i].name}:{value.space_name}'
+                except:
                     pass
 
                 self.params[-1 - i].default = value
@@ -130,6 +141,7 @@ class SpaceFactory(BasicSearchSpace):
         self.ast_constraint = ast_constraint.AstRoot([])
         self.type = _type
         self._sub_space = {}
+        self.space_name = _type.__name__
 
         for name, member in self.type.__dict__.items():
             try:
@@ -140,8 +152,6 @@ class SpaceFactory(BasicSearchSpace):
                         visitors.EvalAstChecked(),
                         visitors.MemberAstModifierVisitor(self, name)
                     ]
-
-                    print(name, hash(member.space))
 
             except AttributeError:
                 pass

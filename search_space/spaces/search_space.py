@@ -1,5 +1,8 @@
 from copy import copy
+from distutils.command.config import config
 from typing import List
+
+from search_space.context_manager.runtime_manager import SearchSpaceConfig
 from . import ast
 from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
@@ -9,6 +12,8 @@ from .algebra_constraint import ast as ast_constraint
 from .algebra_constraint import ast_index as ast_index
 from .algebra_constraint import visitors
 from .algebra_constraint import VisitorLayer
+from .printer_tools.default_printer_class import DefaultPrinter
+
 import inspect
 
 
@@ -20,7 +25,7 @@ class BasicSearchSpace:
     #                                                               #
     #################################################################
 
-    def __init__(self, initial_domain, distribute_like=UNIFORM, sampler=None) -> None:
+    def __init__(self, initial_domain, distribute_like=UNIFORM, sampler=None, name=None) -> None:
         # super().__init__()
         self.initial_domain = initial_domain
         self.__distribute_like__: str = distribute_like
@@ -29,6 +34,7 @@ class BasicSearchSpace:
             visitors.DomainModifierVisitor()]
         self._inner_hash = None
         self._clean_asts = ast_constraint.AstRoot([])
+        self.space_name = self.__class__.__name__ if name is None else name
 
         self._distribution: Sampler = SamplerFactory().create_sampler(
             self.__distribute_like__, self) if sampler is None else sampler
@@ -57,6 +63,7 @@ class BasicSearchSpace:
             domain = self.initial_domain,
 
         result = type(self)(*domain, distribute_like=self.__distribute_like__)
+        result.space_name = f"{result.space_name}'"
         return result
 
     #################################################################
@@ -149,10 +156,15 @@ class BasicSearchSpace:
     #################################################################
 
     def get_sample(self, context=None, local_domain=None):
+        config = SearchSpaceConfig(printer=DefaultPrinter())
+        printer = config.printer_class
+
+        printer.init_search(hash(self), self.space_name)
 
         if not context is None:
             cache_value = context.get_sampler_value(self)
             if not cache_value is None:
+                printer.sample_value(cache_value, True)
                 return cache_value, context
 
             precess_is_initialize = context.check_sampling_status(self)
@@ -165,18 +177,28 @@ class BasicSearchSpace:
         context.registry_init_sampler_process(self)
 
         domain = self.initial_domain if local_domain is None else local_domain
+        printer.domain_init(domain)
+
         domain, ast_result = self.__domain_filter__(domain, context)
 
-        while True:
+        sample_index = 0
+        while config.replay_nums is None or config.replay_nums > sample_index:
+
+            printer.tabs += 1
             sample, sample_context = self.__sampler__(domain, context)
+            printer.tabs -= 1
+
             try:
                 self.__check_sample__(sample, ast_result, sample_context)
 
                 context.registry_sampler(self, sample)
+                printer.sample_value(sample)
                 return sample, context
 
             except InvalidSampler as e:
-                pass
+                printer.sample_error(sample, e.text, sample_index)
+
+            sample_index += 1
 
     def __domain_filter__(self, domain, context):
         return domain, self._clean_asts

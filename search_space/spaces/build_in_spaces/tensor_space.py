@@ -103,6 +103,7 @@ class TensorSearchSpace(BasicSearchSpace):
             self.samplers[index]
         except KeyError:
             self.samplers[index] = copy(self.type_space)
+            self.samplers[index].space_name = f'{self.samplers[index].space_name}_{index}'
             self.samplers[index].layers_append(
                 visitors.EvalAstChecked(),
                 visitors.IndexAstModifierVisitor(self, index)
