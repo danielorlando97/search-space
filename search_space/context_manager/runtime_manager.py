@@ -15,7 +15,7 @@ class SearchSpacePrinter:
     def domain_init(self, domain):
         pass
 
-    def ast_transformation(self, domain, ast):
+    def ast_transformation(self, domain, ast, visitor_name=''):
         pass
 
     def sample_error(self, sample, error, sample_num):

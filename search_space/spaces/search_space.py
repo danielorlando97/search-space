@@ -179,7 +179,9 @@ class BasicSearchSpace:
         domain = self.initial_domain if local_domain is None else local_domain
         printer.domain_init(domain)
 
+        printer.tabs += 1
         domain, ast_result = self.__domain_filter__(domain, context)
+        printer.tabs -= 1
 
         sample_index = 0
         while config.replay_nums is None or config.replay_nums > sample_index:
@@ -225,8 +227,14 @@ class SearchSpace(BasicSearchSpace):
         return result + self._clean_asts
 
     def __domain_filter__(self, domain, context):
+        config = SearchSpaceConfig(printer=DefaultPrinter())
+        printer = config.printer_class
+
         domain = copy(domain)
+
         ast_result = self.__ast_init_filter__()
+        printer.ast_transformation(domain, ast_result)
+
         for visitor in reversed(self.visitor_layers):
             if not visitor.do_transform_to_modifier:
                 continue
@@ -235,6 +243,9 @@ class SearchSpace(BasicSearchSpace):
 
             ast_result, domain = visitor.transform_to_modifier(
                 ast_result, domain, context)
+
+            printer.ast_transformation(
+                domain, ast_result, visitor.__class__.__name__)
 
         return domain, self.__ast_result_filter__(ast_result)
 

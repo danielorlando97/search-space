@@ -1,5 +1,8 @@
 from search_space.context_manager.runtime_manager import SearchSpacePrinter
 from search_space.utils.singleton import Singleton
+from search_space.utils import visitor
+from search_space.spaces.algebra_constraint import ast
+from search_space.spaces.algebra_constraint import ast_index
 
 
 class Color:
@@ -43,6 +46,7 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
 
     def __init__(self) -> None:
         self.tabs = 0
+        self.ast_space = '|||'
 
     def init_search(self, id_space, name_space):
         tabs = self.tabs * '\t'
@@ -106,3 +110,105 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
 {tabs}| Invalid Sampler [Sampler: {result}] [Sample Numbs: {sample_num}]
 {tabs}| Error: {error}
 {tabs}{Color.b_red('|_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _')}""")
+
+    def ast_transformation(self, domain, ast, visitor_name=''):
+        tabs = self.tabs * '\t'
+
+        if isinstance(domain, type):
+            name = domain.__name__
+        else:
+            name = domain.__class__.__name__
+
+        try:
+            limits = domain.limits
+        except:
+            limits = None
+
+        print(f"""{tabs}_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+{tabs}{Color.b_green(f'| AST Transform: {visitor_name}]')} [Domain Type: {name}][Domain Limits: {Color.f_red(limits)}]""")
+        self.pivot_tab = self.tabs
+        self.visit(ast)
+        print(f"""{tabs}{Color.b_blue('| ')}_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _""")
+
+    @visitor.on('node')
+    def visit(self, node):
+        pass
+
+    @visitor.when(ast.AstRoot)
+    def visit(self, node: ast.AstRoot):
+        self.tabs += 1
+
+        for n in node.asts:
+            self.visit(n)
+
+        self.tabs -= 1
+
+    @visitor.when(ast.UniversalVariableBinaryOperation)
+    def visit(self, node):
+        init_tab = self.pivot_tab * '\t'
+        tabs = (self.tabs - self.pivot_tab) * self.ast_space
+
+        print(
+            f"""{init_tab}{Color.b_blue(f'| ')}{tabs} {node.__class__.__name__}:""")
+        self.tabs += 1
+        self.visit(node.target)
+        self.visit(node.other)
+        self.tabs -= 1
+
+    @visitor.when(ast.GetItem)
+    def visit(self, node):
+        init_tab = self.pivot_tab * '\t'
+        tabs = (self.tabs - self.pivot_tab) * self.ast_space
+
+        print(
+            f"""{init_tab}{Color.b_blue(f'| ')}{tabs} {node.__class__.__name__}:""")
+        self.tabs += 1
+        self.visit(node.target)
+        self.visit(node.other)
+        self.tabs -= 1
+
+    @visitor.when(ast.GetAttr)
+    def visit(self, node):
+        init_tab = self.pivot_tab * '\t'
+        tabs = (self.tabs - self.pivot_tab) * self.ast_space
+
+        print(
+            f"""{init_tab}{Color.b_blue(f'| ')}{tabs} {node.__class__.__name__}:""")
+        self.tabs += 1
+        self.visit(node.target)
+        self.visit(node.other)
+        self.tabs -= 1
+
+    @visitor.when(ast.SelfNode)
+    def visit(self, node):
+        init_tab = self.pivot_tab * '\t'
+        tabs = (self.tabs - self.pivot_tab) * self.ast_space
+
+        print(
+            f"""{init_tab}{Color.b_blue(f'| ')}{tabs} {Color.f_blue(node.__class__.__name__)}""")
+
+    @visitor.when(ast.NaturalValue)
+    def visit(self, node):
+        init_tab = self.pivot_tab * '\t'
+        tabs = (self.tabs - self.pivot_tab) * self.ast_space
+
+        value = node.target
+        try:
+            value = (value.space_name, hash(value))
+        except AttributeError:
+            pass
+
+        print(
+            f"""{init_tab}{Color.b_blue(f'| ')}{tabs} {Color.f_yellow(node.__class__.__name__)}({value})""")
+
+    # @visitor.when(FunctionNode)
+    # def visit(self, node: FunctionNode, current_index):
+    #     new_args = []
+    #     for arg in node.args:
+    #         new_args.append(self.visit(arg, current_index))
+
+    #     new_kw = {}
+    #     for name, arg in node.kwargs:
+    #         new_kw[name] = self.visit(arg, current_index)
+
+    #     return FunctionNode(node.func, new_args, new_kw)
