@@ -172,9 +172,10 @@ class BasicSearchSpace:
                 raise CircularDependencyDetected(
                     f'in {self.__class__.__name__}')
         else:
-            context = SamplerContext()
+            context = SamplerContext(self.space_name)
 
         context.registry_init_sampler_process(self)
+        printer.context_name(context)
 
         domain = self.initial_domain if local_domain is None else local_domain
         printer.domain_init(domain)

@@ -54,27 +54,19 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
         print(f"""{tabs} _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 {tabs}| Init Sample By {Color.f_green(name_space)} Space Id: {Color.f_red(id_space)}""")
 
-#         print(f"""{tabs} _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-# {tabs}| Init Sample By
-# {tabs}| Space Name: {name_space}
-# {tabs}| Space Id: {id_space}
-# {tabs}|_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _""")
-
-    def sample_value(self, value, caching_value=False):
+    def context_name(self, context):
         tabs = self.tabs * '\t'
 
-        result = "[\n"
-        try:
-            for i, item in enumerate(value):
-                result += f'{tabs}| {i} -> {item},\n'
+        names = []
+        while not context.father is None:
+            names.append(context.name)
+            context = context.father
 
-            result += f'{tabs}| ]'
-        except TypeError:
-            result = value
+        names.append(context.name)
+        names.reverse()
 
-        print(f"""{tabs}| Sample Result [Is Caching: {Color.f_blue(caching_value)}]
-{tabs}| {Color.b_green('Value')}: {result}
-{tabs}|_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _""")
+        print(
+            f"""{tabs}| {Color.b_yellow('Context')}: {' -> '.join(names)}""")
 
     def domain_init(self, domain):
 
@@ -92,6 +84,22 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
 
         print(
             f"""{tabs}| Sampler Domain Init [Domain Type: {name}] [Domain Limits: {Color.f_red(limits)}]""")
+
+    def sample_value(self, value, caching_value=False):
+        tabs = self.tabs * '\t'
+
+        result = "[\n"
+        try:
+            for i, item in enumerate(value):
+                result += f'{tabs}| {i} -> {item},\n'
+
+            result += f'{tabs}| ]'
+        except TypeError:
+            result = value
+
+        print(f"""{tabs}| Sample Result [Is Caching: {Color.f_blue(caching_value)}]
+{tabs}| {Color.b_green('Value')}: {result}
+{tabs}|_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _""")
 
     def sample_error(self, sample, error, sample_num):
 

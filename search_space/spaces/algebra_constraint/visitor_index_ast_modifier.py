@@ -98,7 +98,15 @@ class IndexAstModifierVisitor(VisitorLayer):
 
     def _index_solution(self, target, current_index):
         if not isinstance(target, ast_index.IndexNode):
-            return target
+            if self.context is None:
+                return target
+
+            try:
+                _ = target.get_sample
+            except AttributeError:
+                return target
+
+            return target.get_sample(context=self.context)[0]
 
         result = self.index_solution.visit(
             self.current_index, target, self.context)

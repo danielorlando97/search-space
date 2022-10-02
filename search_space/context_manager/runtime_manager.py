@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Protocol, Union
 from search_space.utils.singleton import Singleton
 
 
@@ -19,6 +19,9 @@ class SearchSpacePrinter:
         pass
 
     def sample_error(self, sample, error, sample_num):
+        pass
+
+    def context_name(self, context):
         pass
 
 

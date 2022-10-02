@@ -15,7 +15,7 @@ class TensorSlicePointer:
 
     def get_sample(self, context=None, local_domain=None):
         if context is None:
-            context = SamplerContext()
+            context = SamplerContext(name="TensorSlicePointer")
 
         sample = self._sample(context, local_domain, self.index)
         context.registry_sampler(self, sample)
@@ -179,7 +179,7 @@ class TensorSearchSpace(BasicSearchSpace):
                 shape.append(ls)
 
         self._current_shape = tuple(shape)
-        context = context.create_child()
+        context = context.create_child(f'{self.space_name}_index')
         return self.iter_virtual_list(
             shape, [], lambda index: self[index].get_sample(context)[0]), context
 

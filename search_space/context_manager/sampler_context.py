@@ -30,7 +30,8 @@ class InitSamplerInfo:
 
 
 class SamplerContext:
-    def __init__(self, father=None) -> None:
+    def __init__(self, name='', father=None) -> None:
+        self.name = name
         self.sampler_logs = []
         self.context = {}
         self.result = None
@@ -43,18 +44,18 @@ class SamplerContext:
     #                                                               #
     #################################################################
 
-    def create_child(self):
-        return SamplerContext(self)
+    def create_child(self, name=''):
+        return SamplerContext(name=name, father=self)
 
     def registry_sampler(self, search_space, value):
-        self.context[search_space] = value
+        self.context[hash(search_space)] = value
 
     def registry_init_sampler_process(self, search_space):
-        self.sampling_status[search_space] = True
+        self.sampling_status[hash(search_space)] = True
 
     def check_sampling_status(self, search_space):
         try:
-            return self.sampling_status[search_space]
+            return self.sampling_status[hash(search_space)]
         except KeyError:
             if not self.father is None:
                 return self.father.check_sampling_status(search_space)
@@ -62,7 +63,7 @@ class SamplerContext:
 
     def get_sampler_value(self, search_space):
         try:
-            return self.context[search_space]
+            return self.context[hash(search_space)]
         except KeyError:
             if not self.father is None:
                 return self.father.get_sampler_value(search_space)

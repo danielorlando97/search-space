@@ -157,7 +157,7 @@ class SpaceFactory(BasicSearchSpace):
                 pass
 
     def __sampler__(self, domain, context: SamplerContext):
-        instance_context = context.create_child()
+        instance_context = context.create_child(f'{self.space_name}_members')
         sub_space_list = list(self._sub_space.values())
 
         class_func = ClassFunction(
