@@ -145,7 +145,7 @@ class BasicSearchSpace:
             clean_asts=self._clean_asts,
             layers=self.visitor_layers,
         )
-
+        ss.space_name = self.space_name
         ss.set_hash(hash(self))
         return ss
 

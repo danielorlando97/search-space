@@ -128,7 +128,10 @@ class IndexAstModifierVisitor(VisitorLayer):
 
             return ast.NaturalValue(slice(start, stop, steep))
 
-        return ast.NaturalValue(self._index_solution(node.target, current_index))
+        try:
+            return ast.NaturalValue(self._index_solution(node.target, current_index))
+        except CircularDependencyDetected:
+            return ast.NotEvaluate()
 
     @visitor.when(FunctionNode)
     def visit(self, node: FunctionNode, current_index):

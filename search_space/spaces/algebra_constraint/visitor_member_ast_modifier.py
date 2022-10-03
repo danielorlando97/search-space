@@ -93,10 +93,11 @@ class MemberAstModifierVisitor(VisitorLayer):
     @visitor.when(ast.NaturalValue)
     def visit(self, node):
         try:
-            return ast.NaturalValue(node.target.get_sample(context=self.context)[0])
+            _ = node.target.get_sample
         except AttributeError:
-            pass
-        except TypeError:
-            pass
+            return ast.NaturalValue(node.target)
 
-        return ast.NaturalValue(node.target)
+        try:
+            return ast.NaturalValue(node.target.get_sample(self.context)[0])
+        except CircularDependencyDetected:
+            return ast.NotEvaluate()

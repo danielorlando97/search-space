@@ -4,7 +4,8 @@ from search_space.utils.singleton import Singleton
 
 class SearchSpacePrinter:
 
-    tabs: str
+    def __init__(self) -> None:
+        self.tabs = 0
 
     def init_search(self, id_space, name_space):
         pass
