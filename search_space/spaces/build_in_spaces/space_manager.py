@@ -3,6 +3,7 @@ import inspect
 from token import EXACT_TOKEN_TYPES
 from typing_extensions import Self
 from search_space.context_manager.sampler_context import SamplerContext
+from search_space.sampler.distribution_names import UNIFORM_BERNOULLI
 from search_space.spaces.algebra_constraint import visitors
 from search_space.spaces import BasicSearchSpace
 import imp
@@ -12,6 +13,8 @@ from search_space.utils.singleton import Singleton
 from search_space.spaces import SearchSpace
 from search_space.spaces.algebra_constraint import ast as ast_constraint
 from typing import _UnionGenericAlias
+from search_space.spaces.domains.categorical_domain import CategoricalDomain
+
 # TODO: Change to Multiply definitions
 
 
@@ -36,12 +39,19 @@ class SpacesManager(metaclass=Singleton):
             return self.__spaces[_type]
         except KeyError:
             if type(_type) == _UnionGenericAlias:
-                return None
+                args = [self.get_space_by_type(t) for t in _type.__args__]
+                return UnionSpace(*args)
 
-            if _type == Self:
-                return SelfSpace()
+            def f(*args, **kwargs):
 
-            return _SpaceFactory(_type)
+                if _type == type(None):
+                    return NoneSpace()
+
+                if _type == Self:
+                    return SelfSpace()
+
+                return SpaceFactory(_type)
+            return f
 
 
 class FunctionParamInfo:
@@ -97,15 +107,15 @@ class ClassFunction:
                     pass
 
                 try:
-                    value.self_space = copy(_self)
-                except AttributeError:
-                    pass
-
-                try:
                     value = [s for s in sub_space if hash(s) == hash(value)][0]
                 except IndexError:
                     pass
                 except TypeError:
+                    pass
+
+                try:
+                    value.__self_assign__(_self)
+                except AttributeError:
                     pass
 
                 try:
@@ -137,22 +147,6 @@ class ClassFunction:
     def __call__(self, *args, **kwds):
         new_args = self.sample_params(*args, **kwds)
         return self.func(*new_args)
-
-
-class _SpaceFactory:
-    def __init__(self, _type) -> None:
-        self.type = _type
-
-    def __call__(self, *args, **kwds):
-        return SpaceFactory(self.type)
-
-
-class SelfSpace:
-    def __init__(self, distribute_like=None) -> None:
-        self.self_space: SearchSpaceProtocol = None
-
-    def __getattribute__(self, __name: str):
-        return self.self_space.__getattribute__[__name]
 
 
 class SpaceFactory(BasicSearchSpace):
@@ -214,19 +208,52 @@ class SpaceFactory(BasicSearchSpace):
         for space in self._sub_space.values():
             space.layers_append(*args)
 
-# class TestA:
-#     def __init__(self, a: int, b: float = Domain[float]()) -> None:
-#         self.a = a
-#         self.b = b
 
-#     def __str__(self) -> str:
-#         try:
-#             return f'a:{self.a}\nb:{self.b}\nc:{self.c}'
-#         except AttributeError:
-#             return f'a:{self.a}\nb:{self.b}\n'
+class SelfSpace:
+    def __init__(self, distribute_like=None) -> None:
+        self.self_space = None
 
-#     def build(self, c: int):
-#         self.c = c + self.b
+    def get_sample(self, context=None, local_domain=None):
+        return self.self_space.get_sample()[0], context
+
+    def __getattr__(self, __name: str):
+        return getattr(self.self_space, __name)
+
+    def __self_assign__(self, space):
+        if self.self_space is None:
+            self.self_space = SpacesManager().get_space_by_type(space)()
 
 
-# m = Domain[TestA]()
+class NoneSpace(BasicSearchSpace):
+    def __init__(self) -> None:
+        super().__init__(None, None)
+
+    def get_sample(self, context=None, local_domain=None):
+        return None, context
+
+    def __ast_optimization__(self, ast_list):
+        return self
+
+
+class UnionSpace(BasicSearchSpace):
+    def __init__(self, *domain, distribute_like=UNIFORM_BERNOULLI) -> None:
+        super().__init__(CategoricalDomain(domain), distribute_like=distribute_like)
+
+    def get_sample(self, context=None, local_domain=None):
+        space, context = super().get_sample(context, local_domain)
+        return space.get_sample(context, local_domain)
+
+    def __call__(self, *args, **kwds):
+        self.initial_domain = CategoricalDomain(
+            [space(*args, **kwds) for space in self.initial_domain.list]
+        )
+
+        return self
+
+    def __self_assign__(self, space):
+
+        for s in self.initial_domain.list:
+            try:
+                s.__self_assign__(space)
+            except AttributeError:
+                pass
