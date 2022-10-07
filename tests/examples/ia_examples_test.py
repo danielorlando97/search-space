@@ -1,4 +1,3 @@
-from ctypes import resize
 from typing import List
 from unittest import TestCase
 from search_space.dsl import Domain, RandomValue

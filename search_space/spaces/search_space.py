@@ -78,7 +78,7 @@ class BasicSearchSpace:
 
         ast = ast_constraint.AstRoot([])
 
-        if type(ast_list) == type(ast_constraint.AstRoot([])):
+        if type(ast_list) == type(ast):
             temp_ast = ast_list
         else:
 
@@ -116,13 +116,8 @@ class BasicSearchSpace:
         args += [ast_index.SelfNode(i)
                  for i in range(len(func_data.args) - 1 - len(defaults))]
 
-        args += [item.space for item in defaults]
+        args += [ast.SelfNode(item.space) for item in defaults]
 
-        for i, a in enumerate(args):
-            try:
-                print(func_data.args[i], hash(a))
-            except:
-                pass
         return func(*args)
 
     def __domain_optimization__(self, domain, ast_result):

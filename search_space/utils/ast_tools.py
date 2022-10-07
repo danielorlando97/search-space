@@ -1,3 +1,6 @@
+from ast import arg
+
+
 def decorated_all_methods(decorator):
     def f(cls):
         for attr in cls.__dict__:  # there's propably a better way to do this
@@ -9,22 +12,28 @@ def decorated_all_methods(decorator):
 
 def check_ast_precedence(fun):
     def f(*args, **kws):
-        _self = args[0]
-        other = args[1]
+        if len(args) == 2:
 
-        try:
-            p = other.precedence
-        except AttributeError:
-            p = -1
+            _self = args[0]
+            other = args[1]
 
-        if p > _self.precedence:
-            return other[fun.__name__](other, _self)
+            try:
+                p = other.precedence
+            except AttributeError:
+                p = -1
 
+            if p > _self.precedence:
+
+                f = getattr(other, fun.__name__)
+                return f(_self)
+        return fun(*args, **kws)
+    f.__name__ = fun.__name__
     return f
 
 
 def check_params_type(typ_fun, class_fun):
     def ff(func):
+
         def f(*args, **kws):
             new_args = []
             for arg in args:
@@ -33,6 +42,7 @@ def check_params_type(typ_fun, class_fun):
                 else:
                     new_args.append(class_fun(arg))
             return func(*new_args, **kws)
+        f.__name__ = func.__name__
         return f
     return ff
 

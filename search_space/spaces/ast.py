@@ -1,9 +1,12 @@
+from search_space.context_manager.sampler_context import SamplerContext
 from search_space.utils.ast_tools import decorated_all_methods, check_ast_precedence, check_params_type
+from .search_space_protocol import SearchSpaceProtocol
 
 check_natural_value = check_params_type(
     lambda: SpaceOperationNode, lambda x: NaturalValue(x))
 
 
+@decorated_all_methods(check_ast_precedence)
 @decorated_all_methods(check_natural_value)
 class SpaceOperationNode:
     precedence = 0
@@ -145,7 +148,7 @@ class SpaceOperationNode:
 
 
 class SearchBinaryOperation(SpaceOperationNode):
-    def __init__(self, target, other) -> None:
+    def __init__(self, target: SpaceOperationNode, other: SpaceOperationNode) -> None:
         super().__init__()
         self.target = target
         self.other = other
@@ -158,7 +161,11 @@ class SearchBinaryOperation(SpaceOperationNode):
 
 
 class GetAttr(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a.__dict__[b]
 
     #################################################################
     #                                                               #
@@ -168,7 +175,11 @@ class GetAttr(SearchBinaryOperation):
 
 
 class GetItem(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a[b]
 
     #################################################################
     #                                                               #
@@ -178,23 +189,43 @@ class GetItem(SearchBinaryOperation):
 
 
 class AddOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a + b
 
 
 class SubOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a - b
 
 
 class MultiOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a * b
 
 
 class DivOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a / b
 
 
 class ModOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a % b
 
     #################################################################
     #                                                               #
@@ -204,11 +235,19 @@ class ModOp(SearchBinaryOperation):
 
 
 class AndOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a and b
 
 
 class OrOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a or b
 
 
 class XorOp(SearchBinaryOperation):
@@ -222,28 +261,51 @@ class XorOp(SearchBinaryOperation):
 
 
 class EqualOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a == b
 
 
 class NotEqualOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a != b
 
 
 class GreatOrEqualOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a >= b
 
 
 class GreatOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a > b
 
 
 class LessOrEqualOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
+
+        return a <= b
 
 
 class LessOp(SearchBinaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        a = self.target.get_sample(context, local_domain)
+        b = self.target.get_sample(context, local_domain)
 
+        return a < b
     #################################################################
     #                                                               #
     #                 Unary Operations                              #
@@ -258,11 +320,13 @@ class SearchUnaryOperation(SpaceOperationNode):
 
 
 class NegOp(SearchUnaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        return - self.target.get_sample(context, local_domain)
 
 
 class NaturalValue(SearchUnaryOperation):
-    pass
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        return self.target
 
     #################################################################
     #                                                               #
@@ -272,4 +336,9 @@ class NaturalValue(SearchUnaryOperation):
 
 
 class SelfNode(SpaceOperationNode):
-    pass
+    def __init__(self, space: SearchSpaceProtocol) -> None:
+        super().__init__()
+        self.space = space
+
+    def get_sample(self, context: SamplerContext = None, local_domain=None):
+        return self.space.get_sample(context, local_domain)

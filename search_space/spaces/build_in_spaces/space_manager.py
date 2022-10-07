@@ -1,15 +1,17 @@
 from copy import copy
 import inspect
 from token import EXACT_TOKEN_TYPES
+from typing_extensions import Self
 from search_space.context_manager.sampler_context import SamplerContext
 from search_space.spaces.algebra_constraint import visitors
 from search_space.spaces import BasicSearchSpace
 import imp
 from typing import List, Type
+from search_space.spaces.search_space_protocol import SearchSpaceProtocol
 from search_space.utils.singleton import Singleton
 from search_space.spaces import SearchSpace
 from search_space.spaces.algebra_constraint import ast as ast_constraint
-
+from typing import _UnionGenericAlias
 # TODO: Change to Multiply definitions
 
 
@@ -33,6 +35,12 @@ class SpacesManager(metaclass=Singleton):
         try:
             return self.__spaces[_type]
         except KeyError:
+            if type(_type) == _UnionGenericAlias:
+                return None
+
+            if _type == Self:
+                return SelfSpace()
+
             return _SpaceFactory(_type)
 
 
@@ -62,7 +70,7 @@ class FunctionParamInfo:
 
 
 class ClassFunction:
-    def __init__(self, func, context, sub_space: list) -> None:
+    def __init__(self, func, context, sub_space: list, _self) -> None:
         self.func = func
         self.context = context
 
@@ -85,6 +93,11 @@ class ClassFunction:
 
                 try:
                     value = value.space
+                except AttributeError:
+                    pass
+
+                try:
+                    value.self_space = copy(_self)
                 except AttributeError:
                     pass
 
@@ -134,6 +147,14 @@ class _SpaceFactory:
         return SpaceFactory(self.type)
 
 
+class SelfSpace:
+    def __init__(self, distribute_like=None) -> None:
+        self.self_space: SearchSpaceProtocol = None
+
+    def __getattribute__(self, __name: str):
+        return self.self_space.__getattribute__[__name]
+
+
 class SpaceFactory(BasicSearchSpace):
     def __init__(self, _type, distribute_like=None) -> None:
         super().__init__(_type, None)
@@ -161,13 +182,13 @@ class SpaceFactory(BasicSearchSpace):
         sub_space_list = list(self._sub_space.values())
 
         class_func = ClassFunction(
-            self.type.__init__, instance_context, sub_space_list)
+            self.type.__init__, instance_context, sub_space_list, self.type)
         class_instance = domain(*class_func.sample_params())
 
         # there's propably a better way to do this
         for name, method in inspect.getmembers(class_instance, inspect.ismethod):
             setattr(class_instance, name,
-                    ClassFunction(method, instance_context, sub_space_list))
+                    ClassFunction(method, instance_context, sub_space_list,  self.type))
 
         return class_instance, instance_context
 

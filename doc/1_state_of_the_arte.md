@@ -7,28 +7,28 @@
         co-tutor: Doc. Alejandro Piad Morffis
 
 El espacio de búsqueda es una de las componentes principales de los sistemas
-de _AutoML_, independientemente de la naturaleza de los mismo. La gran mayoría
+de AutoML, independientemente de la naturaleza de los mismo. La gran mayoría
 de las herramientas de sector cuentan con una espacio de búsqueda muy definido,
 normalmente determinado por el tipo de problema al que dan solución o a las
-herramientas de _ML_ subyacente. En dichos casos, usualmente, llaman "description
+herramientas de ML subyacente. En dichos casos, usualmente, llaman "description
 del espacio de búsqueda" a la delimitación de los hyperparámetros de los
 distintos modelos que se incluyen en dicha definición previa
 
 Como se muestra en las investigaciones previas realizadas por [5] casi ninguna
-de las herramientas del sector _AutoML_ cuenta con la capacidad real de describir,
+de las herramientas del sector AutoML cuenta con la capacidad real de describir,
 en su totalidad y de forma detallada, su espacio de búsqueda. Independientemente
 de esto, todo mecanismo y sintaxis que tenga como objetivo la descripción estructural
 del campo de investigación, tiene su lugar en el procesos investigativo de la presente
 tesis.
 
-## Marco Teórico
+Marco Teórico
 
-### _Espacio de Búsqueda_
+Espacio de Búsqueda
 
 Subconjunto del universo tal que cada uno de sus elementos son soluciones factibles
 para una problema dado.
 
-### _Descripción del Espacio de Búsqueda_
+Descripción del Espacio de Búsqueda
 
 Proceso mediante el cual, según las características del medio, se define una
 jerarquía de estructuras y datos de forma tal que el receptor de dicha descripción  
@@ -36,27 +36,27 @@ pueda entender las dimensiones y características del espacio y sea capaz de gen
 muestras del mismo.
 
 En el casos específico del sector computacional el medio no suele ser un lenguaje
-de programación de uso general, sino que las distintas herramientas de optimización, _ML_
-o _AutoML_, suele implementar _DSL's_ o _frameworks_ en los que las descripciones se
+de programación de uso general, sino que las distintas herramientas de optimización, ML
+o AutoML, suele implementar DSL's o frameworks en los que las descripciones se
 pueda acercar un poco más al lenguaje natural.
 
-### _DSL_ (_Lenguaje de Dominio Específico_,_Domain Specific Language_ )
+DSL ( Lenguaje de Dominio Específico, Domain Specific Language)
 
 Según [6] un lenguaje específico de dominio es un lenguaje especializado que sirve
 para elevar el nivel de abstracción del software y facilitar el desarrollo del mismo.
 Los DSL cuentan con múltiples formas de representación e implementación, desde
 micro-modificaciones realizadas a lenguajes subyacentes, hasta proyectos a gran escala.
 
-Para la presente investigación solo son de interés aquellos _DSLs_ que se construyen e
+Para la presente investigación solo son de interés aquellos DSLs que se construyen e
 incorporan a un lenguaje subyacente, elevando el nivel de abstracción y la expresividad
 del código con respecto a un domino específico.
 
-### _DSLs_ orientados a descripciones
+DSLs orientados a descripciones
 
-Los _DSLs_ pertenecientes al domino de la presente investigación tiene como objetivo
+Los DSLs pertenecientes al domino de la presente investigación tiene como objetivo
 la descripción de una serie de conceptos para su posterior explotación. Esto supone que
 los mismos cuenten con una ejecución separada en dos fases, que puede recordar a las
-tradicionales estabas de los programas (_compilación_ y _ejecución_), pues en un
+tradicionales estabas de los programas (compilación y ejecución), pues en un
 primer momento los desarrolladores escriben toda una serie de reglas y descripciones
 que posteriormente serán utilizadas para la ejecución o ejecuciones en búsqueda de un
 propósito final.
@@ -69,53 +69,53 @@ pueda pensar en estos 'componentes descriptivos' como una herramienta de dos fas
 en un único componente
 
 Precisamente los sistemas que son objeto de estudio de esta tesis presentan las
-características necesarias para pensar en sus _DSLs_ como mecanismos de dos fases.
-Esos sistemas de búsquedas, _ML_ y _AutoML_ suelen tener un alto costo temporal de
+características necesarias para pensar en sus DSLs como mecanismos de dos fases.
+Esos sistemas de búsquedas, ML y AutoML suelen tener un alto costo temporal de
 explotación e investigación del espacio, razón por la cual podemos considerar un costo
 fijo todas las declaraciones e instancias iniciales necesarias para orquestar toda
 la búsqueda y luego tener un segundo análisis temporal sobre la dilatación de dicho
 sondeo del elemento optimo.
 
 En estos casos específicos el autor considera razonable hablar de las dos fases de
-estos _DSLs_ como _tiempo de compilación del DSL_ y _tiempo de ejecución del DSL_
+estos DSLs como tiempo de compilación del DSL y tiempo de ejecución del DSL
 
-### Tiempo de compilación del _DSL_
+Tiempo de compilación del DSL
 
-Definimos el tiempo de compilación de un _DSL_ como todas las operaciones puntuales que se
+Definimos el tiempo de compilación de un DSL como todas las operaciones puntuales que se
 realizan para orquestar la infraestructura que dará soporte a la ejecución del objetivo
 final del mismo. Dicha infraestructura debería permanecer inmutable en su mayoría
-durante todos los procesos posteriores a la "compilación" del _DSL_.
+durante todos los procesos posteriores a la "compilación" del DSL.
 
-### Tiempo de ejecución del _DSL_
+Tiempo de ejecución del DSL
 
-Definimos el tiempo de ejecución del _DSL_ como todas las operaciones que realiza
+Definimos el tiempo de ejecución del DSL como todas las operaciones que realiza
 la herramienta, posteriores a la "compilación" del mismo, para lograr su objetivo básico y
 principal.
 
-Véase por ejemplo el proceso de ejecución del módulo _Grammar_ de _AutoGOAL_, el cual es
+Véase por ejemplo el proceso de ejecución del módulo Grammar de AutoGOAL, el cual es
 la componente descriptiva del sistema. En un primer momento se analizan todas las descripciones
 aportadas para inferir una gramática libre del contexto que describa el espacio de todos los
 programas factibles, proceso que se pudiera interpretar como la "compilación del sistema". Y
 posteriormente, de forma iterativa, se generan nuevas instancias de dicha gramática para ser
 evaluadas y realizar otras operaciones ajenas al componente descriptivo. Si se interpreta que
-el objetivo final del modulo _Gramar_ es la generación de soluciones factibles, entonces se
-podrían decir que una vez que inicia una ejecución de _AutoGOAL_, luego de la "compilación"
-de sus descripciones, su _DSL_ se ejecuta múltiples veces hasta que el sistema encuentra una
+el objetivo final del modulo Gramar es la generación de soluciones factibles, entonces se
+podrían decir que una vez que inicia una ejecución de AutoGOAL, luego de la "compilación"
+de sus descripciones, su DSL se ejecuta múltiples veces hasta que el sistema encuentra una
 respuesta al problema planteado.
 
-### Python para _DSL_
+Python para DSL
 
-Como el resultado de la presente tesis es un _DSL_ atado a un lenguaje de propósito general
+Como el resultado de la presente tesis es un DSL atado a un lenguaje de propósito general
 subyacente. Dicho lenguaje de contar con una serie de características especiales,
 que permita a el autor modificar la semántica de su sintaxis original. Y aunque la gran mayoría
 de los sistemas de la actualidad que podrían estar interesados en la explotación de la solución
-propuesta están escritos en _Python_. La elección de dicho lenguaje como lenguaje subyacente
+propuesta están escritos en Python. La elección de dicho lenguaje como lenguaje subyacente
 para la implementación de la propuesta planteada no se encuentra influenciada solo por dicha
-situación, sino que además _Python_ cuenta con potentes y cómoda herramientas para modificar  
+situación, sino que además Python cuenta con potentes y cómoda herramientas para modificar  
 la semántica de su sintaxis y desarrollar la metaprogramación.
 
-Según [14], _Python_ es un lenguaje de programación de alto nivel y de propósito general.
-Python es de tipado dinámico y fuerte, pero existen bibliotecas, como _typing_, que haciendo
+Según [14], Python es un lenguaje de programación de alto nivel y de propósito general.
+Python es de tipado dinámico y fuerte, pero existen bibliotecas, como typing, que haciendo
 uso de la metaprogramación y otras técnicas, son capaces de modificar la semántica del
 lenguaje para ofrecer una experiencia de usuario similar a la de los lenguajes estéticamente
 tipados.
@@ -134,10 +134,10 @@ un indice determinado respectivamente. La lista es extremadamente larga y crece 
 que aparecen nuevos bibliotecas del lenguaje.
 
 En [14] se define el término metaprogramación como a la posibilidad de que un programa tenga
-conocimiento o se manipule a sí mismo. En _Python_ cada pequeño elemento del lenguaje
+conocimiento o se manipule a sí mismo. En Python cada pequeño elemento del lenguaje
 representa un objeto. A diferencia de otros lenguajes, donde la declaración de funciones y
 clases no son más que punteros a direcciones de memoria donde se alojan sus respectivos códigos,
-en _Python_ cada definición tiene como resultado la instancia de una determinada clase que se
+en Python cada definición tiene como resultado la instancia de una determinada clase que se
 referencia a partir del nombre de dicha definición y que desde el preciso momento de su
 definición dicha instancia puede ser modificada de todas las maneras que soporte el lenguaje
 y la semántica del contexto.
@@ -145,7 +145,7 @@ y la semántica del contexto.
 El más popular ejemplo de lo antes expresado son los decoradores. Estos representan una de las
 cualidades de más alto nivel del paradigma funcional, las funciones de orden superior (funciones
 que esperan funciones como parámetros). Los decoradores ya no son una sintaxis novedosa en el
-mundo de los lenguajes de programación; pero la sencillez de estos en _Python_ sigue resaltando
+mundo de los lenguajes de programación; pero la sencillez de estos en Python sigue resaltando
 por encima del resto, pues según su filosofía, los decoradores no son más que una función
 simple donde el argumento es el objeto resultante de la definición subyacente. Esta es una
 increíble herramienta para escribir metaprogramas pues con solo una linea de código más por
@@ -159,7 +159,7 @@ que tiene un método "z" que llama a la función "x"
 La más alta expresión de esta filosofía, donde toda definición es la instancia de un objeto,
 son las metaclases. Una metaclase es el clase que describe la naturaleza de las instancias
 resultantes de la declaración de nuevas clases. El lenguaje define la metaclases básica
-**type** y brinda las herramientas necesarias para crear nuevas y personalizar la asignación
+type y brinda las herramientas necesarias para crear nuevas y personalizar la asignación
 de su respectiva metaclases para cada clase que el usuario define. El procesos de instanciación
 de una nueva clase definida por el usuarios pasa por un pipeline de 3 "métodos mágicos" que
 tiene origen en el método `__call__` de la instancia de su metaclase. Esto es otra gran
@@ -167,30 +167,30 @@ característica para la flexibilización de la semántica pues por ejemplo, bajo
 misma clase, en el momento de crear una nueva instancia, se podrían crear la instancia adecuada
 de toda una jerarquía según las características de los parámetros iniciales.
 
-Además la biblioteca estándar del lenguaje incluye el módulo _inspect_, que como indica [15],
+Además la biblioteca estándar del lenguaje incluye el módulo inspect, que como indica [15],
 proporciona varias funciones útiles para ayudar a obtener información sobre objetos vivos
 como módulos, clases, métodos y funciones. Hay cuatro tipos principales de servicios que ofrece
 este módulo: comprobación de tipos, obtención del código fuente, inspección de clases y funciones,
 y examen de la pila del intérprete. Lo cual supone una inmensa fuente de metadatos que unido
 a todo lo antes expuestos transforman a este lenguaje en el ambiente ideal para el desarrollo de
-_DSLs_ y _framewors_ de gran expresividad.
+DSLs y framewors de gran expresividad.
 
 ## Estado del Arte
 
 En función del marco teórico en que se desarrollo la investigación y teniendo en cuenta
 que el estado del arte respecto a la descripción de espacios de búsqueda, en este momento,
-se encuentra concentrado en los sistemas _AutoML_ y bibliotecas de optimización, entonces se
+se encuentra concentrado en los sistemas AutoML y bibliotecas de optimización, entonces se
 realizo una selección y estudio de las herramientas del sector, que contarán con algún
 mecanismo para expresar la dimension o estructura de su espacio de búsqueda. Dicha
 herramienta debía ser; un mecanismo integrado con el lenguaje de propósito general
 subyacente, en los que el objetivo final de cada descripción fuera la generación de
 muestras. El listado final quedo integrado por:
 
-- AutoGOAL [4]: Biblioteca de _AutoML_, escrita en _Python_, transversal a la naturaleza
-  de los problemas y de las herramientas subyacentes. Mediante su módulo _Grammar_ ofrece
+- AutoGOAL [4]: Biblioteca de AutoML, escrita en Python, transversal a la naturaleza
+  de los problemas y de las herramientas subyacentes. Mediante su módulo Grammar ofrece
   un listados de tipos y abstracciones con las que los desarrolladores pueden describir
   su espacio de búsqueda.
-- HyperOpt [7]: Biblioteca de _Python_ que intenta resolver el problema de la optimización
+- HyperOpt [7]: Biblioteca de Python que intenta resolver el problema de la optimización
   paramétrica siendo independiente a la función en cuestión. La misma define una sintaxis y
   una lista de funciones para expresar la definición de cada uno de los parámetro de la
   función en cuestión
@@ -207,7 +207,7 @@ muestras. El listado final quedo integrado por:
   especialmente diseñado para el aprendizaje automático. El cual inyecta la instancia de una
   clase predefinida para seguir la evolución de dichos hiperparámetros asi como
   una lista de funciones para describir las características de los mismos
-- AutoGloun [11]: Biblioteca de _AutoML_, escrita en _Python_, que permite utilizar y ampliar
+- AutoGloun [11]: Biblioteca de AutoML, escrita en Python, que permite utilizar y ampliar
   AutoML de forma sencilla, centrándose en el ensamblaje automatizado de pilas, el aprendizaje
   profundo y las aplicaciones del mundo real que abarcan datos de imágenes, textos y tablas.
   Aprovechando el ajuste automático de hiperparámetros, la selección/ensamblaje de modelos,
@@ -216,7 +216,7 @@ muestras. El listado final quedo integrado por:
   dicha personalización la biblioteca combina la definición de una sintaxis para la descripción
   estructural de los hiperparámetros con una lista de tipos para expresar la dimension de los
   mismo
-- AutoSklearn [12]: Biblioteca de _AutoML_, escrita en _Python_, sustentados sobre conjunto de
+- AutoSklearn [12]: Biblioteca de AutoML, escrita en Python, sustentados sobre conjunto de
   herramientas de aprendizaje automático de scikit-learn. Permite a los desarrolladores personalizar
   sus modelos ofreciendo una lista de tipos con los que restringir los distintos dominios de cada
   hiperparámetro, junto con una sintaxis específica para la declaración de los mismo
@@ -235,11 +235,11 @@ momento:
 
 - Estilo de la Sintaxis Concreta: Esta puede ser imperativa o funcional
 - Objetivo del Sistema Subyacente: En el caso particular del campo de interés de esta
-  investigación la mayoría de las herramientas se encuentra relacionadas con el _ML_ o
-  _AutoML_, pero dentro de ambos campos existen múltiples subdominios y razones por las que
+  investigación la mayoría de las herramientas se encuentra relacionadas con el ML o
+  AutoML, pero dentro de ambos campos existen múltiples subdominios y razones por las que
   sería de interés describir un dominio determinado
 - Activo Objetivo: Nombre con el que se describe el resultado esperado por las transformaciones
-  del _DSL_. En los casos analizados por [6] suelen ser archivos de textos, gráficos o llamadas
+  del DSL. En los casos analizados por [6] suelen ser archivos de textos, gráficos o llamadas
   al sistema, pero en esta investigación el autor reinterpreto esta característica, debido a la
   naturales del campo de investigación, y por tanto los activos objetivos pasan a describir a
   los efectos que provoca el empleo del mismo dentro de un programa, las instancias que
@@ -270,7 +270,7 @@ momento:
     de los vectores de dimension aleatoria
   - Estructuras de controles de flujo para las descripción de espacios opcionales
 
-#### [Tabla Comparativa Online](https://github.com/danielorlando97/search-space/blob/process_optimization/doc/table.md)
+<!-- #### [Tabla Comparativa Online](https://github.com/danielorlando97/search-space/blob/process_optimization/doc/table.md) -->
 
 Analizando el estado del arte mediante la comparación antes expuesta se
 resaltar varias puntos. La mayoría de las herramientas de la actualidad
@@ -284,18 +284,18 @@ y la comparación textual entre los nombres de los argumentos con las llaves
 de dichos diccionarios o nombres que se le asignan a las distintas instancias de
 las clases básicas.
 
-Además cada uno de los **DSLs** analizado presentan diseños muy influenciado
+Además cada uno de los DSLs analizado presentan diseños muy influenciado
 por el domino de la herramienta subyacente. En los casos en que el objetivo
 principal de la misma es la optimización paramétrica, las descripciones se
 encuentran constituidas por los nombres de las distribuciones de cada una de
 las variables aleatorias. Mientras que herramientas especializadas en la solución
-del problema del **AutoML**, las herramientas descriptivas se ven más influenciada
+del problema del AutoML, las herramientas descriptivas se ven más influenciada
 por las funciones de estos parámetros dentro de los distintos algoritmos. Bajo este
 análisis una herramienta con el propósito principal de describir los espacios de
 búsqueda, como sería de propuesta de solución, debe presentar una sintaxis expresiva
 respeto a los tipos que serán generados como resultado final.
 
-Por último, se destaca el caso de la biblioteca _Optuna_ que siendo la herramienta
+Por último, se destaca el caso de la biblioteca Optuna que siendo la herramienta
 que se decanta por una filosofía imperativa, cuenta con mecanismo para dar respuesta
 a los problemas que dieron lugar a la presenta investigación. Pese a la flexibilidad
 y la potencia de la propuesta no es la sintaxis ideal para las descripciones, como se
