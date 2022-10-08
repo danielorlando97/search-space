@@ -48,7 +48,7 @@ class ModuleDomain(Generic[T]):
             self.plus = other
             return self
 
-        other = [other] if not type(other) in [list, tuple] else other
+        other = [other] if not type(other) in [list, tuple] else copy(other)
         if self.plus is None:
             self.plus = other.pop(0)
 

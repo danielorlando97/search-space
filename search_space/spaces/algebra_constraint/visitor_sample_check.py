@@ -52,6 +52,43 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
 
     #################################################################
     #                                                               #
+    #                 Arithmetic Visit                              #
+    #                                                               #
+    #################################################################
+
+    @visitor.when(ast.ModOp)
+    def visit(self, node, current_index=[]):
+        a = self.visit(node.target, current_index)
+        b = self.visit(node.other, current_index)
+
+        return a % b
+
+    #################################################################
+    #                                                               #
+    #                  Logic Visit                                  #
+    #                                                               #
+    #################################################################
+
+    @visitor.when(ast.AndOp)
+    def visit(self, node, current_index=[]):
+        a = self.visit(node.target, current_index)
+
+        if type(a) == bool and not a:
+            return a
+
+        return self.visit(node.other, current_index)
+
+    @visitor.when(ast.OrOp)
+    def visit(self, node, current_index=[]):
+        a = self.visit(node.target, current_index)
+
+        if type(a) == bool and a:
+            return a
+
+        return self.visit(node.other, current_index)
+
+    #################################################################
+    #                                                               #
     #                  Binary Cmp Visit                             #
     #                                                               #
     #################################################################
