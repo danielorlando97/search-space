@@ -86,3 +86,6 @@ class CategoricalDomain:
 
         self.filter(lambda x: x <= other)
         return self
+
+    def __or__(self, __o):
+        return BachedDomain(self, __o)

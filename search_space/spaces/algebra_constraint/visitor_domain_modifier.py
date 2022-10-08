@@ -1,4 +1,5 @@
-from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError
+from copy import copy
+from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError, UnSupportOpError
 from search_space.utils import visitor
 from search_space.spaces.algebra_constraint import ast
 from search_space.spaces.algebra_constraint.functions_and_predicates import FunctionNode, AdvancedFunctionNode
@@ -43,10 +44,50 @@ class DomainModifierVisitor(VisitorLayer):
 
     #################################################################
     #                                                               #
-    #                  Binary Cmp Visit                             #
+    #                 Arithmetic Visit                              #
     #                                                               #
     #################################################################
 
+    @visitor.when(ast.ModOp)
+    def visit(self, node):
+        _ = self.visit(node.target)
+        limit = self.visit(node.other)
+
+        self.domain = self.domain % limit
+
+    #################################################################
+    #                                                               #
+    #                  Logic Visit                                  #
+    #                                                               #
+    #################################################################
+
+    @visitor.when(ast.AndOp)
+    def visit(self, node):
+        a = self.visit(node.target)
+
+        if type(a) == bool and not a:
+            return
+
+        b = self.visit(node.other)
+
+    @visitor.when(ast.OrOp)
+    def visit(self, node):
+        current_domain = copy(self.domain)
+        a = self.visit(node.target)
+
+        if type(a) == bool and a:
+            return
+
+        current_domain, self.domain = self.domain, current_domain
+        b = self.visit(node.other)
+
+        self.domain = self.domain | current_domain
+
+    #################################################################
+    #                                                               #
+    #                  Binary Cmp Visit                             #
+    #                                                               #
+    #################################################################
     @visitor.when(ast.LessOp)
     def visit(self, node):
         _ = self.visit(node.target)
@@ -94,6 +135,14 @@ class DomainModifierVisitor(VisitorLayer):
     #                  Simple Transform                             #
     #                                                               #
     #################################################################
+
+    # @visitor.when(ast.GetAttr)
+    # def visit(self, node):
+    #     raise UnSupportOpError(self.domain, '', 'GetAttr')
+
+    # @visitor.when(ast.GetItem)
+    # def visit(self, node):
+    #     raise UnSupportOpError(self.domain, 1, 'GetItem')
 
     @visitor.when(ast.SelfNode)
     def visit(self, node):

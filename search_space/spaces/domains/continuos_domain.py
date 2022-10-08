@@ -1,5 +1,6 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
+from search_space.spaces.domains.module_domain import ModuleDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 
@@ -108,3 +109,9 @@ class ContinuosDomain:
 
     def __le__(self, other):
         return self.__lt__(other)
+
+    def __or__(self, __o):
+        return BachedDomain(self, __o)
+
+    def __mod__(self, factor):
+        return ModuleDomain(self, factor)

@@ -3,7 +3,7 @@ import inspect
 from token import EXACT_TOKEN_TYPES
 from typing_extensions import Self
 from search_space.context_manager.sampler_context import SamplerContext
-from search_space.sampler.distribution_names import UNIFORM_BERNOULLI
+from search_space.sampler.distribution_names import UNIFORM, UNIFORM_BERNOULLI
 from search_space.spaces.algebra_constraint import visitors
 from search_space.spaces import BasicSearchSpace
 import imp
@@ -238,7 +238,7 @@ class NoneSpace(BasicSearchSpace):
 
 
 class UnionSpace(BasicSearchSpace):
-    def __init__(self, *domain, distribute_like=UNIFORM_BERNOULLI) -> None:
+    def __init__(self, *domain, distribute_like=UNIFORM) -> None:
         super().__init__(CategoricalDomain(domain), distribute_like=distribute_like)
 
     def get_sample(self, context=None, local_domain=None):

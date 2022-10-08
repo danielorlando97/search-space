@@ -1,5 +1,6 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
+from search_space.spaces.domains.module_domain import ModuleDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 
@@ -76,12 +77,7 @@ class NaturalDomain:
         if other > self.max or other < self.min:
             return self
 
-        """If other is equal that one of limit, we can't limit 
-           to domain only can check this condition after we sampler"""
-        if other == self.max or self.min == other:
-            return self
-
-        return BachedDomain(NaturalDomain(self.min, other), NaturalDomain(other, self.max))
+        return BachedDomain(NaturalDomain(self.min, other - 1), NaturalDomain(other + 1, self.max))
 
     def __lt__(self, other):
         if type(other) in [list, tuple]:
@@ -126,3 +122,9 @@ class NaturalDomain:
 
         self.max = min(other, self.max)
         return self
+
+    def __or__(self, __o):
+        return BachedDomain(self, __o)
+
+    def __mod__(self, factor):
+        return ModuleDomain(self, factor)
