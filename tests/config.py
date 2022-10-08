@@ -1,5 +1,12 @@
 import os
 
+from search_space.context_manager.runtime_manager import SearchSpaceConfig
+
+SearchSpaceConfig(
+    verbose=False,
+    replay_nums=100,
+)
+
 validate_replay_count = os.getenv('validate_replay_count', '')
 if any(validate_replay_count):
     validate_replay_count = int(validate_replay_count)

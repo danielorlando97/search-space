@@ -45,9 +45,44 @@ class CategoricalDomain:
     #################################################################
 
     def __eq__(self, other):
+        if type(other) in [list, tuple]:
+            self.filter(lambda x: x in other)
+            return self
+
         self.filter(lambda x: x == other)
         return self
 
     def __ne__(self, other):
+        if type(other) in [list, tuple]:
+            self.filter(lambda x: not x in other)
+            return self
+
         self.filter(lambda x: x != other)
+        return self
+
+    def __lt__(self, other):
+        if type(other) in [list, tuple]:
+            other = min(other)
+
+        self.filter(lambda x: x < other)
+        return self
+
+    def __gt__(self, other):
+        if type(other) in [list, tuple]:
+            other = max(other)
+        self.filter(lambda x: x > other)
+        return self
+
+    def __ge__(self, other):
+        if type(other) in [list, tuple]:
+            other = max(other)
+
+        self.filter(lambda x: x >= other)
+        return self
+
+    def __le__(self, other):
+        if type(other) in [list, tuple]:
+            other = min(other)
+
+        self.filter(lambda x: x <= other)
         return self

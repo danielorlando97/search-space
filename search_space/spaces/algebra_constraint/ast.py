@@ -283,12 +283,12 @@ class SelfNode(UniversalVariableNode):
 
 
 class AstRoot(UniversalVariableNode):
-    def __init__(self, asts=[]) -> None:
+    def __init__(self, asts=None) -> None:
         super().__init__()
-        self.asts = asts
+        self.asts = [] if asts is None else asts
 
     def add_constraint(self, ast):
-        if type(ast) in [type([]), type(())]:
+        if type(ast) in [list, tuple]:
             self.asts += ast
         else:
             self.asts.append(ast)
@@ -299,7 +299,7 @@ class AstRoot(UniversalVariableNode):
 
         n = AstRoot([])
 
-        if type(other) in [type(list()), tuple()]:
+        if type(other) in [list, tuple]:
             n.asts = self.asts + other
         else:
             n.asts = self.asts + other.asts

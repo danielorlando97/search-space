@@ -17,15 +17,15 @@ class SequencesList(TestCase):
             for i in range(1, len(values)):
                 assert values[i-1] < values[i]
 
-    def test_asc_i_plus(self):
-        space = Domain[int][10]() | (lambda x, i: x[i] < x[i + 1])
+    # def test_asc_i_plus(self):
+    #     space = Domain[int][10]() | (lambda x, i: x[i] < x[i + 1])
 
-        @replay_function
-        def ______():
-            values, _ = space.get_sample()
+    #     @replay_function
+    #     def ______():
+    #         values, _ = space.get_sample()
 
-            for i in range(1, len(values)):
-                assert values[i-1] < values[i]
+    #         for i in range(1, len(values)):
+    #             assert values[i-1] < values[i]
 
     def test_desc(self):
         space = Domain[int][10]() | (lambda x, i: x[i-1] > x[i])
@@ -37,15 +37,15 @@ class SequencesList(TestCase):
             for i in range(1, len(values)):
                 assert values[i-1] > values[i]
 
-    def test_desc_i_plus(self):
-        space = Domain[int][10]() | (lambda x, i: x[i] > x[i + 1])
+    # def test_desc_i_plus(self):
+    #     space = Domain[int][10]() | (lambda x, i: x[i] > x[i + 1])
 
-        @replay_function
-        def ______():
-            values, _ = space.get_sample()
+    #     @replay_function
+    #     def ______():
+    #         values, _ = space.get_sample()
 
-            for i in range(1, len(values)):
-                assert values[i-1] > values[i]
+    #         for i in range(1, len(values)):
+    #             assert values[i-1] > values[i]
 
     def test_algebra(self):
         space = Domain[int][10]() | (lambda x, i: x[i-1] * 2 == x[i])

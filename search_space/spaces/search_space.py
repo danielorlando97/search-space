@@ -64,6 +64,8 @@ class BasicSearchSpace:
 
         result = type(self)(*domain, distribute_like=self.__distribute_like__)
         result.space_name = f"{result.space_name}'"
+        result.visitor_layers = [item for item in self.visitor_layers]
+        result._clean_asts.add_constraint(self._clean_asts.asts)
         return result
 
     #################################################################
@@ -180,7 +182,7 @@ class BasicSearchSpace:
         printer.tabs -= 1
 
         sample_index = 0
-        while config.replay_nums is None or config.replay_nums > sample_index:
+        while True:
 
             printer.tabs += 1
             sample, sample_context = self.__sampler__(domain, context)
@@ -194,6 +196,9 @@ class BasicSearchSpace:
                 return sample, context
 
             except InvalidSampler as e:
+                if not config.replay_nums is None or config.replay_nums <= sample_index:
+                    raise e
+
                 printer.sample_error(sample, e.text, sample_index)
 
             sample_index += 1
@@ -255,5 +260,6 @@ class SearchSpace(BasicSearchSpace):
             self.__distribute_like__,
             sampler=None,
             ast=self.ast_constraint,
-            clean_asts=self._clean_asts
+            clean_asts=self._clean_asts,
+            layers=self.visitor_layers
         )

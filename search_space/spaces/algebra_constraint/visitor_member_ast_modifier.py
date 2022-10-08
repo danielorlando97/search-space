@@ -82,7 +82,7 @@ class MemberAstModifierVisitor(VisitorLayer):
             if other.target == self.member:
                 return target
             else:
-                return ast.NaturalValue(self.space[other])
+                return ast.NaturalValue(self.space[other.target])
 
         return ast.GetAttr(target, other)
 

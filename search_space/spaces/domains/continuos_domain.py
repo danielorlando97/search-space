@@ -1,4 +1,5 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
+from search_space.spaces.domains.categorical_domain import CategoricalDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 
@@ -42,6 +43,9 @@ class ContinuosDomain:
     #################################################################
 
     def __eq__(self, other):
+        if type(other) in [list, tuple]:
+            return CategoricalDomain([item for item in other if self.min <= item and item <= self.max])
+
         if other > self.max or other < self.min:
             raise InvalidSpaceDefinition(
                 f"{other} isn't intro the [{self.min}, {self.max}]")
@@ -52,6 +56,20 @@ class ContinuosDomain:
         return self
 
     def __ne__(self, other):
+        if type(other) in [list, tuple]:
+
+            other = [item for item in other + [self.min, self.max] if self.min <=
+                     item and item <= self.max]
+            other = list(set(other))
+            other.sort()
+
+            if len(other) == 2:
+                return self
+
+            return BachedDomain(
+                * [ContinuosDomain(other[i-1], other[i]) for i in range(1, len(other))]
+            )
+
         "If other is out of current domain, it will never enter and current domain is right"
         if other > self.max or other < self.min:
             return self
@@ -64,6 +82,9 @@ class ContinuosDomain:
         return BachedDomain(ContinuosDomain(self.min, other), ContinuosDomain(other, self.max))
 
     def __lt__(self, other):
+        if type(other) in [list, tuple]:
+            other = min(other)
+
         if self.min > other:
             raise InvalidSpaceDefinition(
                 f"All values intro [{self.min}, {self.max}] are graters that {other}")
@@ -72,6 +93,9 @@ class ContinuosDomain:
         return self
 
     def __gt__(self, other):
+        if type(other) in [list, tuple]:
+            other = max(other)
+
         if self.max < other:
             raise InvalidSpaceDefinition(
                 f"All values intro [{self.min}, {self.max}] are less that {other}")

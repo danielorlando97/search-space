@@ -56,11 +56,57 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     #                                                               #
     #################################################################
 
+    @visitor.when(ast.NotEqualOp)
+    def visit(self, node, current_index=[]):
+
+        a = self.visit(node.target, current_index)
+        b = self.visit(node.other, current_index)
+
+        if type(b) in [list, tuple] and not type(a) in [list, tuple]:
+            if not a in b:
+                return self
+
+        elif type(a) in [list, tuple] and not type(b) in [list, tuple]:
+            if not b in a:
+                return self
+
+        elif a != b:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {a} != {b} ]")
+
+    @visitor.when(ast.EqualOp)
+    def visit(self, node, current_index=[]):
+
+        a = self.visit(node.target, current_index)
+        b = self.visit(node.other, current_index)
+
+        if type(b) in [list, tuple] and not type(a) in [list, tuple]:
+            if a in b:
+                return self
+
+        elif type(a) in [list, tuple] and not type(b) in [list, tuple]:
+            if b in a:
+                return self
+
+        elif a == b:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {a} == {b} ]")
+
     @visitor.when(ast.LessOp)
     def visit(self, node, current_index=[]):
 
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
+
+        if type(b) in [list, tuple]:
+            b = min(b)
+
+        if type(a) in [list, tuple]:
+            a = max(a)
 
         if a < b:
             return self
@@ -74,6 +120,12 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
+        if type(b) in [list, tuple]:
+            b = min(b)
+
+        if type(a) in [list, tuple]:
+            a = max(a)
+
         if a <= b:
             return self
 
@@ -86,11 +138,17 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
+        if type(b) in [list, tuple]:
+            b = max(b)
+
+        if type(a) in [list, tuple]:
+            a = min(a)
+
         if a > b:
             return self
 
         raise InvalidSampler(
-            f"inconsistent sampler => [ {a} < {b} ]")
+            f"inconsistent sampler => [ {a} > {b} ]")
 
     @visitor.when(ast.GreatOrEqualOp)
     def visit(self, node, current_index=[]):
@@ -98,11 +156,17 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
+        if type(b) in [list, tuple]:
+            b = max(b)
+
+        if type(a) in [list, tuple]:
+            a = min(a)
+
         if a >= b:
             return self
 
         raise InvalidSampler(
-            f"inconsistent sampler => [ {a} < {b} ]")
+            f"inconsistent sampler => [ {a} >= {b} ]")
 
     #################################################################
     #                                                               #

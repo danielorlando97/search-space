@@ -1,3 +1,4 @@
+from unittest import result
 from search_space.context_manager.sampler_context import SamplerContext
 from search_space.errors import DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint, NotEvaluateError
 from search_space.spaces import BasicSearchSpace
@@ -54,7 +55,7 @@ class TensorSearchSpace(BasicSearchSpace):
     #                                                               #
     #################################################################
 
-    def __init__(self, shape_space: list) -> None:
+    def __init__(self, shape_space: list, distribute_like=None) -> None:
         super().__init__((), None)
         self.len_spaces = shape_space if type(
             shape_space) in [type(list()), type(tuple())] else [shape_space]
@@ -62,6 +63,7 @@ class TensorSearchSpace(BasicSearchSpace):
         self.samplers = {}
         self.ast_constraint = ast_constraint.AstRoot([])
         self._current_shape = []
+        self.visitor_layers = []
 
     def set_type(self, space: BasicSearchSpace):
         self.type_space = space
@@ -74,6 +76,17 @@ class TensorSearchSpace(BasicSearchSpace):
             self._current_shape = self.len_spaces
             self.iter_virtual_list(
                 self.len_spaces, [], lambda index: self[index])
+
+    def __copy__(self):
+        result = super().__copy__()
+        result.len_spaces = [copy(item) for item in self.len_spaces]
+        result.type_space = self.type_space
+        result.ast_constraint = self.ast_constraint
+
+        for key, sampler in self.samplers.items():
+            result.samplers[key] = copy(sampler)
+
+        return result
 
     def iter_virtual_list(self, shape, index, func):
         if len(shape) == 0:
@@ -162,6 +175,11 @@ class TensorSearchSpace(BasicSearchSpace):
             self.samplers[key] = space.__ast_optimization__(ast_list)
 
         return self
+
+    def layers_append(self, *args):
+        self.visitor_layers += list(args)
+        for key in self.samplers.keys():
+            self.samplers[key].layers_append(*args)
 
     #################################################################
     #                                                               #

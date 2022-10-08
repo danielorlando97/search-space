@@ -163,13 +163,15 @@ class SpaceFactory(BasicSearchSpace):
                 if isinstance(member.space, BasicSearchSpace):
                     self._sub_space[name] = copy(member.space)
                     self._sub_space[name].set_hash(hash(member.space))
-                    self._sub_space[name].visitor_layers += [
+                    self._sub_space[name].layers_append(
                         visitors.EvalAstChecked(),
                         visitors.MemberAstModifierVisitor(self, name)
-                    ]
+                    )
 
             except AttributeError:
                 pass
+
+        self.visitor_layers = []
 
     def __sampler__(self, domain, context: SamplerContext):
         instance_context = context.create_child(f'{self.space_name}_members')
@@ -177,7 +179,7 @@ class SpaceFactory(BasicSearchSpace):
 
         class_func = ClassFunction(
             self.type.__init__, instance_context, sub_space_list, self.type)
-        class_instance = domain(*class_func.sample_params())
+        class_instance = self.type(*class_func.sample_params())
 
         # there's propably a better way to do this
         for name, method in inspect.getmembers(class_instance, inspect.ismethod):

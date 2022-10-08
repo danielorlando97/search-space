@@ -1,3 +1,4 @@
+from xml import dom
 from search_space.sampler.factory import SamplerFactory
 from search_space.spaces import SearchSpace, BasicSearchSpace
 from search_space.sampler.distribution_names import UNIFORM
@@ -46,9 +47,11 @@ class CategoricalSearchSpace(SearchSpace):
 
 @SpacesManager.registry(bool)
 class BasicBooleanSearchSpace(BasicSearchSpace):
-    def __init__(self, distribute_like=UNIFORM) -> None:
-        super().__init__(CategoricalDomain(
-            [True, False]), distribute_like=distribute_like)
+    def __init__(self, *domain, distribute_like=UNIFORM) -> None:
+        if len(domain) == 0:
+            domain = [True, False]
+
+        super().__init__(CategoricalDomain(domain), distribute_like=distribute_like)
 
     # def __advance_space__(self, ast):
     #     advance_space = BooleanSearchSpace(
