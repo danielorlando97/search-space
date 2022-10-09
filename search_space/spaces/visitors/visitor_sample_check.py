@@ -8,7 +8,6 @@ from search_space.errors import InvalidSampler, NotEvaluateError
 from search_space.utils.ast_tools import index_list
 from . import VisitorLayer
 from search_space.utils.singleton import Singleton
-from search_space.spaces.visitors.functions_and_predicates import FunctionNode, AdvancedFunctionNode
 from . import ast_index
 
 
@@ -298,8 +297,8 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         except TypeError:
             pass
 
-    @ visitor.when(FunctionNode)
-    def visit(self, node: FunctionNode, current_index):
+    @visitor.when(constraints.FunctionNode)
+    def visit(self, node: constraints.FunctionNode, current_index):
         new_args = []
         for arg in node.args:
             new_args.append(self.visit(arg, current_index))

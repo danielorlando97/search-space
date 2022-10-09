@@ -2,7 +2,6 @@ from copy import copy
 from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError, UnSupportOpError
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
-from search_space.spaces.visitors.functions_and_predicates import FunctionNode, AdvancedFunctionNode
 from . import VisitorLayer
 from search_space.utils.singleton import Singleton
 
@@ -223,8 +222,8 @@ class DomainModifierVisitor(VisitorLayer):
         except AttributeError:
             return node.target
 
-    @visitor.when(FunctionNode)
-    def visit(self, node: FunctionNode):
+    @visitor.when(constraints.FunctionNode)
+    def visit(self, node: constraints.FunctionNode):
         new_args = []
         for arg in node.args:
             new_args.append(self.visit(arg))

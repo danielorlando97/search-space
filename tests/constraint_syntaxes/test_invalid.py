@@ -48,12 +48,12 @@ class ConstraintInvalidBasicSyntaxes(TestCase):
     def test_invalid_eq(self):
         try:
             ast = self.space.__build_constraint__(lambda x: (x == x) < 3)
-            assert False, 'lambda x: x == x < 3'
+            assert False, 'lambda x: (x == x) < 3'
         except UnSupportOpError:
             pass
 
         try:
-            ast = self.space.__build_constraint__(lambda x: x == x + 3)
+            ast = self.space.__build_constraint__(lambda x: (x == x) + 3)
             assert False, 'lambda x: x == x + 3'
         except UnSupportOpError:
             pass
@@ -61,12 +61,12 @@ class ConstraintInvalidBasicSyntaxes(TestCase):
     def test_invalid_neq(self):
         try:
             ast = self.space.__build_constraint__(lambda x: (x != x) > 3)
-            assert False, 'lambda x: x != x > 3'
+            assert False, 'lambda x: (x != x) > 3'
         except UnSupportOpError:
             pass
 
         try:
-            ast = self.space.__build_constraint__(lambda x: x != x - 3)
+            ast = self.space.__build_constraint__(lambda x: (x != x) - 3)
             assert False, 'lambda x: x != x - 3'
         except UnSupportOpError:
             pass
@@ -74,12 +74,12 @@ class ConstraintInvalidBasicSyntaxes(TestCase):
     def test_invalid_less(self):
         try:
             ast = self.space.__build_constraint__(lambda x: (x < x) == 3)
-            assert False, 'lambda x: x < x == 3'
+            assert False, 'lambda x: (x < x) == 3'
         except UnSupportOpError:
             pass
 
         try:
-            ast = self.space.__build_constraint__(lambda x: x < x * 3)
+            ast = self.space.__build_constraint__(lambda x: (x < x) * 3)
             assert False, 'lambda x: x < x * 3'
         except UnSupportOpError:
             pass
@@ -87,12 +87,12 @@ class ConstraintInvalidBasicSyntaxes(TestCase):
     def test_invalid_great(self):
         try:
             ast = self.space.__build_constraint__(lambda x: (x > x) <= 3)
-            assert False, 'lambda x: x > x <= 3'
+            assert False, 'lambda x: (x > x) <= 3'
         except UnSupportOpError:
             pass
 
         try:
-            ast = self.space.__build_constraint__(lambda x: x > x % 3)
+            ast = self.space.__build_constraint__(lambda x: (x > x) % 3)
             assert False, 'lambda x: x > x % 3'
         except UnSupportOpError:
             pass

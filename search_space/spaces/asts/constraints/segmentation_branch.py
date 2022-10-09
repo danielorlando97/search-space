@@ -30,10 +30,10 @@ class SegmentationAtomNode(UniversalVariableBinaryOperation):
     def __rsub__(self, other):
         return SegmentationSubOp(other, self)
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         return SegmentationDivOp(self, other)
 
-    def __rdiv__(self, other):
+    def __rtruediv__(self, other):
         return SegmentationDivOp(other, self)
 
     def __mod__(self, other):

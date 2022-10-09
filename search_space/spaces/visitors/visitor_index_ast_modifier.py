@@ -1,6 +1,5 @@
 from threading import currentThread
 from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError
-from search_space.spaces.visitors.functions_and_predicates import FunctionNode
 from search_space.utils.singleton import Singleton
 from ..asts import constraints
 from search_space.utils import visitor
@@ -133,8 +132,8 @@ class IndexAstModifierVisitor(VisitorLayer):
         except CircularDependencyDetected:
             return constraints.NotEvaluate()
 
-    @visitor.when(FunctionNode)
-    def visit(self, node: FunctionNode, current_index):
+    @visitor.when(constraints.FunctionNode)
+    def visit(self, node: constraints.FunctionNode, current_index):
         new_args = []
         for arg in node.args:
             new_args.append(self.visit(arg, current_index))
@@ -143,7 +142,7 @@ class IndexAstModifierVisitor(VisitorLayer):
         for name, arg in node.kwargs:
             new_kw[name] = self.visit(arg, current_index)
 
-        return FunctionNode(node.func, new_args, new_kw)
+        return constraints.FunctionNode(node.func, new_args, new_kw)
 
 
 class IndexSolutionVisitor(metaclass=Singleton):

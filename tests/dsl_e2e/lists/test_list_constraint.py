@@ -61,7 +61,7 @@ class NumeralConstraint(TestCase):
                 assert v <= 10
 
     def test_simple_or(self):
-        space = Domain[int][10]() | (lambda x, i: False | x[i] <= 10)
+        space = Domain[int][10]() | (lambda x, i: False | (x[i] <= 10))
 
         @replay_function
         def ______():
@@ -70,7 +70,7 @@ class NumeralConstraint(TestCase):
                 assert v <= 10
 
     def test_simple_and(self):
-        space = Domain[int][10]() | (lambda x, i: True & x[i] <= 10)
+        space = Domain[int][10]() | (lambda x, i: True & (x[i] <= 10))
 
         @replay_function
         def ______():
@@ -79,7 +79,7 @@ class NumeralConstraint(TestCase):
                 assert v <= 10
 
     def test_or(self):
-        space = Domain[int][10]() | (lambda x, i: x[i] > 15 | x[i] < 5)
+        space = Domain[int][10]() | (lambda x, i: (x[i] > 15) | (x[i] < 5))
 
         @replay_function
         def ______():
@@ -230,7 +230,8 @@ class NumeralDim2Constraint(TestCase):
                     assert v <= 10
 
     def test_simple_or(self):
-        space = Domain[int][10][10]() | (lambda x, i, j: False | x[i][j] <= 10)
+        space = Domain[int][10][10]() | (
+            lambda x, i, j: False | (x[i][j] <= 10))
 
         @replay_function
         def ______():
@@ -240,7 +241,8 @@ class NumeralDim2Constraint(TestCase):
                     assert v <= 10
 
     def test_simple_and(self):
-        space = Domain[int][10][10]() | (lambda x, i, j: True & x[i][j] <= 10)
+        space = Domain[int][10][10]() | (
+            lambda x, i, j: True & (x[i][j] <= 10))
 
         @replay_function
         def ______():
@@ -251,7 +253,7 @@ class NumeralDim2Constraint(TestCase):
 
     def test_or(self):
         space = Domain[int][10][10]() | (
-            lambda x, i, j: x[i][j] > 15 | x[i][j] < 5)
+            lambda x, i, j: (x[i][j] > 15) | (x[i][j] < 5))
 
         @replay_function
         def ______():

@@ -72,7 +72,7 @@ class CustomConstraint(TestCase):
             assert v.a <= 10
 
     def test_simple_or(self):
-        space = Domain[CustomSpace]() | (lambda x: False | x.ADomain < 10)
+        space = Domain[CustomSpace]() | (lambda x: False | (x.ADomain < 10))
 
         @replay_function
         def ______():
@@ -81,7 +81,7 @@ class CustomConstraint(TestCase):
 
     def test_simple_and(self):
 
-        space = Domain[CustomSpace]() | (lambda x: True & x.ADomain <= 10)
+        space = Domain[CustomSpace]() | (lambda x: True & (x.ADomain <= 10))
 
         @replay_function
         def ______():
@@ -90,7 +90,7 @@ class CustomConstraint(TestCase):
 
     def test_or(self):
         space = Domain[CustomSpace]() | (
-            lambda x: x.ADomain > 15 | x.BDomain < 5)
+            lambda x: (x.ADomain > 15) | (x.BDomain < 5))
 
         @replay_function
         def ______():
@@ -214,7 +214,7 @@ class CircularExternalDependency(TestCase):
 
     def test_or(self):
         space = Domain[CustomSpace]() | (
-            lambda x: x.ADomain > x.BDomain | x.BDomain < x.ADomain)
+            lambda x: (x.ADomain > x.BDomain) | (x.BDomain < x.ADomain))
 
         @replay_function
         def ______():

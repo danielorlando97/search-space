@@ -55,7 +55,7 @@ class NumeralConstraint(TestCase):
             assert v <= 5
 
     def test_simple_or(self):
-        space = Domain[int] | (lambda x: False | x < 5)
+        space = Domain[int] | (lambda x: False | (x < 5))
 
         @replay_function
         def ______():
@@ -63,7 +63,7 @@ class NumeralConstraint(TestCase):
             assert v < 5
 
     def test_simple_and(self):
-        space = Domain[int](max=15) | (lambda x: True & x <= 5)
+        space = Domain[int](max=15) | (lambda x: True & (x <= 5))
 
         @replay_function
         def ______():
@@ -71,7 +71,7 @@ class NumeralConstraint(TestCase):
             assert v <= 5
 
     def test_or(self):
-        space = Domain[int](max=20) | (lambda x: x > 15 | x < 5)
+        space = Domain[int](max=20) | (lambda x: (x > 15) | (x < 5))
 
         @replay_function
         def ______():
@@ -195,7 +195,7 @@ class NumeralFloatConstraint(TestCase):
             assert v <= 5
 
     def test_simple_or(self):
-        space = Domain[float] | (lambda x: False | x < 5)
+        space = Domain[float] | (lambda x: False | (x < 5))
 
         @replay_function
         def ______():
@@ -203,7 +203,7 @@ class NumeralFloatConstraint(TestCase):
             assert v < 5
 
     def test_simple_and(self):
-        space = Domain[float](max=15) | (lambda x: True & x <= 5)
+        space = Domain[float](max=15) | (lambda x: True & (x <= 5))
 
         @replay_function
         def ______():
@@ -211,7 +211,7 @@ class NumeralFloatConstraint(TestCase):
             assert v <= 5
 
     def test_or(self):
-        space = Domain[float](max=20) | (lambda x: x > 15 | x < 5)
+        space = Domain[float](max=20) | (lambda x: (x > 15) | (x < 5))
 
         @replay_function
         def ______():

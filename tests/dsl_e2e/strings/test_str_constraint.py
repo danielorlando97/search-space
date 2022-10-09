@@ -57,7 +57,7 @@ class StringConstraint(TestCase):
             assert v <= '10'
 
     def test_simple_or(self):
-        space = Domain[str](options=options) | (lambda x: False | x > '10')
+        space = Domain[str](options=options) | (lambda x: False | (x > '10'))
 
         @replay_function
         def ______():
@@ -65,7 +65,7 @@ class StringConstraint(TestCase):
             assert v > '10'
 
     def test_simple_and(self):
-        space = Domain[str](options=options) | (lambda x: True & x > '10')
+        space = Domain[str](options=options) | (lambda x: True & (x > '10'))
 
         @replay_function
         def ______():
@@ -73,7 +73,8 @@ class StringConstraint(TestCase):
             assert v > '10'
 
     def test_or(self):
-        space = Domain[str](options=options) | (lambda x: x < '100' | x > '10')
+        space = Domain[str](options=options) | (
+            lambda x: (x < '100') | (x > '10'))
 
         @replay_function
         def ______():

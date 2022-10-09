@@ -5,7 +5,7 @@ from .expr_ops import AddOp, SubOp, MultiOp, DivOp
 from .segmentation_branch import SegmentationAddOp, SegmentationSubOp, SegmentationMultiOp, SegmentationDivOp
 from .segmentation_branch import SegmentationEqualOp, SegmentationNotEqualOp, SegmentationLessOp, SegmentationLessOrEqualOp, SegmentationGreatOp, SegmentationGreatOrEqualOp
 from .segmentation_branch import SegmentationModOp, SegmentationExprNode
-from .atoms import GetAttr, GetItem, NaturalValue, NotEvaluate, SelfNode
+from .atoms import GetAttr, GetItem, NaturalValue, NotEvaluate, SelfNode, FunctionNode, AdvancedFunctionNode
 
 """
          Constraint := Cmp | Constraint

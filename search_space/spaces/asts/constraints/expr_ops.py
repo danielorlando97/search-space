@@ -25,16 +25,16 @@ class ExprOpsNode(CmpOpsNode):
     def __rsub__(self, other):
         return SubOp(other, self)
 
-    def __div__(self, other):
+    def __truediv__(self, other):
         return DivOp(self, other)
 
-    def __rdiv__(self, other):
+    def __rtruediv__(self, other):
         return DivOp(other, self)
 
     def __mod__(self, other):
         return SegmentationModOp(self, other)
 
-    def __divmod__(self, other):
+    def __rdivmod__(self, other):
         return SegmentationModOp(other, self)
 
 

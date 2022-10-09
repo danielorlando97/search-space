@@ -7,7 +7,7 @@ from search_space.utils.ast_tools import decorated_all_methods
 def expr_node_check(fn):
     def f(*args):
         if not isinstance(args[1], CmpOpsNode.ExprNode):
-            raise UnSupportOpError(CmpOpsNode(None, None), args[1], 'cmp')
+            raise UnSupportOpError(args[0], args[1], 'cmp')
 
         return fn(*args)
     f.__name__ = fn.__name__
@@ -61,37 +61,37 @@ class CmpOpsNode(LogicOpsNode):
         return cls
 
 
-class EqualOp(CmpOpsNode):
+class EqualOp(LogicOpsNode):
     def _suggestion(self, op):
-        return f'try to change the constraint like \
-            {type(self.target).__name__} == ( {type(self.other).__name__} {op} ...'
+        return f"""try to change the constraint like 
+            {type(self.target).__name__} == ( {type(self.other).__name__} {op} ..."""
 
 
-class NotEqualOp(CmpOpsNode):
+class NotEqualOp(LogicOpsNode):
     def _suggestion(self, op):
-        return f'try to change the constraint like \
-            {type(self.target).__name__} != ( {type(self.other).__name__} {op} ...'
+        return f"""try to change the constraint like 
+            {type(self.target).__name__} != ( {type(self.other).__name__} {op} ..."""
 
 
-class GreatOrEqualOp(CmpOpsNode):
+class GreatOrEqualOp(LogicOpsNode):
     def _suggestion(self, op):
-        return f'try to change the constraint like \
-            {type(self.target).__name__} >= ( {type(self.other).__name__} {op} ...'
+        return f"""try to change the constraint like 
+            {type(self.target).__name__} >= ( {type(self.other).__name__} {op} ..."""
 
 
-class GreatOp(CmpOpsNode):
+class GreatOp(LogicOpsNode):
     def _suggestion(self, op):
-        return f'try to change the constraint like \
-            {type(self.target).__name__} > ( {type(self.other).__name__} {op} ...'
+        return f"""try to change the constraint like 
+            {type(self.target).__name__} > ( {type(self.other).__name__} {op} ..."""
 
 
-class LessOrEqualOp(CmpOpsNode):
+class LessOrEqualOp(LogicOpsNode):
     def _suggestion(self, op):
-        return f'try to change the constraint like \
-            {type(self.target).__name__} <= ( {type(self.other).__name__} {op} ...'
+        return f"""try to change the constraint like 
+            {type(self.target).__name__} <= ( {type(self.other).__name__} {op} ..."""
 
 
-class LessOp(CmpOpsNode):
+class LessOp(LogicOpsNode):
     def _suggestion(self, op):
-        return f'try to change the constraint like \
-            {type(self.target).__name__} < ( {type(self.other).__name__} {op} ...'
+        return f"""try to change the constraint like 
+            {type(self.target).__name__} > ( {type(self.other).__name__} {op} ..."""
