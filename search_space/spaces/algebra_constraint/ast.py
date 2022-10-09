@@ -1,6 +1,49 @@
 from search_space.utils.ast_tools import decorated_all_methods, check_ast_precedence, check_params_type
 
 
+"""
+    Constraint := Cmp | Constraint
+               := Cmp & Constraint
+               := Cmp
+               := ModularExpr
+
+           Cmp := Expr == Expr
+           Cmp := Expr != Expr
+           Cmp := Expr >= Expr
+           Cmp := Expr > Expr
+           Cmp := Expr <= Expr
+           Cmp := Expr < Expr
+           Cmp := Expr
+
+   ModularExpr := ModularAtom == Expr
+   ModularExpr := ModularAtom != Expr
+   ModularExpr := ModularAtom <= Expr
+   ModularExpr := ModularAtom < Expr
+   ModularExpr := ModularAtom > Expr
+   ModularExpr := ModularAtom >= Expr
+
+   ModularAtom := ModularAtom + Expr  
+   ModularAtom := ModularAtom - Expr  
+   ModularAtom := ModularAtom * Expr  
+   ModularAtom := ModularAtom / Expr  
+   ModularAtom := ModularAtom % Expr  
+   ModularAtom := Expr % Expr 
+
+
+          Expr := Atom + Expr
+          Expr := Atom - Expr
+          Expr := Atom * Expr
+          Expr := Atom / Expr
+          Expr := Atom
+
+          Atom := Self
+          Atom := FunctionCall
+          Atom := NaturalValue
+          Atom := (Constraint)
+
+"""
+
+
 check_natural_value = check_params_type(
     lambda: UniversalVariableNode, lambda x: NaturalValue(x))
 
