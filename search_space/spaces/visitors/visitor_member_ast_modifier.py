@@ -1,8 +1,8 @@
 from xml import dom
 from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError
-from . import ast
+from ..asts import constraints
 from search_space.utils import visitor
-from search_space.spaces.algebra_constraint import ast
+from search_space.spaces.asts import constraints
 from . import VisitorLayer
 
 
@@ -37,9 +37,9 @@ class MemberAstModifierVisitor(VisitorLayer):
     def visit(self, node):
         pass
 
-    @visitor.when(ast.AstRoot)
+    @visitor.when(constraints.AstRoot)
     def visit(self, node):
-        result = ast.AstRoot([])
+        result = constraints.AstRoot([])
 
         for n in node.asts:
             result.add_constraint(
@@ -53,7 +53,7 @@ class MemberAstModifierVisitor(VisitorLayer):
     #                                                               #
     #################################################################
 
-    @visitor.when(ast.UniversalVariableBinaryOperation)
+    @visitor.when(constraints.UniversalVariableBinaryOperation)
     def visit(self, node):
         a = self.visit(node.target)
         b = self.visit(node.other)
@@ -66,38 +66,38 @@ class MemberAstModifierVisitor(VisitorLayer):
     #                                                               #
     #################################################################
 
-    @visitor.when(ast.GetItem)
+    @visitor.when(constraints.GetItem)
     def visit(self, node):
         index = self.visit(node.other)
         target = self.visit(node.target)
 
-        return ast.GetItem(target, index)
+        return constraints.GetItem(target, index)
 
-    @visitor.when(ast.GetAttr)
-    def visit(self, node: ast.GetAttr):
+    @visitor.when(constraints.GetAttr)
+    def visit(self, node: constraints.GetAttr):
         target = self.visit(node.target)
         other = self.visit(node.other)
 
-        if target.is_self and isinstance(other, ast.NaturalValue):
+        if target.is_self and isinstance(other, constraints.NaturalValue):
             if other.target == self.member:
                 return target
             else:
-                return ast.NaturalValue(self.space[other.target])
+                return constraints.NaturalValue(self.space[other.target])
 
-        return ast.GetAttr(target, other)
+        return constraints.GetAttr(target, other)
 
-    @visitor.when(ast.SelfNode)
+    @visitor.when(constraints.SelfNode)
     def visit(self, node):
         return node
 
-    @visitor.when(ast.NaturalValue)
+    @visitor.when(constraints.NaturalValue)
     def visit(self, node):
         try:
             _ = node.target.get_sample
         except AttributeError:
-            return ast.NaturalValue(node.target)
+            return constraints.NaturalValue(node.target)
 
         try:
-            return ast.NaturalValue(node.target.get_sample(self.context)[0])
+            return constraints.NaturalValue(node.target.get_sample(self.context)[0])
         except CircularDependencyDetected:
-            return ast.NotEvaluate()
+            return constraints.NotEvaluate()

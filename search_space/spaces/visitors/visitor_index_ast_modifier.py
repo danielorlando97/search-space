@@ -1,10 +1,10 @@
 from threading import currentThread
 from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError
-from search_space.spaces.algebra_constraint.functions_and_predicates import FunctionNode
+from search_space.spaces.visitors.functions_and_predicates import FunctionNode
 from search_space.utils.singleton import Singleton
-from . import ast
+from ..asts import constraints
 from search_space.utils import visitor
-from search_space.spaces.algebra_constraint import ast
+from search_space.spaces.asts import constraints
 from . import ast_index
 from . import VisitorLayer
 
@@ -31,9 +31,9 @@ class IndexAstModifierVisitor(VisitorLayer):
     def visit(self, node, current_index=[]):
         pass
 
-    @visitor.when(ast.AstRoot)
+    @visitor.when(constraints.AstRoot)
     def visit(self, node, current_index=[]):
-        result = ast.AstRoot([])
+        result = constraints.AstRoot([])
 
         for n in node.asts:
             result.add_constraint(self.visit(n, None))
@@ -46,7 +46,7 @@ class IndexAstModifierVisitor(VisitorLayer):
     #                                                               #
     #################################################################
 
-    @visitor.when(ast.UniversalVariableBinaryOperation)
+    @visitor.when(constraints.UniversalVariableBinaryOperation)
     def visit(self, node, current_index):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
@@ -60,41 +60,41 @@ class IndexAstModifierVisitor(VisitorLayer):
     #################################################################
 
 # TODO: refactor to x[(i, j)]
-    @visitor.when(ast.GetItem)
+    @visitor.when(constraints.GetItem)
     def visit(self, node, current_index):
         current_index = [] if current_index is None else current_index
         index = self.visit(node.other, current_index)
         return self.visit(node.target, [index.target] + current_index)
 
-    @visitor.when(ast.GetAttr)
+    @visitor.when(constraints.GetAttr)
     def visit(self, node, current_index):
         name = self.visit(node.other, current_index)
         target = self.visit(node.target, current_index)
 
-        return ast.GetAttr(target, name)
+        return constraints.GetAttr(target, name)
 
-    @visitor.when(ast.SelfNode)
+    @visitor.when(constraints.SelfNode)
     def visit(self, node, current_index):
         if current_index is None:
             return node
 
         if len(current_index) == 0:
-            return ast.NotEvaluate()
+            return constraints.NotEvaluate()
 
         if tuple(current_index) == self.current_index:
             return node
 
         try:
             if self.context is None:
-                return ast.NaturalValue(self.space[current_index])
+                return constraints.NaturalValue(self.space[current_index])
 
             value = self.space[current_index].get_sample(context=self.context)
         except NotEvaluateError:
-            return ast.NotEvaluate()
+            return constraints.NotEvaluate()
         except CircularDependencyDetected:
-            return ast.NotEvaluate()
+            return constraints.NotEvaluate()
 
-        return ast.NaturalValue(value)
+        return constraints.NaturalValue(value)
 
     def _index_solution(self, target, current_index):
         if not isinstance(target, ast_index.IndexNode):
@@ -116,7 +116,7 @@ class IndexAstModifierVisitor(VisitorLayer):
 
         return result
 
-    @visitor.when(ast.NaturalValue)
+    @visitor.when(constraints.NaturalValue)
     def visit(self, node, current_index):
 
         if isinstance(node.target, slice):
@@ -126,12 +126,12 @@ class IndexAstModifierVisitor(VisitorLayer):
                 self._index_solution(node.target.step, current_index)
             )
 
-            return ast.NaturalValue(slice(start, stop, steep))
+            return constraints.NaturalValue(slice(start, stop, steep))
 
         try:
-            return ast.NaturalValue(self._index_solution(node.target, current_index))
+            return constraints.NaturalValue(self._index_solution(node.target, current_index))
         except CircularDependencyDetected:
-            return ast.NotEvaluate()
+            return constraints.NotEvaluate()
 
     @visitor.when(FunctionNode)
     def visit(self, node: FunctionNode, current_index):

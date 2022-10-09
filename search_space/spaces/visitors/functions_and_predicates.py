@@ -1,4 +1,4 @@
-from search_space.spaces.algebra_constraint.ast import UniversalVariableNode, NaturalValue
+from search_space.spaces.asts.constraints import UniversalVariableNode, NaturalValue
 
 
 class FunctionNode(UniversalVariableNode):

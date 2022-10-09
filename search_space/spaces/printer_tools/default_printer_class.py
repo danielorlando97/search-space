@@ -1,8 +1,8 @@
 from search_space.context_manager.runtime_manager import SearchSpacePrinter
 from search_space.utils.singleton import Singleton
 from search_space.utils import visitor
-from search_space.spaces.algebra_constraint import ast
-from search_space.spaces.algebra_constraint import ast_index
+from search_space.spaces.asts import constraints
+from search_space.spaces.visitors import ast_index
 
 
 class Color:
@@ -142,8 +142,8 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
     def visit(self, node):
         pass
 
-    @visitor.when(ast.AstRoot)
-    def visit(self, node: ast.AstRoot):
+    @visitor.when(constraints.AstRoot)
+    def visit(self, node: constraints.AstRoot):
         self.tabs += 1
 
         for n in node.asts:
@@ -151,7 +151,7 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
 
         self.tabs -= 1
 
-    @visitor.when(ast.UniversalVariableBinaryOperation)
+    @visitor.when(constraints.UniversalVariableBinaryOperation)
     def visit(self, node):
         init_tab = self.pivot_tab * '\t'
         tabs = (self.tabs - self.pivot_tab) * self.ast_space
@@ -163,7 +163,7 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
         self.visit(node.other)
         self.tabs -= 1
 
-    @visitor.when(ast.GetItem)
+    @visitor.when(constraints.GetItem)
     def visit(self, node):
         init_tab = self.pivot_tab * '\t'
         tabs = (self.tabs - self.pivot_tab) * self.ast_space
@@ -175,7 +175,7 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
         self.visit(node.other)
         self.tabs -= 1
 
-    @visitor.when(ast.GetAttr)
+    @visitor.when(constraints.GetAttr)
     def visit(self, node):
         init_tab = self.pivot_tab * '\t'
         tabs = (self.tabs - self.pivot_tab) * self.ast_space
@@ -187,7 +187,7 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
         self.visit(node.other)
         self.tabs -= 1
 
-    @visitor.when(ast.SelfNode)
+    @visitor.when(constraints.SelfNode)
     def visit(self, node):
         init_tab = self.pivot_tab * '\t'
         tabs = (self.tabs - self.pivot_tab) * self.ast_space
@@ -195,7 +195,7 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
         print(
             f"""{init_tab}{Color.b_blue(f'| ')}{tabs} {Color.f_blue(node.__class__.__name__)}""")
 
-    @visitor.when(ast.NaturalValue)
+    @visitor.when(constraints.NaturalValue)
     def visit(self, node):
         init_tab = self.pivot_tab * '\t'
         tabs = (self.tabs - self.pivot_tab) * self.ast_space

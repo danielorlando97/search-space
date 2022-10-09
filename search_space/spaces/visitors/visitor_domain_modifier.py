@@ -1,8 +1,8 @@
 from copy import copy
 from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError, UnSupportOpError
 from search_space.utils import visitor
-from search_space.spaces.algebra_constraint import ast
-from search_space.spaces.algebra_constraint.functions_and_predicates import FunctionNode, AdvancedFunctionNode
+from search_space.spaces.asts import constraints
+from search_space.spaces.visitors.functions_and_predicates import FunctionNode, AdvancedFunctionNode
 from . import VisitorLayer
 from search_space.utils.singleton import Singleton
 
@@ -34,8 +34,8 @@ class DomainModifierVisitor(VisitorLayer):
     def visit(self, node):
         pass
 
-    @visitor.when(ast.AstRoot)
-    def visit(self, node: ast.AstRoot):
+    @visitor.when(constraints.AstRoot)
+    def visit(self, node: constraints.AstRoot):
 
         for n in node.asts:
             self.visit(n)
@@ -48,17 +48,17 @@ class DomainModifierVisitor(VisitorLayer):
     #                                                               #
     #################################################################
 
-    @visitor.when(ast.ModOp)
-    def visit(self, node):
-        target = self.visit(node.target)
-        limit = self.visit(node.other)
+    # @visitor.when(constraints.ModOp)
+    # def visit(self, node):
+    #     target = self.visit(node.target)
+    #     limit = self.visit(node.other)
 
-        if not None in [target, limit]:
-            return target % limit
+    #     if not None in [target, limit]:
+    #         return target % limit
 
-        self.domain = self.domain % limit
+    #     self.domain = self.domain % limit
 
-    @visitor.when(ast.AddOp)
+    @visitor.when(constraints.AddOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
@@ -68,7 +68,7 @@ class DomainModifierVisitor(VisitorLayer):
 
         self.domain = self.domain + limit
 
-    @visitor.when(ast.SubOp)
+    @visitor.when(constraints.SubOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
@@ -78,7 +78,7 @@ class DomainModifierVisitor(VisitorLayer):
 
         self.domain = self.domain - limit
 
-    @visitor.when(ast.MultiOp)
+    @visitor.when(constraints.MultiOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
@@ -88,7 +88,7 @@ class DomainModifierVisitor(VisitorLayer):
 
         self.domain = self.domain * limit
 
-    @visitor.when(ast.DivOp)
+    @visitor.when(constraints.DivOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
@@ -104,7 +104,7 @@ class DomainModifierVisitor(VisitorLayer):
     #                                                               #
     #################################################################
 
-    @visitor.when(ast.AndOp)
+    @visitor.when(constraints.AndOp)
     def visit(self, node):
         a = self.visit(node.target)
 
@@ -116,7 +116,7 @@ class DomainModifierVisitor(VisitorLayer):
         if not None in [a, b]:
             return target and limit
 
-    @visitor.when(ast.OrOp)
+    @visitor.when(constraints.OrOp)
     def visit(self, node):
         current_domain = copy(self.domain)
         a = self.visit(node.target)
@@ -137,7 +137,7 @@ class DomainModifierVisitor(VisitorLayer):
     #                  Binary Cmp Visit                             #
     #                                                               #
     #################################################################
-    @visitor.when(ast.LessOp)
+    @visitor.when(constraints.LessOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
@@ -147,7 +147,7 @@ class DomainModifierVisitor(VisitorLayer):
 
         self.domain = self.domain < limit
 
-    @visitor.when(ast.LessOrEqualOp)
+    @visitor.when(constraints.LessOrEqualOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
@@ -157,7 +157,7 @@ class DomainModifierVisitor(VisitorLayer):
 
         self.domain = self.domain <= limit
 
-    @visitor.when(ast.GreatOp)
+    @visitor.when(constraints.GreatOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
@@ -167,7 +167,7 @@ class DomainModifierVisitor(VisitorLayer):
 
         self.domain = self.domain > limit
 
-    @visitor.when(ast.GreatOrEqualOp)
+    @visitor.when(constraints.GreatOrEqualOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
@@ -177,7 +177,7 @@ class DomainModifierVisitor(VisitorLayer):
 
         self.domain = self.domain >= limit
 
-    @visitor.when(ast.NotEqualOp)
+    @visitor.when(constraints.NotEqualOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
@@ -187,7 +187,7 @@ class DomainModifierVisitor(VisitorLayer):
 
         self.domain = self.domain != limit
 
-    @visitor.when(ast.EqualOp)
+    @visitor.when(constraints.EqualOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
@@ -211,11 +211,11 @@ class DomainModifierVisitor(VisitorLayer):
     # def visit(self, node):
     #     raise UnSupportOpError(self.domain, 1, 'GetItem')
 
-    @visitor.when(ast.SelfNode)
+    @visitor.when(constraints.SelfNode)
     def visit(self, node):
         pass
 
-    @visitor.when(ast.NaturalValue)
+    @visitor.when(constraints.NaturalValue)
     def visit(self, node):
 
         try:
@@ -235,6 +235,6 @@ class DomainModifierVisitor(VisitorLayer):
 
         return node.func(*new_args, **new_kw)
 
-    @visitor.when(ast.NotEvaluate)
+    @visitor.when(constraints.NotEvaluate)
     def visit(self, node):
         raise NotEvaluateError()

@@ -1,7 +1,7 @@
 from search_space.sampler.factory import SamplerFactory
 from search_space.spaces import SearchSpace, BasicSearchSpace
 from search_space.sampler.distribution_names import UNIFORM
-from search_space.spaces.algebra_constraint import visitors
+from search_space.spaces.visitors import visitors
 from search_space.spaces.domains.continuos_domain import ContinuosDomain
 from search_space.spaces.domains.natural_domain import NaturalDomain
 from .space_manager import SpacesManager

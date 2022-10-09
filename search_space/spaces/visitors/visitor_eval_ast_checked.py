@@ -1,11 +1,11 @@
 from secrets import choice
 from token import EXACT_TOKEN_TYPES
 from search_space.errors import CircularDependencyDetected, InvalidSpaceDefinition, NotEvaluateError
-from search_space.spaces.algebra_constraint.functions_and_predicates import FunctionNode
+from search_space.spaces.visitors.functions_and_predicates import FunctionNode
 from search_space.utils.singleton import Singleton
-from . import ast
+from ..asts import constraints
 from search_space.utils import visitor
-from search_space.spaces.algebra_constraint import ast
+from search_space.spaces.asts import constraints
 from . import ast_index
 from . import VisitorLayer
 
@@ -40,9 +40,9 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
     def visit(self, node):
         pass
 
-    @visitor.when(ast.AstRoot)
+    @visitor.when(constraints.AstRoot)
     def visit(self, node):
-        result = ast.AstRoot([])
+        result = constraints.AstRoot([])
 
         for n in node.asts:
             try:
@@ -59,7 +59,7 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
     #                                                               #
     #################################################################
 
-    @visitor.when(ast.UniversalVariableBinaryOperation)
+    @visitor.when(constraints.UniversalVariableBinaryOperation)
     def visit(self, node):
         a = self.visit(node.target)
         b = self.visit(node.other)
@@ -69,7 +69,7 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
 
         return self.choice_result(a, b, f)
 
-    @visitor.when(ast.EqualOp)
+    @visitor.when(constraints.EqualOp)
     def visit(self, node):
         a = self.visit(node.target)
         b = self.visit(node.other)
@@ -85,7 +85,7 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
     #                                                               #
     #################################################################
 
-    @visitor.when(ast.GetItem)
+    @visitor.when(constraints.GetItem)
     def visit(self, node):
         return self.visit(node.target)
 
@@ -107,11 +107,11 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
 
         return self.NATURAL
 
-    @visitor.when(ast.SelfNode)
+    @visitor.when(constraints.SelfNode)
     def visit(self, node):
         return self.SELF
 
-    @visitor.when(ast.NaturalValue)
+    @visitor.when(constraints.NaturalValue)
     def visit(self, node):
         if not self.context is None:
             try:
@@ -124,6 +124,6 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
 
         return self.NATURAL
 
-    @visitor.when(ast.NotEvaluate)
+    @visitor.when(constraints.NotEvaluate)
     def visit(self, node):
         return self.NOT_EVAL

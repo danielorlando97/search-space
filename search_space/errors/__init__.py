@@ -1,7 +1,11 @@
 class UnSupportOpError(Exception):
-    def __init__(self, a, b, op: object) -> None:
-        super().__init__(
-            f"{op} isn't support between {type(a).__name__} and {type(b).__name__} ")
+    def __init__(self, a, b, op: object, sub="") -> None:
+        if b is None:
+            super().__init__(
+                f"{op} isn't support by {type(a).__name__} \n {sub}")
+        else:
+            super().__init__(
+                f"{op} isn't support between {type(a).__name__} and {type(b).__name__} \n {sub}")
 
 
 class InvalidSampler(Exception):

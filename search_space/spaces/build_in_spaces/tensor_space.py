@@ -3,8 +3,8 @@ from search_space.context_manager.sampler_context import SamplerContext
 from search_space.errors import DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint, NotEvaluateError
 from search_space.spaces import BasicSearchSpace
 from copy import copy
-from search_space.spaces.algebra_constraint import visitors
-from search_space.spaces.algebra_constraint import ast as ast_constraint
+from search_space.spaces.visitors import visitors
+from search_space.spaces.asts import constraints as ast_constraint
 # TODO: check space types
 
 

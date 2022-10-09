@@ -8,10 +8,10 @@ from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
 from search_space.errors import DetectedRuntimeDependency, InvalidSampler, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
-from .algebra_constraint import ast as ast_constraint
-from .algebra_constraint import ast_index as ast_index
-from .algebra_constraint import visitors
-from .algebra_constraint import VisitorLayer
+from .asts import constraints as ast_constraint
+from .visitors import ast_index as ast_index
+from .visitors import visitors
+from .visitors import VisitorLayer
 from .printer_tools.default_printer_class import DefaultPrinter
 
 import inspect

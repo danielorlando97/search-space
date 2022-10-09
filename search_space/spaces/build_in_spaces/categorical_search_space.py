@@ -2,7 +2,7 @@ from xml import dom
 from search_space.sampler.factory import SamplerFactory
 from search_space.spaces import SearchSpace, BasicSearchSpace
 from search_space.sampler.distribution_names import UNIFORM
-from search_space.spaces.algebra_constraint import visitors
+from search_space.spaces.visitors import visitors
 from search_space.spaces.build_in_spaces.space_manager import SpacesManager
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
 
