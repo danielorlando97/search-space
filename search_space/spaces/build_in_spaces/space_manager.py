@@ -109,9 +109,9 @@ class ClassFunction:
                 try:
                     value = [s for s in sub_space if hash(s) == hash(value)][0]
                 except IndexError:
-                    pass
-                except TypeError:
-                    pass
+                    value = copy(value)
+                # except TypeError:
+                #     pass
 
                 try:
                     value.__self_assign__(_self)
@@ -149,11 +149,25 @@ class ClassFunction:
         return self.func(*new_args)
 
 
-class SpaceFactory(BasicSearchSpace):
-    def __init__(self, _type, distribute_like=None) -> None:
-        super().__init__(_type, None)
+class SpaceFactory(SearchSpace):
+    def __init__(
+        self, _type,
+        distribute_like=None,
+        sampler=None,
+        ast=None,
+        clean_asts=None,
+        layers=[]
+    ) -> None:
 
-        self.ast_constraint = ast_constraint.AstRoot([])
+        super().__init__(
+            _type,
+            distribute_like,
+            sampler,
+            ast_constraint.AstRoot() if ast is None else ast,
+            ast_constraint.AstRoot() if ast is None else clean_asts,
+            layers
+        )
+
         self.type = _type
         self._sub_space = {}
         self.space_name = _type.__name__
@@ -172,6 +186,12 @@ class SpaceFactory(BasicSearchSpace):
                 pass
 
         self.visitor_layers = []
+
+    def __ast_init_filter__(self):
+        return self.ast_constraint + self._clean_asts
+
+    def __ast_result_filter__(self, result):
+        return result
 
     def __sampler__(self, domain, context: SamplerContext):
         instance_context = context.create_child(f'{self.space_name}_members')
@@ -195,10 +215,6 @@ class SpaceFactory(BasicSearchSpace):
         for key, space in self._sub_space.items():
             self._sub_space[key] = space.__ast_optimization__(ast_list)
 
-        return self
-
-    def __advance_space__(self, ast: ast_constraint.AstRoot):
-        self._clean_asts.asts += ast.asts
         return self
 
     def __getitem__(self, index):

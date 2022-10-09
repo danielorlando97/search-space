@@ -63,6 +63,34 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
 
         return a % b
 
+    @visitor.when(ast.AddOp)
+    def visit(self, node, current_index=[]):
+        a = self.visit(node.target, current_index)
+        b = self.visit(node.other, current_index)
+
+        return a + b
+
+    @visitor.when(ast.SubOp)
+    def visit(self, node, current_index=[]):
+        a = self.visit(node.target, current_index)
+        b = self.visit(node.other, current_index)
+
+        return a - b
+
+    @visitor.when(ast.MultiOp)
+    def visit(self, node, current_index=[]):
+        a = self.visit(node.target, current_index)
+        b = self.visit(node.other, current_index)
+
+        return a * b
+
+    @visitor.when(ast.DivOp)
+    def visit(self, node, current_index=[]):
+        a = self.visit(node.target, current_index)
+        b = self.visit(node.other, current_index)
+
+        return a / b
+
     #################################################################
     #                                                               #
     #                  Logic Visit                                  #

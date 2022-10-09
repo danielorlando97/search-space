@@ -196,7 +196,7 @@ class BasicSearchSpace:
                 return sample, context
 
             except InvalidSampler as e:
-                if not config.replay_nums is None or config.replay_nums <= sample_index:
+                if not config.replay_nums is None and config.replay_nums <= sample_index:
                     raise e
 
                 printer.sample_error(sample, e.text, sample_index)
@@ -228,12 +228,15 @@ class SearchSpace(BasicSearchSpace):
         return result + self._clean_asts
 
     def __domain_filter__(self, domain, context):
+        ast_result = self.__ast_init_filter__()
+        if len(ast_result.asts) == 0:
+            return domain, self.__ast_result_filter__(ast_result)
+
         config = SearchSpaceConfig(printer=DefaultPrinter())
         printer = config.printer_class
 
         domain = copy(domain)
 
-        ast_result = self.__ast_init_filter__()
         printer.ast_transformation(domain, ast_result)
 
         for visitor in reversed(self.visitor_layers):
@@ -259,7 +262,7 @@ class SearchSpace(BasicSearchSpace):
             self.initial_domain,
             self.__distribute_like__,
             sampler=None,
-            ast=self.ast_constraint,
-            clean_asts=self._clean_asts,
-            layers=self.visitor_layers
+            ast=ast_constraint.AstRoot(copy(self.ast_constraint.asts)),
+            clean_asts=ast_constraint.AstRoot(copy(self._clean_asts.asts)),
+            layers=copy(self.visitor_layers)
         )

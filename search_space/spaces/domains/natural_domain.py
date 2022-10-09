@@ -1,6 +1,6 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
-from search_space.spaces.domains.module_domain import ModuleDomain
+from search_space.spaces.domains.module_domain import LinearTransformedDomain, ModuleDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 
@@ -127,4 +127,36 @@ class NaturalDomain:
         return BachedDomain(self, __o)
 
     def __mod__(self, factor):
-        return ModuleDomain(self, factor)
+        return LinearTransformedDomain(
+            original_domain=self,
+            transformer=lambda x: x/factor,
+            inverse=lambda x: x * factor
+        )
+
+    def __add__(self, factor):
+        return LinearTransformedDomain(
+            original_domain=self,
+            transformer=lambda x: x - factor,
+            inverse=lambda x: x + factor
+        )
+
+    def __sub__(self, factor):
+        return LinearTransformedDomain(
+            original_domain=self,
+            transformer=lambda x: x + factor,
+            inverse=lambda x: x - factor
+        )
+
+    def __mult__(self, factor):
+        return LinearTransformedDomain(
+            original_domain=self,
+            transformer=lambda x: x/factor,
+            inverse=lambda x: x * factor
+        )
+
+    def __div__(self, factor):
+        return LinearTransformedDomain(
+            original_domain=self,
+            transformer=lambda x: x * factor,
+            inverse=lambda x: x / factor
+        )

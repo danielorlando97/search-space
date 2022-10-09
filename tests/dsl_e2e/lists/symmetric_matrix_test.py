@@ -1,5 +1,6 @@
 from unittest import TestCase
 from search_space.dsl import Domain
+from search_space.errors import CircularDependencyDetected, InvalidSampler
 from tests.config import replay_function
 
 
@@ -25,7 +26,7 @@ class SymmetricMatrix(TestCase):
             for i, row in enumerate(matrix):
                 assert len(row) == size
                 for j, item in enumerate(row):
-                    assert item == matrix[j][i]
+                    assert item == matrix[j][i], f'{item} == {matrix[j][i]}, {(j,i)}'
 
         replay_function(test)
 
@@ -104,14 +105,20 @@ class SymmetricMatrix(TestCase):
             def __eq__(self, __o: object) -> bool:
                 return self.a == __o.a
 
+        """
+        Intro hight level space, like class, the black box func 
+        can't be optimized. This is the combined space and we can't
+        discard options  
+        """
+
         matrix_space = Domain[ATestClass][6][6]() | (
             lambda x, i, j: x[i][j] == x[j][i])
 
         def test():
-            matrix, _ = matrix_space.get_sample()
-
-            for i, row in enumerate(matrix):
-                for j, item in enumerate(row):
-                    assert item == matrix[j][i]
+            try:
+                matrix, _ = matrix_space.get_sample()
+                assert False
+            except InvalidSampler:
+                pass
 
         replay_function(test)

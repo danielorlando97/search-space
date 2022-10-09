@@ -1,5 +1,6 @@
 from unittest import TestCase
 from search_space.dsl import Domain, RandomValue
+from search_space.errors import InvalidSampler
 from search_space.spaces import FunctionalConstraint
 from tests.config import replay_function
 
@@ -37,7 +38,7 @@ class BasicExamples(TestCase):
     def test_get_random_str_by_condition(self):
         space = Domain[bool]()
         space2 = Domain[str](options=[str(i) for i in range(100)]) | (
-            lambda x, y=space: (y | x == '1', (y & y != '1'))
+            lambda x, y=space: (y | (x == '1'), (y & (x != '1')))
         )
 
         @replay_function
@@ -49,6 +50,27 @@ class BasicExamples(TestCase):
                 assert string != '1'
             else:
                 assert string == '1'
+
+    def test_invalid_get_random_str_by_condition(self):
+        space = Domain[bool]()
+        space2 = Domain[str](options=[str(i) for i in range(100)]) | (
+            lambda x, y=space: (y | x == '1', (y & (x != '1')))
+        )
+
+        """
+        In Python '|' has more priority than '==' because the 
+        cmp op is 'or'. So our DSL need the breaks for conditionals
+        expressions 
+        """
+
+        @replay_function
+        def ______():
+            bool_, context = space.get_sample()
+            try:
+                string, _ = space2.get_sample(context)
+                assert False
+            except InvalidSampler:
+                pass
 
     def test_get_random_value_by_func(self):
 

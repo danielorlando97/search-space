@@ -50,10 +50,53 @@ class DomainModifierVisitor(VisitorLayer):
 
     @visitor.when(ast.ModOp)
     def visit(self, node):
-        _ = self.visit(node.target)
+        target = self.visit(node.target)
         limit = self.visit(node.other)
 
+        if not None in [target, limit]:
+            return target % limit
+
         self.domain = self.domain % limit
+
+    @visitor.when(ast.AddOp)
+    def visit(self, node):
+        target = self.visit(node.target)
+        limit = self.visit(node.other)
+
+        if not None in [target, limit]:
+            return target + limit
+
+        self.domain = self.domain + limit
+
+    @visitor.when(ast.SubOp)
+    def visit(self, node):
+        target = self.visit(node.target)
+        limit = self.visit(node.other)
+
+        if not None in [target, limit]:
+            return target - limit
+
+        self.domain = self.domain - limit
+
+    @visitor.when(ast.MultiOp)
+    def visit(self, node):
+        target = self.visit(node.target)
+        limit = self.visit(node.other)
+
+        if not None in [target, limit]:
+            return target * limit
+
+        self.domain = self.domain * limit
+
+    @visitor.when(ast.DivOp)
+    def visit(self, node):
+        target = self.visit(node.target)
+        limit = self.visit(node.other)
+
+        if not None in [target, limit]:
+            return target / limit
+
+        self.domain = self.domain / limit
 
     #################################################################
     #                                                               #
@@ -70,6 +113,9 @@ class DomainModifierVisitor(VisitorLayer):
 
         b = self.visit(node.other)
 
+        if not None in [a, b]:
+            return target and limit
+
     @visitor.when(ast.OrOp)
     def visit(self, node):
         current_domain = copy(self.domain)
@@ -81,6 +127,9 @@ class DomainModifierVisitor(VisitorLayer):
         current_domain, self.domain = self.domain, current_domain
         b = self.visit(node.other)
 
+        if not None in [a, b]:
+            return target or limit
+
         self.domain = self.domain | current_domain
 
     #################################################################
@@ -90,43 +139,61 @@ class DomainModifierVisitor(VisitorLayer):
     #################################################################
     @visitor.when(ast.LessOp)
     def visit(self, node):
-        _ = self.visit(node.target)
+        target = self.visit(node.target)
         limit = self.visit(node.other)
+
+        if not None in [target, limit]:
+            return target < limit
 
         self.domain = self.domain < limit
 
     @visitor.when(ast.LessOrEqualOp)
     def visit(self, node):
-        _ = self.visit(node.target)
+        target = self.visit(node.target)
         limit = self.visit(node.other)
+
+        if not None in [target, limit]:
+            return target <= limit
 
         self.domain = self.domain <= limit
 
     @visitor.when(ast.GreatOp)
     def visit(self, node):
-        _ = self.visit(node.target)
+        target = self.visit(node.target)
         limit = self.visit(node.other)
+
+        if not None in [target, limit]:
+            return target > limit
 
         self.domain = self.domain > limit
 
     @visitor.when(ast.GreatOrEqualOp)
     def visit(self, node):
-        _ = self.visit(node.target)
+        target = self.visit(node.target)
         limit = self.visit(node.other)
+
+        if not None in [target, limit]:
+            return target >= limit
 
         self.domain = self.domain >= limit
 
     @visitor.when(ast.NotEqualOp)
     def visit(self, node):
-        _ = self.visit(node.target)
+        target = self.visit(node.target)
         limit = self.visit(node.other)
+
+        if not None in [target, limit]:
+            return target != limit
 
         self.domain = self.domain != limit
 
     @visitor.when(ast.EqualOp)
     def visit(self, node):
-        _ = self.visit(node.target)
+        target = self.visit(node.target)
         limit = self.visit(node.other)
+
+        if not None in [target, limit]:
+            return target == limit
 
         self.domain = self.domain == limit
 

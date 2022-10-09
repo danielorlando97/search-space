@@ -122,7 +122,8 @@ class TensorSearchSpace(BasicSearchSpace):
                 visitors.IndexAstModifierVisitor(self, index)
             )
 
-            self.samplers[index].__ast_optimization__(self.ast_constraint)
+            self.samplers[index] = self.samplers[index].__ast_optimization__(
+                self.ast_constraint)
 
     def _flatter_index(self, index, i=0, result=[]):
         if i >= len(index):
