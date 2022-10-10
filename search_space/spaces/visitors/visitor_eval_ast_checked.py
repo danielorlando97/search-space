@@ -6,12 +6,17 @@ from ..asts import constraints
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
 from . import VisitorLayer
+from .visitor_natural_ast import NaturalAstVisitor, NaturalValuesNode
 
 
 class EvalAstChecked(VisitorLayer, metaclass=Singleton):
     SELF = 'self'
     NATURAL = 'natural'
     NOT_EVAL = 'not_eval'
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.natural_visitor = NaturalAstVisitor()
 
     def transform_to_modifier(self, node, domain=None, context=None):
         self.context = context
@@ -44,7 +49,7 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
 
         for n in node.asts:
             try:
-                _ = self.visit(n)
+                _, _ = self.visit(n)
                 result.add_constraint(n)
             except NotEvaluateError:
                 pass
@@ -58,24 +63,51 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
     #################################################################
 
     @visitor.when(constraints.UniversalVariableBinaryOperation)
-    def visit(self, node):
-        a = self.visit(node.target)
-        b = self.visit(node.other)
+    def visit(self, node: constraints.UniversalVariableBinaryOperation):
+        a, node_A = self.visit(node.target)
+        b, node_B = self.visit(node.other)
 
         def f():
             raise InvalidSpaceDefinition('Auto Constraint Definition')
 
-        return self.choice_result(a, b, f)
+        label = self.choice_result(a, b, f)
+
+        if a != self.SELF and b == self.SELF:
+            result = node.inverted_op(node_A, node_B)
+        else:
+            result = type.__call__(node.__class__, node_A, node_B)
+
+        return label, result
 
     @visitor.when(constraints.EqualOp)
     def visit(self, node):
-        a = self.visit(node.target)
-        b = self.visit(node.other)
+        a, node_A = self.visit(node.target)
+        b, node_B = self.visit(node.other)
 
         def f():
             raise NotEvaluateError()
 
-        return self.choice_result(a, b, f)
+        return self.choice_result(a, b, f), constraints.EqualOp(node_A, node_B)
+
+    @visitor.when(constraints.AndOp)
+    def visit(self, node):
+        a, node_A = self.visit(node.target)
+        b, node_B = self.visit(node.other)
+
+        def f():
+            return self.SELF
+
+        return self.choice_result(a, b, f), constraints.AndOp(node_A, node_B)
+
+    @visitor.when(constraints.OrOp)
+    def visit(self, node):
+        a, node_A = self.visit(node.target)
+        b, node_B = self.visit(node.other)
+
+        def f():
+            return self.SELF
+
+        return self.choice_result(a, b, f), constraints.AndOp(node_A, node_B)
 
     #################################################################
     #                                                               #
@@ -85,16 +117,27 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
 
     @visitor.when(constraints.GetItem)
     def visit(self, node):
-        return self.visit(node.target)
+        label, item = self.visit(node.target)
+        return label, constraints.GetItem(item, node.other)
+
+    @visitor.when(constraints.GetAttr)
+    def visit(self, node):
+        label, item = self.visit(node.target)
+        return label, constraints.GetAttr(item, node.other)
 
     @visitor.when(constraints.FunctionNode)
     def visit(self, node: constraints.FunctionNode):
-        tag_set = set()
+        tag_set, node_list = set(), []
         for arg in node.args:
-            tag_set.add(self.visit(arg))
+            label, n = self.visit(arg)
+            tag_set.add(label)
+            node_list.append(n)
 
+        kws = {}
         for name, arg in node.kwargs:
-            tag_set.add(self.visit(arg))
+            label, n = self.visit(arg)
+            tag_set.add(label)
+            kws[name] = n
 
         if (
             len(tag_set) == 3
@@ -103,25 +146,28 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
         ):
             raise NotEvaluateError()
 
-        return self.NATURAL
+        return self.NATURAL, constraints.FunctionNode(node.func, node_list, kws)
 
     @visitor.when(constraints.SelfNode)
     def visit(self, node):
-        return self.SELF
+        return self.SELF, node
 
     @visitor.when(constraints.NaturalValue)
     def visit(self, node):
-        if not self.context is None:
+
+        if not self.context is None and isinstance(node.target, NaturalValuesNode):
             try:
-                _ = node.target.get_sample(context=self.context)
-                return self.NATURAL
+                _ = self.natural_visitor.get_value(
+                    node.target, context=self._context
+                )
+                return self.NATURAL, node
             except AttributeError:
                 pass
             except CircularDependencyDetected:
-                return self.NOT_EVAL
+                return self.NOT_EVAL, node
 
-        return self.NATURAL
+        return self.NATURAL, node
 
     @visitor.when(constraints.NotEvaluate)
     def visit(self, node):
-        return self.NOT_EVAL
+        return self.NOT_EVAL, node

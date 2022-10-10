@@ -115,7 +115,7 @@ class StringConstraintByList(TestCase):
 
     def test_le(self):
         space = Domain[str](options=options) | (
-            lambda x: x > ["10", "11", "12", "13"]
+            lambda x: x < ["10", "11", "12", "13"]
         )
 
         @replay_function

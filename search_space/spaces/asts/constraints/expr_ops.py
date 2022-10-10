@@ -46,11 +46,17 @@ class AddOp(ExprOpsNode):
         return f'try to change the constraint like \
             {type(self.target).__name__} + ( {type(self.other).__name__} {op} ...'
 
+    def op(self):
+        return lambda x, y: x + y
+
 
 class SubOp(ExprOpsNode):
     def _suggestion(self, op):
         return f'try to change the constraint like \
             {type(self.target).__name__} - ( {type(self.other).__name__} {op} ...'
+
+    def op(self):
+        return lambda x, y: x - y
 
 
 class MultiOp(ExprOpsNode):
@@ -58,8 +64,14 @@ class MultiOp(ExprOpsNode):
         return f'try to change the constraint like \
             {type(self.target).__name__} * ( {type(self.other).__name__} {op} ...'
 
+    def op(self):
+        return lambda x, y: x * y
+
 
 class DivOp(ExprOpsNode):
     def _suggestion(self, op):
         return f'try to change the constraint like \
             {type(self.target).__name__} / ( {type(self.other).__name__} {op} ...'
+
+    def op(self):
+        return lambda x, y: x / y

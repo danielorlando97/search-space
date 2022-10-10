@@ -1,11 +1,12 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
+from search_space.spaces.domains.domain_protocol import DomainProtocol
 from search_space.spaces.domains.module_domain import ModuleDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 
 
-class ContinuosDomain:
+class ContinuosDomain(DomainProtocol):
     def __init__(self, _min, _max) -> None:
         self.min, self.max = _min, _max
 

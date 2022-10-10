@@ -106,9 +106,13 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
 
     @visitor.when(constraints.OrOp)
     def visit(self, node, current_index=[]):
-        a = self.visit(node.target, current_index)
+        a = False
+        try:
+            a = self.visit(node.target, current_index)
+        except InvalidSampler:
+            pass
 
-        if type(a) == bool and a:
+        if a:
             return a
 
         return self.visit(node.other, current_index)
@@ -286,7 +290,9 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     def visit(self, node, current_index=[]):
         if isinstance(node.target, NaturalValuesNode):
             return self.natural_visitor.get_value(
-                node.target, context=self._context
+                node.target,
+                context=self.context,
+                current_index=self.current_index
             )
 
         return node.target

@@ -2,7 +2,7 @@ from xml import dom
 from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError
 from ..asts import constraints
 from search_space.utils import visitor
-from search_space.spaces.asts import constraints
+from search_space.spaces.asts import constraints, naturals_values
 from . import VisitorLayer
 from .visitor_natural_ast import NaturalAstVisitor, NaturalValuesNode
 
@@ -84,7 +84,7 @@ class MemberAstModifierVisitor(VisitorLayer):
             if other.target == self.member:
                 return target
             else:
-                return constraints.NaturalValue(self.space[other.target])
+                return constraints.NaturalValue(naturals_values.SpaceSelfNode(self.space[other.target]))
 
         return constraints.GetAttr(target, other)
 

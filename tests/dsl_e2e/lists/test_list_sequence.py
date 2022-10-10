@@ -15,7 +15,7 @@ class SequencesList(TestCase):
             values, _ = space.get_sample()
 
             for i in range(1, len(values)):
-                assert values[i-1] < values[i]
+                assert values[i-1] < values[i], values
 
     # def test_asc_i_plus(self):
     #     space = Domain[int][10]() | (lambda x, i: x[i] < x[i + 1])

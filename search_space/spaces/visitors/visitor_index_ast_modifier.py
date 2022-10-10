@@ -3,7 +3,7 @@ from search_space.errors import CircularDependencyDetected, DetectedRuntimeDepen
 from search_space.utils.singleton import Singleton
 from ..asts import constraints
 from search_space.utils import visitor
-from search_space.spaces.asts import constraints
+from search_space.spaces.asts import constraints, naturals_values
 from . import VisitorLayer
 from .visitor_natural_ast import NaturalAstVisitor, NaturalValuesNode
 
@@ -110,7 +110,9 @@ class IndexAstModifierVisitor(VisitorLayer):
 
         try:
             if self.context is None:
-                return constraints.NaturalValue(self.space[current_index])
+                return constraints.NaturalValue(
+                    naturals_values.SpaceSelfNode(self.space[current_index])
+                )
 
             value = self.space[current_index].get_sample(context=self.context)
         except NotEvaluateError:

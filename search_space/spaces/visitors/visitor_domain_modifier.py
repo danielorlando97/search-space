@@ -24,6 +24,16 @@ class DomainModifierVisitor(VisitorLayer):
         self.domain, self._context = domain, context
         return self.visit(node)
 
+    def __op_apply__(self, a, b, op):
+        if not a is None:
+            self.domain = op(self.domain, a)
+
+        elif not b is None:
+            self.domain = op(b, self.domain)
+
+        else:
+            return op(b, a)
+
     @visitor.on("node")
     def visit(self, node):
         pass
@@ -57,40 +67,28 @@ class DomainModifierVisitor(VisitorLayer):
         target = self.visit(node.target)
         limit = self.visit(node.other)
 
-        if not None in [target, limit]:
-            return target + limit
-
-        self.domain = self.domain + limit
+        return self.__op_apply__(limit, target, lambda x, y: x + y)
 
     @visitor.when(constraints.SubOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
 
-        if not None in [target, limit]:
-            return target - limit
-
-        self.domain = self.domain - limit
+        return self.__op_apply__(limit, target, lambda x, y: x - y)
 
     @visitor.when(constraints.MultiOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
 
-        if not None in [target, limit]:
-            return target * limit
-
-        self.domain = self.domain * limit
+        return self.__op_apply__(limit, target, lambda x, y: x * y)
 
     @visitor.when(constraints.DivOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
 
-        if not None in [target, limit]:
-            return target / limit
-
-        self.domain = self.domain / limit
+        return self.__op_apply__(limit, target, lambda x, y: x / y)
 
     #################################################################
     #                                                               #
@@ -136,60 +134,42 @@ class DomainModifierVisitor(VisitorLayer):
         target = self.visit(node.target)
         limit = self.visit(node.other)
 
-        if not None in [target, limit]:
-            return target < limit
-
-        self.domain = self.domain < limit
+        return self.__op_apply__(limit, target, lambda x, y: x < y)
 
     @visitor.when(constraints.LessOrEqualOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
 
-        if not None in [target, limit]:
-            return target <= limit
-
-        self.domain = self.domain <= limit
+        return self.__op_apply__(limit, target, lambda x, y: x <= y)
 
     @visitor.when(constraints.GreatOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
 
-        if not None in [target, limit]:
-            return target > limit
-
-        self.domain = self.domain > limit
+        return self.__op_apply__(limit, target, lambda x, y: x > y)
 
     @visitor.when(constraints.GreatOrEqualOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
 
-        if not None in [target, limit]:
-            return target >= limit
-
-        self.domain = self.domain >= limit
+        return self.__op_apply__(limit, target, lambda x, y: x >= y)
 
     @visitor.when(constraints.NotEqualOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
 
-        if not None in [target, limit]:
-            return target != limit
-
-        self.domain = self.domain != limit
+        return self.__op_apply__(limit, target, lambda x, y: x != y)
 
     @visitor.when(constraints.EqualOp)
     def visit(self, node):
         target = self.visit(node.target)
         limit = self.visit(node.other)
 
-        if not None in [target, limit]:
-            return target == limit
-
-        self.domain = self.domain == limit
+        return self.__op_apply__(limit, target, lambda x, y: x == y)
 
     #################################################################
     #                                                               #

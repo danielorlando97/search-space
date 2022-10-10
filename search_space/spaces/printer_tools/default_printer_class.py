@@ -201,7 +201,7 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
 
         value = node.target
         try:
-            value = (value.space_name, hash(value))
+            value = (value.space_name, hash(value.a))
         except AttributeError:
             pass
 

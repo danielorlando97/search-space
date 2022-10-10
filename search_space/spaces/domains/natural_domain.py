@@ -1,11 +1,12 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
+from search_space.spaces.domains.domain_protocol import DomainProtocol
 from search_space.spaces.domains.module_domain import LinearTransformedDomain, ModuleDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 
 
-class NaturalDomain:
+class NaturalDomain(DomainProtocol):
     def __init__(self, _min, _max) -> None:
         self.min, self.max = _min, _max
 
@@ -100,6 +101,12 @@ class NaturalDomain:
 
         self.min = max(other + 1, self.min)
         return self
+
+    def __rlt__(self, other):
+        return self.__gt__(other)
+
+    def __rgt__(self, other):
+        return self.__lt__(other)
 
     def __ge__(self, other):
         if type(other) in [list, tuple]:

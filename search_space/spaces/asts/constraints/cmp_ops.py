@@ -66,11 +66,17 @@ class EqualOp(LogicOpsNode):
         return f"""try to change the constraint like 
             {type(self.target).__name__} == ( {type(self.other).__name__} {op} ..."""
 
+    def op(self):
+        return lambda x, y: x == y
+
 
 class NotEqualOp(LogicOpsNode):
     def _suggestion(self, op):
         return f"""try to change the constraint like 
             {type(self.target).__name__} != ( {type(self.other).__name__} {op} ..."""
+
+    def op(self):
+        return lambda x, y: x != y
 
 
 class GreatOrEqualOp(LogicOpsNode):
@@ -78,11 +84,23 @@ class GreatOrEqualOp(LogicOpsNode):
         return f"""try to change the constraint like 
             {type(self.target).__name__} >= ( {type(self.other).__name__} {op} ..."""
 
+    def inverted_op(self, a, b):
+        return LessOrEqualOp(a, b)
+
+    def op(self):
+        return lambda x, y: x >= y
+
 
 class GreatOp(LogicOpsNode):
     def _suggestion(self, op):
         return f"""try to change the constraint like 
             {type(self.target).__name__} > ( {type(self.other).__name__} {op} ..."""
+
+    def inverted_op(self, a, b):
+        return LessOp(a, b)
+
+    def op(self):
+        return lambda x, y: x > y
 
 
 class LessOrEqualOp(LogicOpsNode):
@@ -90,8 +108,20 @@ class LessOrEqualOp(LogicOpsNode):
         return f"""try to change the constraint like 
             {type(self.target).__name__} <= ( {type(self.other).__name__} {op} ..."""
 
+    def inverted_op(self, a, b):
+        return GreatOrEqualOp(a, b)
+
+    def op(self):
+        return lambda x, y: x <= y
+
 
 class LessOp(LogicOpsNode):
     def _suggestion(self, op):
         return f"""try to change the constraint like 
             {type(self.target).__name__} > ( {type(self.other).__name__} {op} ..."""
+
+    def inverted_op(self, a, b):
+        return GreatOp(a, b)
+
+    def op(self):
+        return lambda x, y: x < y

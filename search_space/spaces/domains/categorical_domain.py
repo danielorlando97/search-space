@@ -1,9 +1,10 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
+from search_space.spaces.domains.domain_protocol import DomainProtocol
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 
 
-class CategoricalDomain:
+class CategoricalDomain(DomainProtocol):
     def __init__(self, _list) -> None:
         self.list = _list
         self.maps = []

@@ -178,6 +178,12 @@ class UniversalVariableBinaryOperation(UniversalVariableNode):
         self.target = target
         self.other = other
 
+    def inverted_op(self, a, b):
+        return type.__call__(self.__class__, a, b)
+
+    def op(self):
+        pass
+
 
 class AstRoot(UniversalVariableNode):
     def __init__(self, asts=None) -> None:
