@@ -45,6 +45,14 @@ class IndexAstModifierVisitor(VisitorLayer):
     #                                                               #
     #################################################################
 
+    @visitor.when(constraints.SegmentationExprNode)
+    def visit(self, node: constraints.SegmentationExprNode, current_index):
+        a = self.visit(node.target, current_index)
+        b = self.visit(node.other, current_index)
+        c = self.visit(node.value, current_index)
+
+        return type.__call__(node.__class__, a, b, c)
+
     @visitor.when(constraints.UniversalVariableBinaryOperation)
     def visit(self, node, current_index):
         a = self.visit(node.target, current_index)

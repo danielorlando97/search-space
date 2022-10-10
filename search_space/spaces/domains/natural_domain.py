@@ -1,12 +1,12 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
-from search_space.spaces.domains.domain_protocol import DomainProtocol
-from search_space.spaces.domains.module_domain import LinearTransformedDomain, ModuleDomain
+from search_space.spaces.domains.domain_protocol import NumeralDomainProtocol
+from search_space.spaces.domains.module_domain import LinearTransformedDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 
 
-class NaturalDomain(DomainProtocol):
+class NaturalDomain(NumeralDomainProtocol):
     def __init__(self, _min, _max) -> None:
         self.min, self.max = _min, _max
 
@@ -132,38 +132,3 @@ class NaturalDomain(DomainProtocol):
 
     def __or__(self, __o):
         return BachedDomain(self, __o)
-
-    def __mod__(self, factor):
-        return LinearTransformedDomain(
-            original_domain=self,
-            transformer=lambda x: x/factor,
-            inverse=lambda x: x * factor
-        )
-
-    def __add__(self, factor):
-        return LinearTransformedDomain(
-            original_domain=self,
-            transformer=lambda x: x - factor,
-            inverse=lambda x: x + factor
-        )
-
-    def __sub__(self, factor):
-        return LinearTransformedDomain(
-            original_domain=self,
-            transformer=lambda x: x + factor,
-            inverse=lambda x: x - factor
-        )
-
-    def __mult__(self, factor):
-        return LinearTransformedDomain(
-            original_domain=self,
-            transformer=lambda x: x/factor,
-            inverse=lambda x: x * factor
-        )
-
-    def __div__(self, factor):
-        return LinearTransformedDomain(
-            original_domain=self,
-            transformer=lambda x: x * factor,
-            inverse=lambda x: x / factor
-        )

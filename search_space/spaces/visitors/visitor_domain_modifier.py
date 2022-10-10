@@ -52,16 +52,6 @@ class DomainModifierVisitor(VisitorLayer):
     #                                                               #
     #################################################################
 
-    # @visitor.when(constraints.ModOp)
-    # def visit(self, node):
-    #     target = self.visit(node.target)
-    #     limit = self.visit(node.other)
-
-    #     if not None in [target, limit]:
-    #         return target % limit
-
-    #     self.domain = self.domain % limit
-
     @visitor.when(constraints.AddOp)
     def visit(self, node):
         target = self.visit(node.target)
@@ -170,6 +160,128 @@ class DomainModifierVisitor(VisitorLayer):
         limit = self.visit(node.other)
 
         return self.__op_apply__(limit, target, lambda x, y: x == y)
+
+    #################################################################
+    #                                                               #
+    #                 Arithmetic Visit                              #
+    #                                                               #
+    #################################################################
+
+    @visitor.when(constraints.SegmentationEqualOp)
+    def visit(self, node: constraints.SegmentationEqualOp):
+        target = self.visit(node.target)
+        factor = self.visit(node.other)
+        value = self.visit(node.other)
+
+        if not target is None:
+            return target % factor == value
+
+        self.domain = self.domain.__mod_eq__(factor, value)
+
+    @visitor.when(constraints.SegmentationNotEqualOp)
+    def visit(self, node: constraints.SegmentationNotEqualOp):
+        target = self.visit(node.target)
+        factor = self.visit(node.other)
+        value = self.visit(node.other)
+
+        if not target is None:
+            return target % factor != value
+
+        self.domain = self.domain.__mod_neq__(factor, value)
+
+    @visitor.when(constraints.SegmentationLessOp)
+    def visit(self, node: constraints.SegmentationLessOp):
+        target = self.visit(node.target)
+        factor = self.visit(node.other)
+        value = self.visit(node.other)
+
+        if not target is None:
+            return target % factor < value
+
+        self.domain = self.domain.__mod_lt__(factor, value)
+
+    @visitor.when(constraints.SegmentationLessOrEqualOp)
+    def visit(self, node: constraints.SegmentationLessOrEqualOp):
+        target = self.visit(node.target)
+        factor = self.visit(node.other)
+        value = self.visit(node.other)
+
+        if not target is None:
+            return target % factor <= value
+
+        self.domain = self.domain.__mod_le__(factor, value)
+
+    @visitor.when(constraints.SegmentationGreatOp)
+    def visit(self, node: constraints.SegmentationGreatOp):
+        target = self.visit(node.target)
+        factor = self.visit(node.other)
+        value = self.visit(node.other)
+
+        if not target is None:
+            return target % factor > value
+
+        self.domain = self.domain.__mod_gt__(factor, value)
+
+    @visitor.when(constraints.SegmentationGreatOrEqualOp)
+    def visit(self, node: constraints.SegmentationGreatOrEqualOp):
+        target = self.visit(node.target)
+        factor = self.visit(node.other)
+        value = self.visit(node.other)
+
+        if not target is None:
+            return target % factor >= value
+
+        self.domain = self.domain.__mod_ge__(factor, value)
+
+    @visitor.when(constraints.SegmentationAddOp)
+    def visit(self, node: constraints.SegmentationAddOp):
+        target = self.visit(node.target)
+        factor = self.visit(node.other)
+
+        if not target is None:
+            return target + factor
+
+        self.domain = self.domain.__mod_add__(factor, 0)
+
+    @visitor.when(constraints.SegmentationSubOp)
+    def visit(self, node: constraints.SegmentationSubOp):
+        target = self.visit(node.target)
+        factor = self.visit(node.other)
+
+        if not target is None:
+            return target - factor
+
+        self.domain = self.domain.__mod_sub__(factor, 0)
+
+    @visitor.when(constraints.SegmentationMultiOp)
+    def visit(self, node: constraints.SegmentationMultiOp):
+        target = self.visit(node.target)
+        factor = self.visit(node.other)
+
+        if not target is None:
+            return target * factor
+
+        self.domain = self.domain.__mod_mult__(factor, 0)
+
+    @visitor.when(constraints.SegmentationDivOp)
+    def visit(self, node: constraints.SegmentationDivOp):
+        target = self.visit(node.target)
+        factor = self.visit(node.other)
+
+        if not target is None:
+            return target / factor
+
+        self.domain = self.domain.__mod_div__(factor, 0)
+
+    @visitor.when(constraints.SegmentationModOp)
+    def visit(self, node: constraints.SegmentationModOp):
+        target = self.visit(node.target)
+        factor = self.visit(node.other)
+
+        if not target is None:
+            return target % factor
+
+        self.domain = self.domain.__mod_eq__(factor, 0)
 
     #################################################################
     #                                                               #
