@@ -49,7 +49,7 @@ class NaturalAstVisitor:
         a = self.visit(node.a)
         b = self.visit(node.b)
 
-        return a + b
+        return a - b
 
     @visitor.when(naturals_values.MultiOp)
     def visit(self, node: naturals_values.MultiOp):

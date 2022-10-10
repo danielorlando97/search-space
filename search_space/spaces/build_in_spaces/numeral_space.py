@@ -22,6 +22,8 @@ class NumeralSearchSpace(SearchSpace):
     def __sampler__(self, domain, context):
         return domain.get_sample(self._distribution), context
 
+# TODO: Include infinity values
+
 
 @SpacesManager.registry(float)
 class BasicContinueSearchSpace(BasicSearchSpace):
