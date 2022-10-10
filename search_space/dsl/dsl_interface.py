@@ -105,12 +105,6 @@ class SpaceDomain(Generic[T]):
     def random_sample(self) -> T:
         return self
 
-    def __getitem__(self, item) -> T:
-        pass
-
-    def __contains__(self, item):
-        return item.change_to_reference(self.space)
-
 
 class DomainFactory(TypeBuilder, Generic[T]):
     def __call__(self, constraint_fun=None, min=None, max=None, options=None, distribute_like=None) -> SpaceDomain[T]:

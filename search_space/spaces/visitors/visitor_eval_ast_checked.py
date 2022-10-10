@@ -5,7 +5,6 @@ from search_space.utils.singleton import Singleton
 from ..asts import constraints
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
-from . import ast_index
 from . import VisitorLayer
 
 

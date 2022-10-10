@@ -1,9 +1,21 @@
 from .expr_ops import ExprOpsNode
 from .__base__ import check_natural_value, UniversalVariableNode
 from search_space.utils.ast_tools import decorated_all_methods
+from search_space.errors import UnSupportOpError
+
+
+def natural_node_check(fn):
+    def f(*args):
+        if not isinstance(args[1], NaturalValue):
+            raise UnSupportOpError(args[0], args[1], 'members')
+
+        return fn(*args)
+    f.__name__ = fn.__name__
+    return f
 
 
 @decorated_all_methods(check_natural_value)
+@decorated_all_methods(natural_node_check)
 class AtomsOp(ExprOpsNode):
 
     def __getattr__(self, name):
@@ -47,7 +59,7 @@ class NotEvaluate(Atoms):
         super().__init__(None)
 
 
-class FunctionNode(Atoms):
+class FunctionNode(NaturalValue):
     def __init__(self, func, args, kwargs) -> None:
         super().__init__(None)
         self.func = func

@@ -1,20 +1,19 @@
 from doctest import Example
 from random import sample
 from token import EXACT_TOKEN_TYPES
-from search_space.spaces.visitors.visitor_index_ast_modifier import IndexSolutionVisitor
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
 from search_space.errors import InvalidSampler, NotEvaluateError
 from search_space.utils.ast_tools import index_list
 from . import VisitorLayer
 from search_space.utils.singleton import Singleton
-from . import ast_index
+from .visitor_natural_ast import NaturalAstVisitor, NaturalValuesNode
 
 
 class ValidateSampler(VisitorLayer, metaclass=Singleton):
 
     def __init__(self) -> None:
-        self.index_solution = IndexSolutionVisitor()
+        self.natural_visitor = NaturalAstVisitor()
 
     def check_is_not_eval_node(self, *nodes):
         for node in nodes:
@@ -242,6 +241,9 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     def visit(self, node: constraints.GetItem, current_index=[]):
 
         b = self.visit(node.other, current_index)
+        if type(b) == bool:
+            b = self.current_index[-len(current_index) - 1]
+
         return self.visit(node.target, current_index + [b])
 
     @visitor.when(constraints.GetAttr)
@@ -282,20 +284,12 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
 
     @ visitor.when(constraints.NaturalValue)
     def visit(self, node, current_index=[]):
-        if isinstance(node.target, ast_index.IndexNode):
-            result = self.index_solution.visit(
-                current_index, node.target, self.context)
-            if type(result) == type(bool()):
-                return current_index[-len(current_index) - 1]
-            else:
-                return result
+        if isinstance(node.target, NaturalValuesNode):
+            return self.natural_visitor.get_value(
+                node.target, context=self._context
+            )
 
-        try:
-            return node.target.get_sample(context=self.context)[0]
-        except AttributeError:
-            return node.target
-        except TypeError:
-            pass
+        return node.target
 
     @visitor.when(constraints.FunctionNode)
     def visit(self, node: constraints.FunctionNode, current_index):
@@ -308,58 +302,3 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             new_kw[name] = self.visit(arg, current_index)
 
         return node.func(*new_args, **new_kw)
-
-
-# class SimpleIndexChecker:
-#     def __init__(self, sample, context) -> None:
-#         self.sample = sample
-#         self.index_node = []
-#         self.index_solution = IndexSolutionVisitor()
-#         self.dim = ()
-#         self.index_list = []
-#         self._maps = []
-#         self.context = context
-
-#     def add_dim(self, node):
-#         self.index_node.append(node)
-
-#         pivot, self.dim = self.sample, []
-#         for i in range(len(self.index_node)):
-#             pivot, value = pivot[0], len(pivot)
-#             self.dim.append(value)
-
-#     def __iter__(self):
-#         if len(self.index_node) > self.dim:
-
-#             self.index_list = index_list(self.dim)
-#         return self.index_list.__iter__()
-
-#     def __cmp_value__(self, index):
-#         result = [self.sample]
-#         for i in index:
-#             ii = self.index_solution.visit(
-#                 index, self.index_node[i], self.context)
-
-#             for
-#             result = result[i]
-
-#         for f in self._maps:
-#             result = f(result)
-
-#         return [result]
-
-#     def __op_exec__(self, other, predicate):
-#         for index in self:
-#             try:
-#                 values = other.__cmp_value__(index)
-#             except AttributeError:
-#                 values = [other]
-
-#             for current_value in self.__cmp_value__(index):
-#                 for other_value in values:
-#                     if not predicate(current_value, other_value):
-#                         return False
-#         return True
-
-#     def __eq__(self, __o: object) -> bool:
-#         return self.__op_exec__(__o, lambda c, o: c == o)

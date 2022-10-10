@@ -1,25 +1,20 @@
 from copy import copy
-from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, NotEvaluateError, UnSupportOpError
+from search_space.errors import NotEvaluateError
+from search_space.spaces.asts.naturals_values.__base__ import NaturalValuesNode
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
 from . import VisitorLayer
-from search_space.utils.singleton import Singleton
+from .visitor_natural_ast import NaturalAstVisitor
 
 
 class DomainModifierVisitor(VisitorLayer):
+    def __init__(self) -> None:
+        super().__init__()
+        self.natural_visitor = NaturalAstVisitor()
+
     @property
     def do_transform_to_check_sample(self):
         return False
-
-    @property
-    def context(self):
-        try:
-            if self._context != None:
-                return self._context
-        except AttributeError:
-            pass
-
-        raise DetectedRuntimeDependency()
 
     def domain_optimization(self, node, domain):
         self.domain, self._context = domain, None
@@ -216,11 +211,12 @@ class DomainModifierVisitor(VisitorLayer):
 
     @visitor.when(constraints.NaturalValue)
     def visit(self, node):
+        if isinstance(node.target, NaturalValuesNode):
+            return self.natural_visitor.get_value(
+                node.target, context=self._context
+            )
 
-        try:
-            return node.target.get_sample(context=self.context)[0]
-        except AttributeError:
-            return node.target
+        return node.target
 
     @visitor.when(constraints.FunctionNode)
     def visit(self, node: constraints.FunctionNode):

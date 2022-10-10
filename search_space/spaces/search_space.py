@@ -3,13 +3,12 @@ from distutils.command.config import config
 from typing import List
 
 from search_space.context_manager.runtime_manager import SearchSpaceConfig
-from . import ast
 from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
 from search_space.errors import DetectedRuntimeDependency, InvalidSampler, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
 from .asts import constraints as ast_constraint
-from .visitors import ast_index as ast_index
+from .asts import naturals_values as ast_natural
 from .visitors import visitors
 from .visitors import VisitorLayer
 from .printer_tools.default_printer_class import DefaultPrinter
@@ -115,10 +114,10 @@ class BasicSearchSpace:
 
         defaults = [] if func_data.defaults is None else func_data.defaults
 
-        args += [ast_index.SelfNode(i)
+        args += [ast_natural.IndexSelf(i)
                  for i in range(len(func_data.args) - 1 - len(defaults))]
 
-        args += [ast.SelfNode(item.space) for item in defaults]
+        args += [ast_natural.SpaceSelfNode(item.space) for item in defaults]
 
         return func(*args)
 

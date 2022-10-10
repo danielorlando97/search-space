@@ -2,7 +2,6 @@ from search_space.context_manager.runtime_manager import SearchSpacePrinter
 from search_space.utils.singleton import Singleton
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
-from search_space.spaces.visitors import ast_index
 
 
 class Color:

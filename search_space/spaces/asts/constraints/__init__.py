@@ -44,10 +44,12 @@ from .atoms import GetAttr, GetItem, NaturalValue, NotEvaluate, SelfNode, Functi
      
                Atom := Atom[index]
                Atom := Atom[member]
-               
                Atom := Self
-               Atom := FunctionCall
-               Atom := NaturalValue
                Atom := (Constraint)
+               Atom := NaturalValue
+
+       NaturalValue := FunctionCall
+       NaturalValue := NaturalValuesAst
+       NaturalValue := int, str, float, list .....
 
 """

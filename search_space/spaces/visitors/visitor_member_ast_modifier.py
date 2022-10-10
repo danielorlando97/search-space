@@ -4,12 +4,14 @@ from ..asts import constraints
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
 from . import VisitorLayer
+from .visitor_natural_ast import NaturalAstVisitor, NaturalValuesNode
 
 
 class MemberAstModifierVisitor(VisitorLayer):
     def __init__(self, space, member) -> None:
         self.member = member
         self.space = space
+        self.natural_visitor = NaturalAstVisitor()
 
     @property
     def context(self):
@@ -92,12 +94,13 @@ class MemberAstModifierVisitor(VisitorLayer):
 
     @visitor.when(constraints.NaturalValue)
     def visit(self, node):
-        try:
-            _ = node.target.get_sample
-        except AttributeError:
-            return constraints.NaturalValue(node.target)
+        if isinstance(node.target, NaturalValuesNode):
+            try:
+                result = self.natural_visitor.get_value(
+                    node.target, context=self._context
+                )
+                return constraints.NaturalValue(result)
+            except CircularDependencyDetected:
+                return constraints.NotEvaluate()
 
-        try:
-            return constraints.NaturalValue(node.target.get_sample(self.context)[0])
-        except CircularDependencyDetected:
-            return constraints.NotEvaluate()
+        return node
