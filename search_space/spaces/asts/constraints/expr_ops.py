@@ -2,10 +2,11 @@ from .cmp_ops import CmpOpsNode
 from .__base__ import check_natural_value
 from search_space.utils.ast_tools import decorated_all_methods
 from .segmentation_branch import SegmentationModOp
+from . import __namespace__ as nsp
 
 
 @decorated_all_methods(check_natural_value)
-class ExprOpsNode(CmpOpsNode):
+class ExprOpsNode(CmpOpsNode, metaclass=nsp.ExprNode):
 
     def __add__(self, other):
         return AddOp(self, other)
@@ -36,9 +37,6 @@ class ExprOpsNode(CmpOpsNode):
 
     def __rdivmod__(self, other):
         return SegmentationModOp(other, self)
-
-
-CmpOpsNode.ExprNode = ExprOpsNode
 
 
 class AddOp(ExprOpsNode):

@@ -1,18 +1,17 @@
 from copy import copy
-from typing import Generic, List, TypeVar
-from search_space.spaces.domains.domain_protocol import DomainProtocol
+from typing import List
+from search_space.spaces.domains.__base__ import Domain
 from search_space.sampler import Sampler, SamplerFactory
 from search_space.sampler.distribution_names import UNIFORM
+from . import __namespace__ as nsp
 
-T = TypeVar('T')
 
-
-class BachedDomain(Generic[T]):
-    def __init__(self, *domains: List[DomainProtocol[T]]) -> None:
-        self.domains: List[DomainProtocol[T]] = domains
+class BachedDomain(Domain, metaclass=nsp.BachedDomain):
+    def __init__(self, *domains: List[Domain]) -> None:
+        self.domains: List[Domain] = domains
         self.sampler_selector: Sampler = SamplerFactory().create_sampler(UNIFORM, self)
 
-    def get_sample(self, sampler: Sampler) -> T:
+    def get_sample(self, sampler: Sampler):
         bache = self.sampler_selector.choice(self.domains)
         return bache.get_sample(sampler)
 

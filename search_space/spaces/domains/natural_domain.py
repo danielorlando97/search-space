@@ -1,12 +1,13 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
-from search_space.spaces.domains.domain_protocol import NumeralDomainProtocol
+from search_space.spaces.domains.__base__ import NumeralDomain
 from search_space.spaces.domains.module_domain import LinearTransformedDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
+from . import __namespace__ as nsp
 
 
-class NaturalDomain(NumeralDomainProtocol):
+class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
     def __init__(self, _min, _max) -> None:
         self.min, self.max = _min, _max
 

@@ -2,11 +2,12 @@ from search_space.errors import UnSupportOpError
 from .logic_ops import LogicOpsNode
 from .__base__ import check_natural_value
 from search_space.utils.ast_tools import decorated_all_methods
+from . import __namespace__ as nsp
 
 
 def expr_node_check(fn):
     def f(*args):
-        if not isinstance(args[1], CmpOpsNode.ExprNode):
+        if not isinstance(args[1], nsp.Type[nsp.ExprNode]):
             raise UnSupportOpError(args[0], args[1], 'cmp')
 
         return fn(*args)
@@ -17,7 +18,6 @@ def expr_node_check(fn):
 @decorated_all_methods(check_natural_value)
 @decorated_all_methods(expr_node_check)
 class CmpOpsNode(LogicOpsNode):
-    ExprNode = None
 
     def __eq__(self, other):
         return EqualOp(self, other)

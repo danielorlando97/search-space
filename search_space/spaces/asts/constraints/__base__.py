@@ -1,10 +1,10 @@
 from search_space.errors import UnSupportOpError
 from search_space.utils.ast_tools import check_params_type
+from . import __namespace__ as nsp
 
 
 class UniversalVariableNode:
     precedence = 1
-    NaturalValue = None
 
     @property
     def is_self(self):
@@ -212,5 +212,5 @@ class AstRoot(UniversalVariableNode):
 
 check_natural_value = check_params_type(
     lambda: UniversalVariableNode,
-    lambda x: UniversalVariableNode.NaturalValue(x)
+    lambda x: nsp.New[nsp.NaturalValueNode](x)
 )

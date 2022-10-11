@@ -1,12 +1,11 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
-from search_space.spaces.domains.domain_protocol import NumeralDomainProtocol
-from search_space.spaces.domains.module_domain import ModuleDomain
+from search_space.spaces.domains.__base__ import NumeralDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 
 
-class ContinuosDomain(NumeralDomainProtocol):
+class ContinuosDomain(NumeralDomain):
     def __init__(self, _min, _max) -> None:
         self.min, self.max = _min, _max
 
@@ -114,5 +113,5 @@ class ContinuosDomain(NumeralDomainProtocol):
     def __or__(self, __o):
         return BachedDomain(self, __o)
 
-    def __mod__(self, factor):
-        return ModuleDomain(self, factor)
+    # def __mod__(self, factor):
+    #     return ModuleDomain(self, factor)

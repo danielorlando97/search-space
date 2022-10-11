@@ -2,6 +2,7 @@ from .expr_ops import ExprOpsNode
 from .__base__ import check_natural_value, UniversalVariableNode
 from search_space.utils.ast_tools import decorated_all_methods
 from search_space.errors import UnSupportOpError
+from . import __namespace__ as nsp
 
 
 def natural_node_check(fn):
@@ -38,11 +39,8 @@ class Atoms(AtomsOp):
         super().__init__(target, None)
 
 
-class NaturalValue(Atoms):
+class NaturalValue(Atoms, metaclass=nsp.NaturalValueNode):
     pass
-
-
-UniversalVariableNode.NaturalValue = NaturalValue
 
 
 class SelfNode(Atoms):
