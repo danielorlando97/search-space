@@ -3,9 +3,10 @@ from search_space.spaces.domains.categorical_domain import CategoricalDomain
 from search_space.spaces.domains.__base__ import NumeralDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
+from . import __namespace__ as nsp
 
 
-class ContinuosDomain(NumeralDomain):
+class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
     def __init__(self, _min, _max) -> None:
         self.min, self.max = _min, _max
 

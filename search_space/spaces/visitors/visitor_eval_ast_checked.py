@@ -49,7 +49,7 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
 
         for n in node.asts:
             try:
-                _, _ = self.visit(n)
+                _, _ = self.visit(n, )
                 result.add_constraint(n)
             except NotEvaluateError:
                 pass
@@ -62,34 +62,31 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
     #                                                               #
     #################################################################
 
-    @visitor.when(constraints.SegmentationExprNode)
-    def visit(self, node: constraints.SegmentationExprNode, current_index):
-        a, _ = self.visit(node.target, current_index)
-        b, _ = self.visit(node.other, current_index)
-        c, _ = self.visit(node.value, current_index)
-
-        s = list(set([a, b, c]))
-
-        if (len(s) == 3):
-            raise NotEvaluateError()
-
-        def f():
-            raise InvalidSpaceDefinition('Auto Constraint Definition')
-
-        if len(s) == 1:
-            if s[0] == self.SELF:
-                raise InvalidSpaceDefinition('Auto Constraint Definition')
-            else:
-                raise NotEvaluateError()
-
-        label = self.choice_result(s[0], s[1], f)
-        n = type.__call__(node.__class__, a, b, c)
-        return label, n
-
     @visitor.when(constraints.UniversalVariableBinaryOperation)
     def visit(self, node: constraints.UniversalVariableBinaryOperation):
         a, node_A = self.visit(node.target)
         b, node_B = self.visit(node.other)
+
+        if isinstance(node, constraints.SegmentationExprNode):
+            c, _ = self.visit(node.value)
+
+            s = list(set([a, b, c]))
+
+            if (len(s) == 3):
+                raise NotEvaluateError()
+
+            def f():
+                raise InvalidSpaceDefinition('Auto Constraint Definition')
+
+            if len(s) == 1:
+                if s[0] == self.SELF:
+                    raise InvalidSpaceDefinition('Auto Constraint Definition')
+                else:
+                    raise NotEvaluateError()
+
+            label = self.choice_result(s[0], s[1], f)
+            n = type.__call__(node.__class__, a, b, c)
+            return label, n
 
         def f():
             raise InvalidSpaceDefinition('Auto Constraint Definition')

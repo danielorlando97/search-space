@@ -240,6 +240,9 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
 
+        if type(value) in [list, tuple] and target % factor in value:
+            return self
+
         if target % factor == value:
             return self
 
@@ -251,6 +254,9 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
+
+        if type(value) in [list, tuple] and not target % factor in value:
+            return self
 
         if target % factor != value:
             return self
@@ -264,6 +270,9 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
 
+        if type(value) in [list, tuple]:
+            value = min(value)
+
         if target % factor < value:
             return self
 
@@ -275,6 +284,9 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
+
+        if type(value) in [list, tuple]:
+            value = min(value)
 
         if target % factor <= value:
             return self
@@ -288,6 +300,9 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
 
+        if type(value) in [list, tuple]:
+            value = max(value)
+
         if target % factor > value:
             return self
 
@@ -299,6 +314,9 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
+
+        if type(value) in [list, tuple]:
+            value = max(value)
 
         if target % factor >= value:
             return self

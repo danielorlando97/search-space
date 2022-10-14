@@ -23,6 +23,12 @@ class NaturalDomain(NumeralDomainProtocol, InjectorMetaclass):
         self.max = _max
 
 
+class ContinuosDomain(NumeralDomainProtocol, InjectorMetaclass):
+    def __init__(self, _min, _max) -> None:
+        self.min = _min
+        self.max = _max
+
+
 class BachedDomain(DomainProtocol, InjectorMetaclass):
     def __init__(self, *domain: list[DomainProtocol]) -> None:
         pass

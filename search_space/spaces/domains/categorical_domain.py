@@ -9,6 +9,9 @@ class CategoricalDomain(Domain):
         self.list = _list
         self.maps = []
 
+    def is_invalid(self):
+        return len(self.list) == 0
+
     def __copy__(self):
         return CategoricalDomain(self.list)
 

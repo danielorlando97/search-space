@@ -55,18 +55,14 @@ class MemberAstModifierVisitor(VisitorLayer):
     #                                                               #
     #################################################################
 
-    @visitor.when(constraints.SegmentationExprNode)
-    def visit(self, node: constraints.SegmentationExprNode, current_index):
-        a = self.visit(node.target, current_index)
-        b = self.visit(node.other, current_index)
-        c = self.visit(node.value, current_index)
-
-        return type.__call__(node.__class__, a, b, c)
-
     @visitor.when(constraints.UniversalVariableBinaryOperation)
     def visit(self, node):
         a = self.visit(node.target)
         b = self.visit(node.other)
+
+        if isinstance(node, constraints.SegmentationExprNode):
+            c = self.visit(node.value)
+            return type.__call__(node.__class__, a, b, c)
 
         return type.__call__(node.__class__, a, b)
 

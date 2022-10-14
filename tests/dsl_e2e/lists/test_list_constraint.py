@@ -348,4 +348,4 @@ class NumeralConstraintByList(TestCase):
             values, _ = space.get_sample()
             for row in values:
                 for v in row:
-                    assert v % 3 == 2
+                    assert v % 3 == 2 or v % 3 == 1

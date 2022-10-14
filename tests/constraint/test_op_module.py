@@ -62,7 +62,7 @@ class ModularConstraintOp(TestCase):
             assert v % 3 == 0 or v % 2 == 0
 
     def test_with_other(self):
-        space = Domain[int](max=20) | (lambda x: (x % 3 == 2, x > 100))
+        space = Domain[int] | (lambda x: (x % 3 == 2, x > 100))
 
         @replay_function
         def ______():
@@ -70,7 +70,7 @@ class ModularConstraintOp(TestCase):
             assert v % 3 == 2 and v > 100
 
     def test_with_other_plus(self):
-        space = Domain[int](max=20) | (
+        space = Domain[int] | (
             lambda x: (x % 3 == 2, x > 0, x < 10, x != 5))
 
         @replay_function
@@ -79,7 +79,7 @@ class ModularConstraintOp(TestCase):
             assert v % 3 == 2 and v > 0 and v < 10 and v != 5
 
 
-class ModularConstraintOp(TestCase):
+class ModularConstraintOpByList(TestCase):
     def test_eq(self):
         space = Domain[int]() | (lambda x: x % 3 == [1, 2])
 

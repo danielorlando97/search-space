@@ -58,28 +58,28 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
             other.sort()
             try:
                 other = [other[0]] + [other[i] for i in range(1, len(other))
-                                      if other[i] - other[i-1] > 1]
+                                      if other[i] - other[i-1] > 0.51]
 
                 while len(other) > 0 and self.min == other[0]:
                     other.pop(0)
-                    self.min += 1
+                    self.min += 0.51
 
                 while len(other) > 0 and self.max == other[-1]:
                     other.pop(-1)
-                    self.max -= 1
+                    self.max -= 0.51
             except IndexError:
                 raise InvalidSpaceDefinition('NaturalDomain is empty')
 
-            other = [self.min - 1] + other + [self.max + 1]
+            other = [self.min - 0.51] + other + [self.max + 0.51]
             return BachedDomain(
-                * [NaturalDomain(other[i-1] + 1, other[i] - 1) for i in range(1, len(other))]
+                * [NaturalDomain(other[i-1] + 0.51, other[i] - 0.51) for i in range(1, len(other))]
             )
 
         "If other is out of current domain, it will never enter and current domain is right"
         if other > self.max or other < self.min:
             return self
 
-        return BachedDomain(NaturalDomain(self.min, other - 1), NaturalDomain(other + 1, self.max))
+        return BachedDomain(NaturalDomain(self.min, other - 0.51), NaturalDomain(other + 0.51, self.max))
 
     def __lt__(self, other):
         if type(other) in [list, tuple]:
@@ -89,7 +89,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
             raise InvalidSpaceDefinition(
                 f"All values intro [{self.min}, {self.max}] are graters that {other}")
 
-        self.max = min(other - 1, self.max)
+        self.max = min(other - 0.51, self.max)
         return self
 
     def __gt__(self, other):
@@ -100,7 +100,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
             raise InvalidSpaceDefinition(
                 f"All values intro [{self.min}, {self.max}] are less that {other}")
 
-        self.min = max(other + 1, self.min)
+        self.min = max(other + 0.51, self.min)
         return self
 
     def __rlt__(self, other):
@@ -143,7 +143,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
                     transformer=lambda x: x/factor,
                     inverse=lambda x: x * factor,
                     independent_value=ind
-                ) for ind in range(value)]
+                ) for ind in range(factor) if ind in value]
             )
 
         return nsp.New[nsp.LinealTransformed](

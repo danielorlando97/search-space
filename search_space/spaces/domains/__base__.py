@@ -2,6 +2,8 @@ from . import __namespace__ as nsp
 
 
 class Domain(nsp.DomainProtocol):
+    def is_invalid(self):
+        return False
 
     def __rlt__(self, other):
         return self.__gt__(other)
@@ -15,35 +17,64 @@ class Domain(nsp.DomainProtocol):
     def __rge__(self, other):
         return self.__le__(other)
 
+    def __or__(self, __o):
+        return nsp.New[nsp.BachedDomain](self, __o)
+
 
 class NumeralDomain(Domain, nsp.NumeralDomainProtocol):
-    pass
-    # def __mod__(self, factor):
+    def is_invalid(self):
+        return self.min > self.max
 
-    # def __add__(self, factor):
-    #     return LinearTransformedDomain(
-    #         original_domain=self,
-    #         transformer=lambda x: x - factor,
-    #         inverse=lambda x: x + factor
-    #     )
+    def __add__(self, factor):
+        return nsp.New[nsp.LinealTransformed](
+            original_domain=self,
+            transformer=lambda x: x - factor,
+            inverse=lambda x: x,
+            independent_value=0
+        )
 
-    # def __sub__(self, factor):
-    #     return LinearTransformedDomain(
-    #         original_domain=self,
-    #         transformer=lambda x: x + factor,
-    #         inverse=lambda x: x - factor
-    #     )
+    def __radd__(self, other):
+        return self.__add__(other)
 
-    # def __mult__(self, factor):
-    #     return LinearTransformedDomain(
-    #         original_domain=self,
-    #         transformer=lambda x: x/factor,
-    #         inverse=lambda x: x * factor
-    #     )
+    def __sub__(self, factor):
+        return nsp.New[nsp.LinealTransformed](
+            original_domain=self,
+            transformer=lambda x: x + factor,
+            inverse=lambda x: x,
+            independent_value=0
+        )
 
-    # def __div__(self, factor):
-    #     return LinearTransformedDomain(
-    #         original_domain=self,
-    #         transformer=lambda x: x * factor,
-    #         inverse=lambda x: x / factor
-    #     )
+    def __rsub__(self, factor):
+        return nsp.New[nsp.LinealTransformed](
+            original_domain=self,
+            transformer=lambda x: x,
+            inverse=lambda x: factor - x,
+            independent_value=0
+        )
+
+    def __mul__(self, factor):
+        return nsp.New[nsp.LinealTransformed](
+            original_domain=self,
+            transformer=lambda x: x / factor,
+            inverse=lambda x: x,
+            independent_value=0
+        )
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __truediv__(self, factor):
+        return nsp.New[nsp.LinealTransformed](
+            original_domain=self,
+            transformer=lambda x: x * factor,
+            inverse=lambda x: x,
+            independent_value=0
+        )
+
+    def __rtruediv__(self, factor):
+        return nsp.New[nsp.LinealTransformed](
+            original_domain=self,
+            transformer=lambda x: x * factor,
+            inverse=lambda x: x / factor,
+            independent_value=0
+        )

@@ -6,7 +6,7 @@ from search_space.context_manager.runtime_manager import SearchSpaceConfig
 from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
-from search_space.errors import DetectedRuntimeDependency, InvalidSampler, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
+from search_space.errors import DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint, InvalidSpaceDefinition, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
 from .asts import constraints as ast_constraint
 from .asts import naturals_values as ast_natural
 from .visitors import visitors
@@ -206,6 +206,9 @@ class BasicSearchSpace:
         return domain, self._clean_asts
 
     def __sampler__(self, domain, context):
+        if domain.is_invalid():
+            raise InvalidSpaceConstraint(
+                "the constraints change to domain in invalid")
         return domain.get_sample(self._distribution), context
 
     def __check_sample__(self, sample, ast_result, context):

@@ -8,8 +8,24 @@ from . import __namespace__ as nsp
 
 class BachedDomain(Domain, metaclass=nsp.BachedDomain):
     def __init__(self, *domains: List[Domain]) -> None:
-        self.domains: List[Domain] = domains
+        self.domains: List[Domain] = list(domains)
         self.sampler_selector: Sampler = SamplerFactory().create_sampler(UNIFORM, self)
+
+    def is_invalid(self):
+        index = 0
+        while index < len(self.domains):
+
+            if self.domains[index].is_invalid():
+                self.domains.pop(index)
+            else:
+                index += 1
+
+        return len(self.domains) == 0
+
+    @property
+    def limits(self):
+        self.is_invalid()
+        return tuple([d.limits for d in self.domains])
 
     def get_sample(self, sampler: Sampler):
         bache = self.sampler_selector.choice(self.domains)
