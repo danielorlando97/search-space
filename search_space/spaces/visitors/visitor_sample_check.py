@@ -54,13 +54,6 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     #                                                               #
     #################################################################
 
-    # @visitor.when(constraints.ModOp)
-    # def visit(self, node, current_index=[]):
-    #     a = self.visit(node.target, current_index)
-    #     b = self.visit(node.other, current_index)
-
-    #     return a % b
-
     @visitor.when(constraints.AddOp)
     def visit(self, node, current_index=[]):
         a = self.visit(node.target, current_index)
@@ -234,6 +227,134 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
 
         raise InvalidSampler(
             f"inconsistent sampler => [ {a} >= {b} ]")
+
+    #################################################################
+    #                                                               #
+    #                 Segmentation Visit                            #
+    #                                                               #
+    #################################################################
+
+    @visitor.when(constraints.SegmentationEqualOp)
+    def visit(self, node: constraints.SegmentationEqualOp, current_index=[]):
+        target = self.visit(node.target, current_index)
+        factor = self.visit(node.other, current_index)
+        value = self.visit(node.value, current_index)
+
+        if target % factor == value:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {target} % {factor} >= {value} ]")
+
+    @visitor.when(constraints.SegmentationNotEqualOp)
+    def visit(self, node: constraints.SegmentationNotEqualOp, current_index=[]):
+        target = self.visit(node.target, current_index)
+        factor = self.visit(node.other, current_index)
+        value = self.visit(node.value, current_index)
+
+        if target % factor != value:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {target} % {factor} != {value} ]")
+
+    @visitor.when(constraints.SegmentationLessOp)
+    def visit(self, node: constraints.SegmentationLessOp, current_index=[]):
+        target = self.visit(node.target, current_index)
+        factor = self.visit(node.other, current_index)
+        value = self.visit(node.value, current_index)
+
+        if target % factor < value:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {target} % {factor} < {value} ]")
+
+    @visitor.when(constraints.SegmentationLessOrEqualOp)
+    def visit(self, node: constraints.SegmentationLessOrEqualOp, current_index=[]):
+        target = self.visit(node.target, current_index)
+        factor = self.visit(node.other, current_index)
+        value = self.visit(node.value, current_index)
+
+        if target % factor <= value:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {target} % {factor} <= {value} ]")
+
+    @visitor.when(constraints.SegmentationGreatOp)
+    def visit(self, node: constraints.SegmentationGreatOp, current_index=[]):
+        target = self.visit(node.target, current_index)
+        factor = self.visit(node.other, current_index)
+        value = self.visit(node.value, current_index)
+
+        if target % factor > value:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {target} % {factor} > {value} ]")
+
+    @visitor.when(constraints.SegmentationGreatOrEqualOp)
+    def visit(self, node: constraints.SegmentationGreatOrEqualOp, current_index=[]):
+        target = self.visit(node.target, current_index)
+        factor = self.visit(node.other, current_index)
+        value = self.visit(node.value, current_index)
+
+        if target % factor >= value:
+            return self
+
+        raise InvalidSampler(
+            f"inconsistent sampler => [ {target} % {factor} >= {value} ]")
+
+    @visitor.when(constraints.SegmentationAddOp)
+    def visit(self, node: constraints.SegmentationAddOp, current_index=[]):
+        target = self.visit(node.target, current_index)
+        factor = self.visit(node.value, current_index)
+
+        if not target is None:
+            return target + factor
+
+        self.domain = self.domain.__mod_add__(factor, 0)
+
+    @visitor.when(constraints.SegmentationSubOp)
+    def visit(self, node: constraints.SegmentationSubOp, current_index=[]):
+        target = self.visit(node.target, current_index)
+        factor = self.visit(node.other, current_index)
+
+        if not target is None:
+            return target - factor
+
+        self.domain = self.domain.__mod_sub__(factor, 0)
+
+    @visitor.when(constraints.SegmentationMultiOp)
+    def visit(self, node: constraints.SegmentationMultiOp, current_index=[]):
+        target = self.visit(node.target, current_index)
+        factor = self.visit(node.other, current_index)
+
+        if not target is None:
+            return target * factor
+
+        self.domain = self.domain.__mod_mult__(factor, 0)
+
+    @visitor.when(constraints.SegmentationDivOp)
+    def visit(self, node: constraints.SegmentationDivOp, current_index=[]):
+        target = self.visit(node.target, current_index)
+        factor = self.visit(node.other, current_index)
+
+        if not target is None:
+            return target / factor
+
+        self.domain = self.domain.__mod_div__(factor, 0)
+
+    @visitor.when(constraints.SegmentationModOp)
+    def visit(self, node: constraints.SegmentationModOp, current_index=[]):
+        target = self.visit(node.target, current_index)
+        factor = self.visit(node.other, current_index)
+
+        if not target is None:
+            return target % factor
+
+        self.domain = self.domain.__mod_eq__(factor, 0)
 
     #################################################################
     #                                                               #

@@ -11,15 +11,17 @@ class LinearTransformedDomain(Domain, metaclass=nsp.LinealTransformed):
     def __init__(
         self,
         original_domain: NumeralDomain,
-        transformer, inverse, independent_value=None,
-        segmentation=False
+        transformer, inverse, independent_value,
     ) -> None:
         self.original_domain = copy(original_domain)
         self.transformer = transformer
         self.inverse = inverse
         self.ind_v = independent_value
-        self._the_origin_domain_is_transformed = False
-        self.segmentation = segmentation
+
+        self.original_domain.min = self._transform_origin_to_new(
+            self.original_domain.min)
+        self.original_domain.max = self._transform_origin_to_new(
+            self.original_domain.max)
 
     def _transform_origin_to_new(self, value):
         return self.transformer(value - self.ind_v)
@@ -33,78 +35,64 @@ class LinearTransformedDomain(Domain, metaclass=nsp.LinealTransformed):
 
         return [self._transform_origin_to_new(item) for item in values]
 
-    def _transformer(self):
-        if self._the_origin_domain_is_transformed:
-            return
-
-        self._the_origin_domain_is_transformed = True
-        if self.ind_v is None:
-            self.ind_v = 0
-
-        self.original_domain.min = self._transform_origin_to_new(
-            self.original_domain.min)
-        self.original_domain.max = self._transform_origin_to_new(
-            self.original_domain.max)
-
     def get_sample(self, sampler: Sampler):
-        self._transformer()
         return self._transform_new_to_origin(self.original_domain.get_sample(sampler))
 
-    def __eq_seg__(self, other):
-        other = [other] if not type(other) in [list, tuple] else copy(other)
-        if self.ind_v is None:
-            self.ind_v = other.pop(0)
+    # def __eq_seg__(self, other):
+    #     other = [other] if not type(other) in [list, tuple] else copy(other)
+    #     if self.ind_v is None:
+    #         self.ind_v = other.pop(0)
 
-        return nsp.New[nsp.BachedDomain](*([self] + [
-            LinearTransformedDomain(
-                self.original_domain,
-                self.transformer,
-                self.inverse,
-                independent_value=plus,
-                segmentation=True
-            )
-            for plus in other
-        ]))
+    #     return nsp.New[nsp.BachedDomain](*([self] + [
+    #         LinearTransformedDomain(
+    #             self.original_domain,
+    #             self.transformer,
+    #             self.inverse,
+    #             independent_value=plus,
+    #             segmentation=True
+    #         )
+    #         for plus in other
+    #     ]))
 
-    def __eq__(self, other):
+    # def __eq__(self, other):
 
-        if self.ind_v is None and not type(other) in [list, tuple]:
-            self.ind_v = other
-            return self
+    #     if self.ind_v is None and not type(other) in [list, tuple]:
+    #         self.ind_v = other
+    #         return self
 
-        if self.segmentation:
-            return self.__eq_seg__(other)
+    #     if self.segmentation:
+    #         return self.__eq_seg__(other)
 
-        self.original_domain = self.original_domain == self._transform_values(
-            other)
+    #     self.original_domain = self.original_domain == self._transform_values(
+    #         other)
 
-        return self
+    #     return self
 
-    def __neq_seg__(self, other):
-        other = [other] if not type(other) in [list, tuple] else copy(other)
-        if self.ind_v is None:
-            self.ind_v = other.pop(0)
+    # def __neq_seg__(self, other):
+    #     other = [other] if not type(other) in [list, tuple] else copy(other)
+    #     if self.ind_v is None:
+    #         self.ind_v = other.pop(0)
 
-        return nsp.New[nsp.BachedDomain](*([self] + [
-            LinearTransformedDomain(
-                self.original_domain,
-                self.transformer,
-                self.inverse,
-                independent_value=plus,
-                segmentation=True
-            )
-            for plus in other
-        ]))
+    #     return nsp.New[nsp.BachedDomain](*([self] + [
+    #         LinearTransformedDomain(
+    #             self.original_domain,
+    #             self.transformer,
+    #             self.inverse,
+    #             independent_value=plus,
+    #             segmentation=True
+    #         )
+    #         for plus in other
+    #     ]))
 
-    def __neq__(self, other):
+    # def __neq__(self, other):
 
-        if self.segmentation:
-            return self.__eq_seg__(other)
+    #     if self.segmentation:
+    #         return self.__eq_seg__(other)
 
-        self.original_domain = self.original_domain == self._transform_values(
-            other)
+    #     self.original_domain = self.original_domain == self._transform_values(
+    #         other)
 
-        return self
+    #     return self
 
 
 # class ModuleDomain(Generic[T]):

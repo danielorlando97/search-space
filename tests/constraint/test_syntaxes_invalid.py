@@ -2,7 +2,7 @@ from unittest import TestCase
 from search_space.errors import UnSupportOpError
 from search_space.spaces.search_space import BasicSearchSpace
 from search_space.spaces.asts import constraints
-from test_valid import cmp_ast
+from test_syntaxes_valid import cmp_ast
 
 
 class ConstraintInvalidBasicSyntaxes(TestCase):

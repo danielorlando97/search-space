@@ -14,7 +14,7 @@ T = TypeVar('T')
 
 class NewClass:
     def __getitem__(self, _type: Type[T]) -> Type[T]:
-        return _type._class
+        return _type._class[_type]
 
 
 New = NewClass()
@@ -22,24 +22,30 @@ New = NewClass()
 
 class TypeClass:
     def __getitem__(self, _type: Type[T]) -> Type[T]:
-        return _type._class
+        return _type._class[_type]
 
 
 Type = TypeClass()
 
 
+def default_init(cls):
+    def f(self, *args, **kwg):
+        super(cls,  self).__init__(*args, **kwg)
+    return f
+
+
 class InjectorMetaclass(type):
-    _class = None
+    _class = {}
 
     def __new__(cls, *args, **kwg):
         def __init__(self, *args, **kwg):
-            InjectorMetaclass.__init__(self, *args, **kwg)
-            if type(self)._class != None:
-                if not issubclass(self, type(self)._class):
-                    raise ImportError(
-                        'Two def for one of the item in namespace')
-            else:
-                type(self)._class = self
+            super().__init__(*args, **kwg)
+            try:
+                _ = type(self)._class[type(self)]
+            except KeyError:
+                type(self)._class[type(self)] = self
 
-        cls.__init__ = __init__
+        cls.__mro__[0].__init__ = __init__
+        for i in range(1, len(cls.__mro__) - 2):
+            cls.__mro__[i].__init__ = default_init(cls.__mro__[i + 1])
         return super().__new__(cls, *args, **kwg)

@@ -17,7 +17,7 @@ class Domain(nsp.DomainProtocol):
 
 
 class NumeralDomain(Domain, nsp.NumeralDomainProtocol):
-
+    pass
     # def __mod__(self, factor):
 
     # def __add__(self, factor):
@@ -47,26 +47,3 @@ class NumeralDomain(Domain, nsp.NumeralDomainProtocol):
     #         transformer=lambda x: x * factor,
     #         inverse=lambda x: x / factor
     #     )
-
-    def __mod_eq__(self, factor, value):
-        return nsp.New[nsp.LinealTransformed](
-            original_domain=self,
-            transformer=lambda x: x/factor,
-            inverse=lambda x: x * factor,
-            independent_value=value
-        )
-
-    def __mod_neq__(self, factor, value):
-        pass
-
-    def __mod_lt__(self, factor, value):
-        pass
-
-    def __mod_gt__(self, factor, value):
-        pass
-
-    def __mod_ge__(self, factor, value):
-        pass
-
-    def __mod_le__(self, factor, value):
-        pass

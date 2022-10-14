@@ -218,14 +218,6 @@ class NumeralFloatConstraint(TestCase):
             v, _ = space.get_sample()
             assert v < 5 or v > 15
 
-    def test_module(self):
-        space = Domain[float] | (lambda x: x % 3 == 2)
-
-        @replay_function
-        def ______():
-            v, _ = space.get_sample()
-            assert v % 3 == 2
-
 
 class NumeralFloatConstraintByList(TestCase):
     def test_eq(self):
@@ -275,11 +267,3 @@ class NumeralFloatConstraintByList(TestCase):
         def ______():
             v, _ = space.get_sample()
             assert v <= 10
-
-    def test_module(self):
-        space = Domain[float] | (lambda x: x % 3 == [1, 2])
-
-        @replay_function
-        def ______():
-            v, _ = space.get_sample()
-            assert v % 3 == 2 or v % 3 == 1

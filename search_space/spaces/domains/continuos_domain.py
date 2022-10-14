@@ -113,5 +113,20 @@ class ContinuosDomain(NumeralDomain):
     def __or__(self, __o):
         return BachedDomain(self, __o)
 
-    # def __mod__(self, factor):
-    #     return ModuleDomain(self, factor)
+    def __mod_eq__(self, factor, value):
+        return self
+
+    def __mod_neq__(self, factor, value):
+        return self
+
+    def __mod_lt__(self, factor, value):
+        return self
+
+    def __mod_gt__(self, factor, value):
+        return self
+
+    def __mod_ge__(self, factor, value):
+        return self
+
+    def __mod_le__(self, factor, value):
+        return self

@@ -1,7 +1,7 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
 from search_space.spaces.domains.__base__ import NumeralDomain
-from search_space.spaces.domains.module_domain import LinearTransformedDomain
+from search_space.spaces.domains.linear_transform_domain import LinearTransformedDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 from . import __namespace__ as nsp
@@ -133,3 +133,87 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
 
     def __or__(self, __o):
         return BachedDomain(self, __o)
+
+    def __mod_eq__(self, factor, value):
+        if type(value) in [list, tuple]:
+
+            return nsp.New[nsp.BachedDomain](
+                * [nsp.New[nsp.LinealTransformed](
+                    original_domain=self,
+                    transformer=lambda x: x/factor,
+                    inverse=lambda x: x * factor,
+                    independent_value=ind
+                ) for ind in range(value)]
+            )
+
+        return nsp.New[nsp.LinealTransformed](
+            original_domain=self,
+            transformer=lambda x: x/factor,
+            inverse=lambda x: x * factor,
+            independent_value=value
+        )
+
+    def __mod_neq__(self, factor, value):
+        if not type(value) in [list, tuple]:
+            value = [value]
+
+        return nsp.New[nsp.BachedDomain](
+            * [nsp.New[nsp.LinealTransformed](
+                original_domain=self,
+                transformer=lambda x: x/factor,
+                inverse=lambda x: x * factor,
+                independent_value=ind
+            ) for ind in range(factor) if not ind in value]
+        )
+
+    def __mod_lt__(self, factor, value):
+        if type(value) in [list, tuple]:
+            value = min(value)
+
+        return nsp.New[nsp.BachedDomain](
+            * [nsp.New[nsp.LinealTransformed](
+                original_domain=self,
+                transformer=lambda x: x/factor,
+                inverse=lambda x: x * factor,
+                independent_value=ind
+            ) for ind in range(factor) if ind < value]
+        )
+
+    def __mod_gt__(self, factor, value):
+        if type(value) in [list, tuple]:
+            value = max(value)
+
+        return nsp.New[nsp.BachedDomain](
+            * [nsp.New[nsp.LinealTransformed](
+                original_domain=self,
+                transformer=lambda x: x/factor,
+                inverse=lambda x: x * factor,
+                independent_value=ind
+            ) for ind in range(factor) if ind > value]
+        )
+
+    def __mod_ge__(self, factor, value):
+        if type(value) in [list, tuple]:
+            value = max(value)
+
+        return nsp.New[nsp.BachedDomain](
+            * [nsp.New[nsp.LinealTransformed](
+                original_domain=self,
+                transformer=lambda x: x/factor,
+                inverse=lambda x: x * factor,
+                independent_value=ind
+            ) for ind in range(factor) if ind >= value]
+        )
+
+    def __mod_le__(self, factor, value):
+        if type(value) in [list, tuple]:
+            value = min(value)
+
+        return nsp.New[nsp.BachedDomain](
+            * [nsp.New[nsp.LinealTransformed](
+                original_domain=self,
+                transformer=lambda x: x/factor,
+                inverse=lambda x: x * factor,
+                independent_value=ind
+            ) for ind in range(factor) if ind <= value]
+        )

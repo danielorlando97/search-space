@@ -163,7 +163,7 @@ class DomainModifierVisitor(VisitorLayer):
 
     #################################################################
     #                                                               #
-    #                 Arithmetic Visit                              #
+    #                 Segmentation Visit                            #
     #                                                               #
     #################################################################
 
@@ -171,7 +171,7 @@ class DomainModifierVisitor(VisitorLayer):
     def visit(self, node: constraints.SegmentationEqualOp):
         target = self.visit(node.target)
         factor = self.visit(node.other)
-        value = self.visit(node.other)
+        value = self.visit(node.value)
 
         if not target is None:
             return target % factor == value
@@ -182,7 +182,7 @@ class DomainModifierVisitor(VisitorLayer):
     def visit(self, node: constraints.SegmentationNotEqualOp):
         target = self.visit(node.target)
         factor = self.visit(node.other)
-        value = self.visit(node.other)
+        value = self.visit(node.value)
 
         if not target is None:
             return target % factor != value
@@ -193,7 +193,7 @@ class DomainModifierVisitor(VisitorLayer):
     def visit(self, node: constraints.SegmentationLessOp):
         target = self.visit(node.target)
         factor = self.visit(node.other)
-        value = self.visit(node.other)
+        value = self.visit(node.value)
 
         if not target is None:
             return target % factor < value
@@ -204,7 +204,7 @@ class DomainModifierVisitor(VisitorLayer):
     def visit(self, node: constraints.SegmentationLessOrEqualOp):
         target = self.visit(node.target)
         factor = self.visit(node.other)
-        value = self.visit(node.other)
+        value = self.visit(node.value)
 
         if not target is None:
             return target % factor <= value
@@ -215,7 +215,7 @@ class DomainModifierVisitor(VisitorLayer):
     def visit(self, node: constraints.SegmentationGreatOp):
         target = self.visit(node.target)
         factor = self.visit(node.other)
-        value = self.visit(node.other)
+        value = self.visit(node.value)
 
         if not target is None:
             return target % factor > value
@@ -226,7 +226,7 @@ class DomainModifierVisitor(VisitorLayer):
     def visit(self, node: constraints.SegmentationGreatOrEqualOp):
         target = self.visit(node.target)
         factor = self.visit(node.other)
-        value = self.visit(node.other)
+        value = self.visit(node.value)
 
         if not target is None:
             return target % factor >= value
@@ -236,7 +236,7 @@ class DomainModifierVisitor(VisitorLayer):
     @visitor.when(constraints.SegmentationAddOp)
     def visit(self, node: constraints.SegmentationAddOp):
         target = self.visit(node.target)
-        factor = self.visit(node.other)
+        factor = self.visit(node.value)
 
         if not target is None:
             return target + factor

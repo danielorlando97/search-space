@@ -11,6 +11,21 @@ class SegmentationExprNode(LogicOpsNode):
 
 @decorated_all_methods(check_natural_value)
 class SegmentationAtomNode(UniversalVariableBinaryOperation):
+    def __and__(self, other):
+        me = self == 0
+        return me & other
+
+    def __rand__(self, other):
+        me = self == 0
+        return other & me
+
+    def __or__(self, other):
+        me = self == 0
+        return me | other
+
+    def __or__(self, other):
+        me = self == 0
+        return other | me
 
     def __add__(self, other):
         return SegmentationAddOp(self, other)
