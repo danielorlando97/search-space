@@ -1,9 +1,25 @@
 from search_space.utils.singleton import Singleton
+from search_space.utils.infinity import Infinity
 
 
 class Sampler:
     def __init__(self) -> None:
         self.history = {}
+
+    def _get_true_range(self, a, b):
+        if not Infinity in [type(a), type(b)]:
+            return a, b
+
+        if type(a) == Infinity and type(b) == Infinity:
+            return float(a), float(b)
+
+        if type(a) != Infinity:
+            m = float(b)
+            return (a, m) if a < m else (a, a*2)
+
+        if type(b) != Infinity:
+            m = float(a)
+            return (m, b) if m < b else (b - 2*b, b)
 
     def generate_random_value(self, domain):
         pass
@@ -16,12 +32,12 @@ class Sampler:
 
     def get_int(self, min, max, repeat_last_value=False):
         value = self.__random_value__(
-            (min, max), repeat_last_value=repeat_last_value)
+            self._get_true_range(min, max), repeat_last_value=repeat_last_value)
         decimal = value - int(value)
         return int(value) if decimal <= 0.5 else int(value) + 1
 
     def get_float(self, min, max, repeat_last_value=False):
-        return self.__random_value__((min, max), repeat_last_value=repeat_last_value)
+        return self.__random_value__(self._get_true_range(min, max), repeat_last_value=repeat_last_value)
 
     def choice(self, domain, repeat_last_value=False):
         index = self.get_int(

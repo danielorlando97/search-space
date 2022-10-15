@@ -1,6 +1,5 @@
 from copy import copy
 import inspect
-from token import EXACT_TOKEN_TYPES
 from typing_extensions import Self
 from search_space.context_manager.sampler_context import SamplerContext
 from search_space.sampler.distribution_names import UNIFORM, UNIFORM_BERNOULLI
@@ -8,7 +7,6 @@ from search_space.spaces.visitors import visitors
 from search_space.spaces import BasicSearchSpace
 import imp
 from typing import List, Type
-from search_space.spaces.search_space_protocol import SearchSpaceProtocol
 from search_space.utils.singleton import Singleton
 from search_space.spaces import SearchSpace
 from search_space.spaces.asts import constraints as ast_constraint
@@ -251,6 +249,9 @@ class NoneSpace(BasicSearchSpace):
 
     def __ast_optimization__(self, ast_list):
         return self
+
+    def __eq__(self, __o: object) -> bool:
+        return __o == None or super().__eq__(__o)
 
 
 class UnionSpace(BasicSearchSpace):

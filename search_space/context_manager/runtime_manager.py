@@ -1,5 +1,6 @@
 from typing import Protocol, Union
 from search_space.utils.singleton import Singleton
+from search_space.utils.infinity import INFINITY_MAX_VALUE, INFINITY_MIN_VALUE
 
 
 class SearchSpacePrinter:
@@ -32,12 +33,20 @@ class SearchSpaceConfig(metaclass=Singleton):
         verbose: bool = False,
         replay_nums: Union[int, None] = None,
         ast_optimizations:  bool = True,
-        printer: SearchSpacePrinter = None
+        printer: SearchSpacePrinter = None,
+        minimal_numeral_limit=None,
+        maximal_numeral_limit=None
     ) -> None:
         self.verbose = verbose
         self.replay_nums = replay_nums
         self.ast_optimizations = ast_optimizations
         self.printer = printer
+
+        if minimal_numeral_limit:
+            INFINITY_MIN_VALUE = minimal_numeral_limit
+
+        if maximal_numeral_limit:
+            INFINITY_MAX_VALUE = maximal_numeral_limit
 
     @property
     def printer_class(self) -> SearchSpacePrinter:

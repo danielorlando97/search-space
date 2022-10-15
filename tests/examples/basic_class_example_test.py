@@ -1,3 +1,4 @@
+from typing import Optional
 from unittest import TestCase
 from search_space.dsl import Domain, RandomValue
 from search_space.spaces import FunctionalConstraint
@@ -14,10 +15,10 @@ class BasicClassExamples(TestCase):
 
     def test_example_line(self):
         """
-        We want to find the line that best interpolates our data. 
-        And for some reason, we know that the slope is an integer 
-        between 50 and 100, but it is not 65. We also know that 
-        the intercept of the line is less than 50  
+        We want to find the line that best interpolates our data.
+        And for some reason, we know that the slope is an integer
+        between 50 and 100, but it is not 65. We also know that
+        the intercept of the line is less than 50
         """
 
         class Line:
@@ -40,8 +41,8 @@ class BasicClassExamples(TestCase):
 
     def test_example_center_point(self):
         """
-        We want to find the pointer more centered and with more density 
-        around it. For some reason, we know that our data looks like 
+        We want to find the pointer more centered and with more density
+        around it. For some reason, we know that our data looks like
         a heavy diagonal 20u thick. So, for every points on the line x = y
         our points are between (x-10, y) and (x+10, y)
         """
@@ -70,11 +71,11 @@ class BasicClassExamples(TestCase):
         By Sklearn (Details about LogisticRegression):
 
         intercept_scaling float, default=1
-            Useful only when the solver 'liblinear' is used and 
-            self.fit_intercept is set to True. In this case, x 
-            becomes [x, self.intercept_scaling], i.e. a “synthetic” 
-            feature with constant value equal to intercept_scaling 
-            is appended to the instance vector. The intercept 
+            Useful only when the solver 'liblinear' is used and
+            self.fit_intercept is set to True. In this case, x
+            becomes [x, self.intercept_scaling], i.e. a “synthetic”
+            feature with constant value equal to intercept_scaling
+            is appended to the instance vector. The intercept
             becomes intercept_scaling * synthetic_feature_weight.
 
         random_state int, RandomState instance, default=None
@@ -94,7 +95,7 @@ class BasicClassExamples(TestCase):
                 intercept_scaling: float = Domain[float] | (
                     lambda x, s=Solver_Domain: (s != 'liblinear') & (x == 1)
                 ),
-                random_state: int = Domain[int] | (
+                random_state: int = Domain[Optional[int]] | (
                     lambda x, s=Solver_Domain: (s != [
                         'liblinear', 'sag', 'saga']) & (x == None)
                 )
@@ -103,7 +104,7 @@ class BasicClassExamples(TestCase):
 
         space = Domain[LogisticRegression]()
 
-        @replay_function
+        @ replay_function
         def ______():
             v, _ = space.get_sample()
 
@@ -115,12 +116,12 @@ class BasicClassExamples(TestCase):
 
     def test_work_deadlines_opt(self):
         """
-        We want to optimize a company's deadline selection. 
-        This org wants to plan two deadlines, one to start 
-        developing new features and the other to review the 
-        functional requirements. The deadlines cannot 
-        intercept each other, so the times have to be relative 
-        primes. 
+        We want to optimize a company's deadline selection.
+        This org wants to plan two deadlines, one to start
+        developing new features and the other to review the
+        functional requirements. The deadlines cannot
+        intercept each other, so the times have to be relative
+        primes.
         """
 
         def list_div(x: int):
@@ -149,7 +150,7 @@ class BasicClassExamples(TestCase):
 
         space = Domain[WorkPlanning]()
 
-        @replay_function
+        @ replay_function
         def ______():
             v, _ = space.get_sample()
 

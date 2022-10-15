@@ -60,9 +60,16 @@ class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
     def __ne__(self, other):
         if type(other) in [list, tuple]:
 
-            other = [item for item in other + [self.min, self.max] if self.min <=
+            other = [item for item in other if self.min <=
                      item and item <= self.max]
             other = list(set(other))
+
+            if not self.min in other:
+                other.append(self.min)
+
+            if not self.max in other:
+                other.append(self.max)
+
             other.sort()
 
             if len(other) == 2:

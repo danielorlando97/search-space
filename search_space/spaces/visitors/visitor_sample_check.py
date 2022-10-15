@@ -240,14 +240,15 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
 
-        if type(value) in [list, tuple] and target % factor in value:
+        mod = abs(target % factor)
+        if type(value) in [list, tuple] and mod in value:
             return self
 
-        if target % factor == value:
+        if mod == abs(value):
             return self
 
         raise InvalidSampler(
-            f"inconsistent sampler => [ {target} % {factor} >= {value} ]")
+            f"inconsistent sampler => [ {target} % {factor} == {value} ]")
 
     @visitor.when(constraints.SegmentationNotEqualOp)
     def visit(self, node: constraints.SegmentationNotEqualOp, current_index=[]):
@@ -255,10 +256,15 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
 
-        if type(value) in [list, tuple] and not target % factor in value:
+        mod = target % factor
+        if (
+            type(value) in [list, tuple]
+            and not mod in value
+            and not -mod in value
+        ):
             return self
 
-        if target % factor != value:
+        if mod != value and -mod != value:
             return self
 
         raise InvalidSampler(
@@ -273,7 +279,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         if type(value) in [list, tuple]:
             value = min(value)
 
-        if target % factor < value:
+        if abs(target % factor) < abs(value):
             return self
 
         raise InvalidSampler(
@@ -288,7 +294,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         if type(value) in [list, tuple]:
             value = min(value)
 
-        if target % factor <= value:
+        if abs(target % factor) <= abs(value):
             return self
 
         raise InvalidSampler(
@@ -303,7 +309,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         if type(value) in [list, tuple]:
             value = max(value)
 
-        if target % factor > value:
+        if abs(target % factor) > abs(value):
             return self
 
         raise InvalidSampler(
@@ -318,7 +324,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         if type(value) in [list, tuple]:
             value = max(value)
 
-        if target % factor >= value:
+        if abs(target % factor) >= abs(value):
             return self
 
         raise InvalidSampler(

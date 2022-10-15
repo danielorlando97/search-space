@@ -134,21 +134,31 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
     def __or__(self, __o):
         return BachedDomain(self, __o)
 
+    def _get_range(self, factor):
+        if factor < 0:
+            return (factor, -factor)
+
+        return (-factor, factor)
+
     def __mod_eq__(self, factor, value):
+        sing = factor/abs(factor)
         if type(value) in [list, tuple]:
+
+            _range = self._get_range(factor)
+            value = [i for i in value if _range[0] < i and i < _range[1]]
 
             return nsp.New[nsp.BachedDomain](
                 * [nsp.New[nsp.LinealTransformed](
                     original_domain=self,
-                    transformer=lambda x: x/factor,
+                    transformer=lambda x: x/abs(factor),
                     inverse=lambda x: x * factor,
-                    independent_value=ind
-                ) for ind in range(factor) if ind in value]
+                    independent_value=ind * sing
+                ) for ind in value]
             )
 
         return nsp.New[nsp.LinealTransformed](
             original_domain=self,
-            transformer=lambda x: x/factor,
+            transformer=lambda x: x/abs(factor),
             inverse=lambda x: x * factor,
             independent_value=value
         )
@@ -157,18 +167,22 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         if not type(value) in [list, tuple]:
             value = [value]
 
+        value = [abs(v) for v in value]
+
         return nsp.New[nsp.BachedDomain](
             * [nsp.New[nsp.LinealTransformed](
                 original_domain=self,
-                transformer=lambda x: x/factor,
+                transformer=lambda x: x/abs(factor),
                 inverse=lambda x: x * factor,
                 independent_value=ind
-            ) for ind in range(factor) if not ind in value]
+            ) for ind in range(*self._get_range(factor))
+                if not abs(ind) in value
+            ]
         )
 
     def __mod_lt__(self, factor, value):
         if type(value) in [list, tuple]:
-            value = min(value)
+            value = min([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](
             * [nsp.New[nsp.LinealTransformed](
@@ -176,12 +190,12 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
                 transformer=lambda x: x/factor,
                 inverse=lambda x: x * factor,
                 independent_value=ind
-            ) for ind in range(factor) if ind < value]
+            ) for ind in range(*self._get_range(factor)) if abs(ind) < value]
         )
 
     def __mod_gt__(self, factor, value):
         if type(value) in [list, tuple]:
-            value = max(value)
+            value = max([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](
             * [nsp.New[nsp.LinealTransformed](
@@ -189,12 +203,12 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
                 transformer=lambda x: x/factor,
                 inverse=lambda x: x * factor,
                 independent_value=ind
-            ) for ind in range(factor) if ind > value]
+            ) for ind in range(*self._get_range(factor)) if abs(ind) > value]
         )
 
     def __mod_ge__(self, factor, value):
         if type(value) in [list, tuple]:
-            value = max(value)
+            value = max([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](
             * [nsp.New[nsp.LinealTransformed](
@@ -202,12 +216,12 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
                 transformer=lambda x: x/factor,
                 inverse=lambda x: x * factor,
                 independent_value=ind
-            ) for ind in range(factor) if ind >= value]
+            ) for ind in range(*self._get_range(factor)) if abs(ind) >= value]
         )
 
     def __mod_le__(self, factor, value):
         if type(value) in [list, tuple]:
-            value = min(value)
+            value = min([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](
             * [nsp.New[nsp.LinealTransformed](
@@ -215,5 +229,5 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
                 transformer=lambda x: x/factor,
                 inverse=lambda x: x * factor,
                 independent_value=ind
-            ) for ind in range(factor) if ind <= value]
+            ) for ind in range(*self._get_range(factor)) if abs(ind) <= value]
         )

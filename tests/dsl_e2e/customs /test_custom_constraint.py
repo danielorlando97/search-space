@@ -223,7 +223,12 @@ class CircularExternalDependency(TestCase):
 
     def test_module(self):
         space = Domain[CustomSpace]() | (
-            lambda x: x.ADomain % x.BDomain == [1, 2])
+            lambda x: (
+                x.ADomain % x.BDomain == [1, 2],
+                0 < x.BDomain, x.BDomain < 100,
+                -1000 < x.ADomain, x.ADOmain < 1000
+            )
+        )
 
         @replay_function
         def ______():
