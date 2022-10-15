@@ -1,3 +1,4 @@
+from cProfile import label
 from secrets import choice
 from token import EXACT_TOKEN_TYPES
 from search_space.errors import CircularDependencyDetected, InvalidSpaceDefinition, NotEvaluateError
@@ -34,8 +35,8 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
             return two_self_func()
         if a == self.NOT_EVAL or b == self.NOT_EVAL:
             raise NotEvaluateError()
-        if not self.SELF in [a, b]:
-            raise NotEvaluateError()
+        # if not self.SELF in [a, b]:
+        #     raise NotEvaluateError()
 
         return a if b == self.NATURAL else b
 
@@ -49,7 +50,10 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
 
         for n in node.asts:
             try:
-                _, _ = self.visit(n, )
+                label, _ = self.visit(n)
+                if label == self.NATURAL:
+                    continue
+
                 result.add_constraint(n)
             except NotEvaluateError:
                 pass

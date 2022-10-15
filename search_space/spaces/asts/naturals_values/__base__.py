@@ -3,8 +3,7 @@ from search_space.utils.ast_tools import check_params_type
 
 
 class NaturalValuesNode:
-    precedence = 1
-    NaturalValue = None
+    precedence = 0
 
     def _suggestion(self, op):
         return ''

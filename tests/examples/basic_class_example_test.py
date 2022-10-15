@@ -23,7 +23,7 @@ class BasicClassExamples(TestCase):
         class Line:
             def __init__(
                 self,
-                m: int = Domain[int](min=0, max=100) | (lambda x: x != 65),
+                m: int = Domain[int](min=50, max=100) | (lambda x: x != 65),
                 n: float = Domain[float]() | (lambda x: x < 50)
             ) -> None:
                 self.m, self.n = m, n
@@ -33,10 +33,10 @@ class BasicClassExamples(TestCase):
         @replay_function
         def ______():
             v, _ = space.get_sample()
-            assert v.a >= 50
-            assert v.a <= 100
-            assert v.a != 65
-            assert v.b < 50
+            assert v.m >= 50
+            assert v.m <= 100
+            assert v.m != 65
+            assert v.n < 50
 
     def test_example_center_point(self):
         """
@@ -47,12 +47,12 @@ class BasicClassExamples(TestCase):
         """
 
         class CenterPoint:
-            Y_Domain = Domain[int](),
+            Y_Domain = Domain[int]()
 
             def __init__(
                 self,
                 x: float = Domain[float]() | (
-                    lambda x, y=Y_Domain: x < y - 10 | x > y + 10
+                    lambda x, y=Y_Domain: (x < y - 10) | (x > y + 10)
                 ),
                 y: int = Y_Domain
             ) -> None:
@@ -86,17 +86,17 @@ class BasicClassExamples(TestCase):
 
         class LogisticRegression:
             Solver_Domain = Domain[str](
-                options=['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga']),
+                options=['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'])
 
             def __init__(
                 self,
                 solver: str = Solver_Domain,
                 intercept_scaling: float = Domain[float] | (
-                    lambda x, s=Solver_Domain: s != 'liblinear' & x == 1
+                    lambda x, s=Solver_Domain: (s != 'liblinear') & (x == 1)
                 ),
                 random_state: int = Domain[int] | (
-                    lambda x, s=Solver_Domain: s != [
-                        'liblinear', 'sag', 'saga'] & x == None
+                    lambda x, s=Solver_Domain: (s != [
+                        'liblinear', 'sag', 'saga']) & (x == None)
                 )
             ) -> None:
                 self.s, self.i, self.r = solver, intercept_scaling, random_state

@@ -95,31 +95,31 @@ class ExprOpsNode(LogicOpsNode):
 class AddOp(ExprOpsNode):
     def _suggestion(self, op):
         return f'try to change the constraint like \
-            {type(self.target).__name__} + ( {type(self.other).__name__} {op} ...'
+            {type(self.a).__name__} + ( {type(self.b).__name__} {op} ...'
 
 
 class SubOp(ExprOpsNode):
     def _suggestion(self, op):
         return f'try to change the constraint like \
-            {type(self.target).__name__} - ( {type(self.other).__name__} {op} ...'
+            {type(self.a).__name__} + ( {type(self.b).__name__} {op} ...'
 
 
 class MultiOp(ExprOpsNode):
     def _suggestion(self, op):
         return f'try to change the constraint like \
-            {type(self.target).__name__} * ( {type(self.other).__name__} {op} ...'
+            {type(self.a).__name__} + ( {type(self.b).__name__} {op} ...'
 
 
 class DivOp(ExprOpsNode):
     def _suggestion(self, op):
         return f'try to change the constraint like \
-            {type(self.target).__name__} / ( {type(self.other).__name__} {op} ...'
+            {type(self.a).__name__} + ( {type(self.b).__name__} {op} ...'
 
 
 class ModOp(ExprOpsNode):
     def _suggestion(self, op):
         return f'try to change the constraint like \
-            {type(self.target).__name__} % ( {type(self.other).__name__} {op} ...'
+            {type(self.a).__name__} + ( {type(self.b).__name__} {op} ...'
 
     #################################################################
     #                                                               #
@@ -131,37 +131,37 @@ class ModOp(ExprOpsNode):
 class EqualOp(ExprOpsNode):
     def _suggestion(self, op):
         return f"""try to change the constraint like 
-            {type(self.target).__name__} == ( {type(self.other).__name__} {op} ..."""
+                    {type(self.a).__name__} + ( {type(self.b).__name__} {op} ..."""
 
 
 class NotEqualOp(ExprOpsNode):
     def _suggestion(self, op):
         return f"""try to change the constraint like 
-            {type(self.target).__name__} != ( {type(self.other).__name__} {op} ..."""
+                    {type(self.a).__name__} + ( {type(self.b).__name__} {op} ..."""
 
 
 class GreatOrEqualOp(ExprOpsNode):
     def _suggestion(self, op):
         return f"""try to change the constraint like 
-            {type(self.target).__name__} >= ( {type(self.other).__name__} {op} ..."""
+                    {type(self.a).__name__} + ( {type(self.b).__name__} {op} ..."""
 
 
 class GreatOp(ExprOpsNode):
     def _suggestion(self, op):
         return f"""try to change the constraint like 
-            {type(self.target).__name__} > ( {type(self.other).__name__} {op} ..."""
+                    {type(self.a).__name__} + ( {type(self.b).__name__} {op} ..."""
 
 
 class LessOrEqualOp(ExprOpsNode):
     def _suggestion(self, op):
         return f"""try to change the constraint like 
-            {type(self.target).__name__} <= ( {type(self.other).__name__} {op} ..."""
+                    {type(self.a).__name__} + ( {type(self.b).__name__} {op} ..."""
 
 
 class LessOp(ExprOpsNode):
     def _suggestion(self, op):
         return f"""try to change the constraint like 
-            {type(self.target).__name__} > ( {type(self.other).__name__} {op} ..."""
+                    {type(self.a).__name__} + ( {type(self.b).__name__} {op} ..."""
 
 
 class IndexSelf(ExprOpsNode):

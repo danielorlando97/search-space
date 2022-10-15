@@ -181,6 +181,10 @@ class UniversalVariableBinaryOperation(UniversalVariableNode):
     def inverted_op(self, a, b):
         return type.__call__(self.__class__, a, b)
 
+    def reverse(self):
+        self.other, self.target = self.target, self.other
+        return self
+
     def op(self):
         pass
 

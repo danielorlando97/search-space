@@ -77,6 +77,9 @@ class MemberAstModifierVisitor(VisitorLayer):
         index = self.visit(node.other)
         target = self.visit(node.target)
 
+        if type(index.target) == bool:
+            return target
+
         return constraints.GetItem(target, index)
 
     @visitor.when(constraints.GetAttr)

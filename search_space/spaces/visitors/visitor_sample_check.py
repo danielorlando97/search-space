@@ -387,7 +387,15 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         if type(b) == bool:
             b = self.current_index[-len(current_index) - 1]
 
-        return self.visit(node.target, current_index + [b])
+        a = self.visit(node.target, current_index + [b])
+
+        try:
+            return a[b]
+        except IndexError:
+            raise NotEvaluateError()
+        except TypeError:
+            raise InvalidSampler(
+                f"inconsistent sampler => sample isn't indexed")
 
     @visitor.when(constraints.GetAttr)
     def visit(self, node: constraints.GetAttr, current_index=[]):
@@ -411,29 +419,20 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
 
     @ visitor.when(constraints.SelfNode)
     def visit(self, node, current_index=[]):
-        if len(current_index) == 0:
-            return self.sample
-        try:
-            result = self.sample
-            for i in current_index:
-                result = result[i]
-
-            return result
-        except IndexError:
-            raise NotEvaluateError()
-        except TypeError:
-            raise InvalidSampler(
-                f"inconsistent sampler => sample isn't indexed")
+        return self.sample
 
     @ visitor.when(constraints.NaturalValue)
     def visit(self, node, current_index=[]):
         if isinstance(node.target, NaturalValuesNode):
+            try:
+                index = self.current_index
+            except AttributeError:
+                index = []
             return self.natural_visitor.get_value(
                 node.target,
                 context=self.context,
-                current_index=self.current_index
+                current_index=index
             )
-
         return node.target
 
     @visitor.when(constraints.FunctionNode)

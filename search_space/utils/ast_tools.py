@@ -25,7 +25,7 @@ def check_ast_precedence(fun):
             if p > _self.precedence:
 
                 f = getattr(other, fun.__name__)
-                return f(_self)
+                return f(_self).reverse()
         return fun(*args, **kws)
     f.__name__ = fun.__name__
     return f

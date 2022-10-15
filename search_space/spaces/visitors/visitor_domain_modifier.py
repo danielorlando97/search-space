@@ -25,10 +25,10 @@ class DomainModifierVisitor(VisitorLayer):
         return self.visit(node)
 
     def __op_apply__(self, a, b, op):
-        if not b is None:
+        if a is None:
             self.domain = op(self.domain, b)
 
-        elif not a is None:
+        elif b is None:
             self.domain = op(a, self.domain)
 
         else:
@@ -108,6 +108,9 @@ class DomainModifierVisitor(VisitorLayer):
 
         current_domain, self.domain = self.domain, current_domain
         b = self.visit(node.other)
+
+        if type(a) == bool and b is None:
+            return
 
         if not None in [a, b]:
             return target or limit
@@ -289,13 +292,19 @@ class DomainModifierVisitor(VisitorLayer):
     #                                                               #
     #################################################################
 
-    # @visitor.when(ast.GetAttr)
-    # def visit(self, node):
-    #     raise UnSupportOpError(self.domain, '', 'GetAttr')
+    # @visitor.when(constraints.GetAttr)
+    # def visit(self, node: constraints.GetAttr):
+    #     target = self.visit(node.target)
+    #     other = self.visit(node.other)
 
-    # @visitor.when(ast.GetItem)
-    # def visit(self, node):
-    #     raise UnSupportOpError(self.domain, 1, 'GetItem')
+    #     return target.__dict__[other]
+
+    @visitor.when(constraints.GetItem)
+    def visit(self, node: constraints.GetItem):
+        target = self.visit(node.target)
+        other = self.visit(node.other)
+
+        return target[other]
 
     @visitor.when(constraints.SelfNode)
     def visit(self, node):

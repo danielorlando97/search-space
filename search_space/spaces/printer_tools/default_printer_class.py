@@ -1,4 +1,5 @@
 from search_space.context_manager.runtime_manager import SearchSpacePrinter
+from search_space.errors import UnSupportOpError
 from search_space.utils.singleton import Singleton
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
@@ -200,8 +201,11 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
         tabs = (self.tabs - self.pivot_tab) * self.ast_space
 
         value = node.target
+
         try:
             value = (value.space_name, hash(value.a))
+        except UnSupportOpError:
+            value = type(value)
         except AttributeError:
             pass
 

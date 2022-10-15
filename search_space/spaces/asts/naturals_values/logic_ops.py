@@ -28,10 +28,10 @@ class LogicOpsNode(NaturalValuesNodeBinaryOperation):
 class AndOp(LogicOpsNode):
 
     def _suggestion(self, op):
-        return f'try to change the constraint like {type(self.target).__name__} & ( {type(self.other).__name__} {op} ...'
+        return f'try to change the constraint like {type(self.a).__name__} & ( {type(self.b).__name__} {op} ...'
 
 
 class OrOp(LogicOpsNode):
 
     def _suggestion(self, op):
-        return f'try to change the constraint like {type(self.target).__name__} | ( {type(self.other).__name__} {op} ...'
+        return f'try to change the constraint like {type(self.a).__name__} | ( {type(self.b).__name__} {op} ...'

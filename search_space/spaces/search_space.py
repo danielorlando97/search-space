@@ -62,6 +62,7 @@ class BasicSearchSpace:
             domain = self.initial_domain,
 
         result = type(self)(*domain, distribute_like=self.__distribute_like__)
+        result.initial_domain = copy(self.initial_domain)
         result.space_name = f"{result.space_name}'"
         result.visitor_layers = [item for item in self.visitor_layers]
         result._clean_asts.add_constraint(self._clean_asts.asts)

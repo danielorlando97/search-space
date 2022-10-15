@@ -61,7 +61,7 @@ class SemiSupervisedClassifier:
         self.cluster, self.classifier = cluster, classifier
 
 
-class GraphByAdjMatrixTest(TestCase):
+class AutoMLUnsupervisedExample(TestCase):
 
     def test(self):
         space = Domain[SemiSupervisedClassifier]()

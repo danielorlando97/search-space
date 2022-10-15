@@ -158,7 +158,7 @@ class NaturalAstVisitor:
         a = self.visit(node.a)
         b = self.visit(node.b)
 
-        return a[b]
+        return a[b] if type(b) != bool else a
 
     @visitor.when(naturals_values.SpaceSelfNode)
     def visit(self, node: naturals_values.SpaceSelfNode):
@@ -170,4 +170,7 @@ class NaturalAstVisitor:
 
     @visitor.when(naturals_values.IndexSelf)
     def visit(self, node: naturals_values.IndexSelf):
-        return self.current_index[node.a]
+        try:
+            return self.current_index[node.a]
+        except IndexError:
+            return True
