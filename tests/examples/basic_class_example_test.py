@@ -104,7 +104,7 @@ class BasicClassExamples(TestCase):
 
         space = Domain[LogisticRegression]()
 
-        @ replay_function
+        @replay_function
         def ______():
             v, _ = space.get_sample()
 
@@ -126,7 +126,7 @@ class BasicClassExamples(TestCase):
 
         def list_div(x: int):
             result = [1, x]
-            for i in range(2, x/2):
+            for i in range(1, x//2 + 1):
                 if x % i == 0:
                     result.append(i)
 
@@ -135,7 +135,7 @@ class BasicClassExamples(TestCase):
         DivList = FunctionalConstraint(list_div)
 
         class WorkPlanning:
-            Review_Work_Domain = Domain[int](max=5)
+            Review_Work_Domain = Domain[int](min=1, max=5)
 
             def __init__(
                 self,

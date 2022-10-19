@@ -410,8 +410,8 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         a = self.visit(node.target, current_index)
 
         try:
-            space = a.__class__.__dict__[b]
-        except KeyError:
+            space = getattr(a, b)
+        except AttributeError:
             raise InvalidSampler(
                 f"inconsistent sampler => {a} don't has {b} member")
 
@@ -421,7 +421,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             raise InvalidSampler(
                 f"inconsistent sampler => {a}.{b} isn't search space")
 
-        return sampler(context=self.context)[0]
+        return sampler(context=a.__instance_context__)[0]
 
     @ visitor.when(constraints.SelfNode)
     def visit(self, node, current_index=[]):

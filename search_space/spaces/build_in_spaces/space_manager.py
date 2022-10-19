@@ -170,7 +170,7 @@ class SpaceFactory(SearchSpace):
         self._sub_space = {}
         self.space_name = _type.__name__
 
-        for name, member in self.type.__dict__.items():
+        for name, member in inspect.getmembers(self.type):
             try:
                 if isinstance(member.space, BasicSearchSpace):
                     self._sub_space[name] = copy(member.space)
@@ -199,7 +199,7 @@ class SpaceFactory(SearchSpace):
             self.type.__init__, instance_context, sub_space_list, self.type)
         class_instance = self.type(*class_func.sample_params())
 
-        # there's propably a better way to do this
+        class_instance.__instance_context__ = instance_context
         for name, method in inspect.getmembers(class_instance, inspect.ismethod):
             setattr(class_instance, name,
                     ClassFunction(method, instance_context, sub_space_list,  self.type))
@@ -223,6 +223,9 @@ class SpaceFactory(SearchSpace):
 
         for space in self._sub_space.values():
             space.layers_append(*args)
+
+    def __repr__(self) -> str:
+        return f'Space({self.space_name})'
 
 
 class SelfSpace:
@@ -269,6 +272,18 @@ class UnionSpace(BasicSearchSpace):
 
         return self
 
+    def __ast_optimization__(self, ast_list):
+
+        super().__ast_optimization__(ast_list)
+
+        result = []
+        for space in self.initial_domain.list:
+            result.append(space.__ast_optimization__(ast_list))
+
+        self.initial_domain.list = result
+
+        return self
+
     def __self_assign__(self, space):
 
         for s in self.initial_domain.list:
@@ -276,3 +291,6 @@ class UnionSpace(BasicSearchSpace):
                 s.__self_assign__(space)
             except AttributeError:
                 pass
+
+    def __check_sample__(self, sample, ast_result, context):
+        return

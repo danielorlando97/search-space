@@ -37,3 +37,6 @@ NaturalValuesNode.NaturalValue = NaturalValue
 class SpaceSelfNode(Atoms):
     def __init__(self, space) -> None:
         super().__init__(space)
+
+    def __hash__(self) -> int:
+        return hash(self.a)

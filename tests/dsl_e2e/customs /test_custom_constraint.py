@@ -226,7 +226,7 @@ class CircularExternalDependency(TestCase):
             lambda x: (
                 x.ADomain % x.BDomain == [1, 2],
                 0 < x.BDomain, x.BDomain < 100,
-                -1000 < x.ADomain, x.ADOmain < 1000
+                -1000 < x.ADomain, x.ADomain < 1000
             )
         )
 

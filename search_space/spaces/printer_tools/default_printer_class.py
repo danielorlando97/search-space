@@ -1,3 +1,4 @@
+from unittest import result
 from search_space.context_manager.runtime_manager import SearchSpacePrinter
 from search_space.errors import UnSupportOpError
 from search_space.utils.singleton import Singleton
@@ -88,13 +89,12 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
     def sample_value(self, value, caching_value=False):
         tabs = self.tabs * '\t'
 
-        result = "[\n"
-        try:
+        if type(value) in [list, tuple]:
+            result = "[\n"
             for i, item in enumerate(value):
                 result += f'{tabs}| {i} -> {item},\n'
-
             result += f'{tabs}| ]'
-        except TypeError:
+        else:
             result = value
 
         print(f"""{tabs}| Sample Result [Is Caching: {Color.f_blue(caching_value)}]
@@ -105,13 +105,12 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
 
         tabs = self.tabs * '\t'
 
-        result = "[\n"
-        try:
+        if type(sample) in [list, tuple]:
+            result = "[\n"
             for i, item in enumerate(sample):
                 result += f'{tabs}| {i} -> {item},\n'
-
             result += f'{tabs}| ]'
-        except TypeError:
+        else:
             result = sample
 
         print(f"""{tabs}{Color.b_red('_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _')}

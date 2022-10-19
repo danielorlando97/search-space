@@ -151,24 +151,30 @@ class NaturalAstVisitor:
         a = self.visit(node.a)
         b = self.visit(node.b)
 
-        return a.__dict__[b]
+        value = getattr(a, b)
+        try:
+            _ = value.get_sample
+        except AttributeError:
+            return value
 
-    @visitor.when(naturals_values.GetItem)
+        return value.get_sample(a.__instance_context__)[0]
+
+    @ visitor.when(naturals_values.GetItem)
     def visit(self, node: naturals_values.GetItem):
         a = self.visit(node.a)
         b = self.visit(node.b)
 
         return a[b] if type(b) != bool else a
 
-    @visitor.when(naturals_values.SpaceSelfNode)
+    @ visitor.when(naturals_values.SpaceSelfNode)
     def visit(self, node: naturals_values.SpaceSelfNode):
         return node.a.get_sample(self.context)[0]
 
-    @visitor.when(naturals_values.NaturalValue)
+    @ visitor.when(naturals_values.NaturalValue)
     def visit(self, node: naturals_values.NaturalValue):
         return node.a
 
-    @visitor.when(naturals_values.IndexSelf)
+    @ visitor.when(naturals_values.IndexSelf)
     def visit(self, node: naturals_values.IndexSelf):
         try:
             return self.current_index[node.a]

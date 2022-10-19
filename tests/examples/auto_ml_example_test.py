@@ -2,6 +2,7 @@ from unittest import TestCase
 from search_space.dsl import Domain, RandomValue
 from search_space.spaces import FunctionalConstraint
 from tests.config import replay_function
+from typing import Union
 
 
 class AbsCluster:
@@ -37,24 +38,24 @@ class AbsClassifier:
 
 class KNN(AbsClassifier):
     def __init__(self, n_categories: int = AbsClassifier.NCategoryDomain) -> None:
-        super().__init__(n_categories * 2 - 1)
+        super().__init__(n_categories)
+        k = self.n * 2 - 1
 
 
 class GaussianNB(AbsClassifier):
     def __init__(self, n_categories: int = AbsClassifier.NCategoryDomain) -> None:
-        super().__init__([1/n_categories for _ in range(n_categories)])
+        super().__init__(n_categories)
+        p = [1/n_categories for _ in range(n_categories)]
 
 
 class SemiSupervisedClassifier:
-    ClusterDomain = Domain[AbsCluster](
-        options=[KMeans, AgglomerativeClustering])
+    ClusterDomain = Domain[Union[KMeans, AgglomerativeClustering]]()
 
     def __init__(
         self,
         cluster: AbsCluster = ClusterDomain,
-        classifier: AbsClassifier = Domain[AbsClassifier](
-            options=[KNN, GaussianNB]) | (
-                lambda x, c=ClusterDomain: x.NCategoryDomain == c.NClusterDomain
+        classifier: AbsClassifier = Domain[Union[KNN, GaussianNB]] | (
+            lambda x, c=ClusterDomain: x.NCategoryDomain == c.NClusterDomain
         )
 
     ) -> None:

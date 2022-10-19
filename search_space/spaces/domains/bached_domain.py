@@ -1,5 +1,6 @@
 from copy import copy
 from typing import List
+from search_space.errors import InvalidSpaceDefinition
 from search_space.spaces.domains.__base__ import Domain
 from search_space.sampler import Sampler, SamplerFactory
 from search_space.sampler.distribution_names import UNIFORM
@@ -35,8 +36,13 @@ class BachedDomain(Domain, metaclass=nsp.BachedDomain):
         return BachedDomain(*[copy(d) for d in self.domains])
 
     def _propagation(self, f):
-        for d in self.domains:
-            f(d)
+        index = 0
+        while index < len(self.domains):
+            try:
+                f(self.domains[index])
+                index += 1
+            except InvalidSpaceDefinition:
+                self.domains.pop(index)
 
     def __eq__(self, other):
         self._propagation(lambda x: x == other)
