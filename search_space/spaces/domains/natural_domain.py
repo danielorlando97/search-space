@@ -51,7 +51,8 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
 
     def __ne__(self, other):
         if type(other) in [list, tuple]:
-
+            if len(other) == 0:
+                return self
             other = [item for item in other if self.min <=
                      item and item <= self.max]
 

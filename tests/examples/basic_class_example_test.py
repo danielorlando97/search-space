@@ -125,23 +125,23 @@ class BasicClassExamples(TestCase):
         """
 
         def list_div(x: int):
-            result = [1, x]
-            for i in range(1, x//2 + 1):
+            result = [i for i in range(2, x)]
+            for i in range(2, x):
                 if x % i == 0:
-                    result.append(i)
+                    result = [j for j in result if j % i != 0]
 
             return result
 
         DivList = FunctionalConstraint(list_div)
 
         class WorkPlanning:
-            Review_Work_Domain = Domain[int](min=1, max=5)
+            Review_Work_Domain = Domain[int](min=2, max=10000)
 
             def __init__(
                 self,
                 init_time: int = Domain[int] | (
                     lambda x, y=Review_Work_Domain: (
-                        x != DivList(y), x < y
+                        x == DivList(y), x > 0
                     )
                 ),
                 review_time: int = Review_Work_Domain,

@@ -1,5 +1,5 @@
 from copy import copy
-from search_space.errors import NotEvaluateError
+from search_space.errors import ArgumentFunctionError, NotEvaluateError
 from search_space.spaces.asts.naturals_values.__base__ import NaturalValuesNode
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
@@ -330,6 +330,10 @@ class DomainModifierVisitor(VisitorLayer):
             new_kw[name] = self.visit(arg)
 
         return node.func(*new_args, **new_kw)
+
+    @visitor.when(constraints.AdvancedFunctionNode)
+    def visit(self, node: constraints.FunctionNode):
+        raise ArgumentFunctionError()
 
     @visitor.when(constraints.NotEvaluate)
     def visit(self, node):

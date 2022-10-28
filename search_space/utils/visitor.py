@@ -27,6 +27,13 @@ def when(param_type, frame=None):
     return f
 
 
+class WithoutDispatcher:
+    pass
+
+
+without_dispatcher = WithoutDispatcher()
+
+
 class Dispatcher(object):
     def __init__(self, param_name, fn):
         # frame = inspect.currentframe().f_back.f_back
@@ -47,7 +54,7 @@ class Dispatcher(object):
             ans = [t[k](*args, **kw) for k in ks if issub(typ, k)]
             if len(ans) == 1:
                 return ans.pop()
-            return ans
+            return ans if len(ans) > 0 else without_dispatcher
 
     def add_target(self, typ, target):
         self.targets[typ] = target

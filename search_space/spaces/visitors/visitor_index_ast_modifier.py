@@ -65,19 +65,20 @@ class IndexAstModifierVisitor(VisitorLayer):
     @visitor.when(constraints.GetItem)
     def visit(self, node, current_index):
         current_index = [] if current_index is None else current_index
+        _slice = node.other.target
 
-        if isinstance(node.other, slice):
+        if isinstance(_slice, slice):
             start, stop, steep = (
                 self.visit(
-                    constraints.NaturalValue(node.other.start),
+                    constraints.NaturalValue(_slice.start),
                     current_index
                 ),
                 self.visit(
-                    constraints.NaturalValue(node.other.stop),
+                    constraints.NaturalValue(_slice.stop),
                     current_index
                 ),
                 self.visit(
-                    constraints.NaturalValue(node.other.step),
+                    constraints.NaturalValue(_slice.step),
                     current_index
                 )
             )

@@ -48,3 +48,11 @@ class UndefinedSampler(Exception):
 
 class DetectedRuntimeDependency(Exception):
     pass
+
+
+class ArgumentFunctionError(Exception):
+    pass
+
+
+class RecursionErrorSpaceDefinition(Exception):
+    pass

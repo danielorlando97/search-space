@@ -225,7 +225,7 @@ class CircularExternalDependency(TestCase):
         space = Domain[CustomSpace]() | (
             lambda x: (
                 x.ADomain % x.BDomain == [1, 2],
-                0 < x.BDomain, x.BDomain < 100,
+                1 < x.BDomain, x.BDomain < 100,
                 -1000 < x.ADomain, x.ADomain < 1000
             )
         )
@@ -237,7 +237,7 @@ class CircularExternalDependency(TestCase):
 
     def test_list(self):
         space = Domain[CustomSpace]() | (
-            lambda x, i: x.DDomain[i] > x.ADomain)
+            lambda x: x.ADomain < x.DDomain)
 
         @replay_function
         def ______():

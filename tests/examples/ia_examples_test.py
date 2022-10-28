@@ -20,11 +20,12 @@ def AdjColors(_map: List[List[bool]], country_colored: List[int], color_len):
             result.add(country_colored[i])
     if len(result) == color_len:
         return []
-        return list(result)
+
+    return list(result)
 
 
 class ColorMapProblem:
-    CountryLenDomain = Domain[int](max=20)
+    CountryLenDomain = Domain[int](min=5, max=20)
     ColorLenDomain = Domain[int](min=1) | (
         lambda x, cl=CountryLenDomain: x < cl)
 
@@ -35,6 +36,7 @@ class ColorMapProblem:
     def __init__(self, color_len: int = ColorLenDomain, adj_map: List[List[bool]] = MapDomain) -> None:
         self.cl, self.map = color_len, adj_map
 
+    # Advance Function and Slices
     SolutionDomain = Domain[int][CountryLenDomain] | (
         lambda x, i, color_len=ColorLenDomain, _map=MapDomain: (
             x[i] < color_len,
@@ -95,49 +97,49 @@ def FreePositions(n, queens):
     return result if len(result) > 0 else table
 
 
-class NQueenProblem:
-    NDomain = Domain[int](max=20)
+# class NQueenProblem:
+#     NDomain = Domain[int](max=20)
 
-    def __init__(self, n: int = NDomain) -> None:
-        self.n = n
+#     def __init__(self, n: int = NDomain) -> None:
+#         self.n = n
 
-    SolutionDomain = Domain[int][NDomain][2] | (
-        lambda x, i, n=NDomain: (
-            x[i][0] < n,
-            x[i][1] < n,
-            x[i] == FreePositions(n, x[:i-1])
-        )
-    )
+#     SolutionDomain = Domain[int][NDomain][2] | (
+#         lambda x, i, n=NDomain: (
+#             x[i][0] < n,
+#             x[i][1] < n,
+#             x[i] == FreePositions(n, x[:i-1])
+#         )
+#     )
 
-    def validate_solution(self, solution: List[List[int]] = SolutionDomain):
-        assert len(solution) == len(self.n)
+#     def validate_solution(self, solution: List[List[int]] = SolutionDomain):
+#         assert len(solution) == len(self.n)
 
-        for pos in solution:
-            assert pos[0] < self.n
-            assert pos[1] < self.n
+#         for pos in solution:
+#             assert pos[0] < self.n
+#             assert pos[1] < self.n
 
-        def free_place(place, queen): return (
-            place[0] - queen[0] == place[1] - queen[1]
-            or place[0] == queen[0]
-            or queen[1] == place[1]
-        )
+#         def free_place(place, queen): return (
+#             place[0] - queen[0] == place[1] - queen[1]
+#             or place[0] == queen[0]
+#             or queen[1] == place[1]
+#         )
 
-        for i, q1 in enumerate(solution):
-            for j, q2 in enumerate(solution):
-                if i != j and not free_place(q1, q2):
-                    return False
-        return True
+#         for i, q1 in enumerate(solution):
+#             for j, q2 in enumerate(solution):
+#                 if i != j and not free_place(q1, q2):
+#                     return False
+#         return True
 
 
-class NQueenProblemTest(TestCase):
+# class NQueenProblemTest(TestCase):
 
-    def test(self):
-        space = Domain[NQueenProblem]()
+#     def test(self):
+#         space = Domain[NQueenProblem]()
 
-        @replay_function
-        def ______():
-            solution, _ = space.get_sample()
+#         @replay_function
+#         def ______():
+#             solution, _ = space.get_sample()
 
-            @replay_function
-            def ______():
-                is_good = solution.validate_solution()
+#             @replay_function
+#             def ______():
+#                 is_good = solution.validate_solution()

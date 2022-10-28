@@ -6,7 +6,7 @@ from search_space.context_manager.runtime_manager import SearchSpaceConfig
 from search_space.sampler import SamplerFactory, Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
-from search_space.errors import DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint, InvalidSpaceDefinition, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
+from search_space.errors import ArgumentFunctionError, DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint, InvalidSpaceDefinition, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
 from .asts import constraints as ast_constraint
 from .asts import naturals_values as ast_natural
 from .visitors import visitors
@@ -103,6 +103,8 @@ class BasicSearchSpace:
                 ast.add_constraint(opt_ast.asts)
             except NotEvaluateError:
                 pass
+            except ArgumentFunctionError:
+                self._clean_asts.add_constraint(opt_ast.asts)
 
         if len(ast.asts) > 0:
             return self.__advance_space__(ast)
@@ -199,7 +201,13 @@ class BasicSearchSpace:
                 if not config.replay_nums is None and config.replay_nums <= sample_index:
                     raise e
 
-                printer.sample_error(sample, e.text, sample_index)
+                config.attempts.append(sample)
+                try:
+                    domain = domain != sample
+                except:
+                    pass
+
+                printer.sample_error(sample, e.text, sample_index, domain)
 
             sample_index += 1
 
@@ -263,7 +271,7 @@ class SearchSpace(BasicSearchSpace):
     def __copy__(self):
         return type(self)(
             self.initial_domain,
-            self.__distribute_like__,
+            distribute_like=self.__distribute_like__,
             sampler=None,
             ast=ast_constraint.AstRoot(copy(self.ast_constraint.asts)),
             clean_asts=ast_constraint.AstRoot(copy(self._clean_asts.asts)),

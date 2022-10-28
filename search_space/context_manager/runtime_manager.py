@@ -20,7 +20,7 @@ class SearchSpacePrinter:
     def ast_transformation(self, domain, ast, visitor_name=''):
         pass
 
-    def sample_error(self, sample, error, sample_num):
+    def sample_error(self, sample, error, sample_num, domain):
         pass
 
     def context_name(self, context):
@@ -41,6 +41,7 @@ class SearchSpaceConfig(metaclass=Singleton):
         self.replay_nums = replay_nums
         self.ast_optimizations = ast_optimizations
         self.printer = printer
+        self.attempts = []
 
         if minimal_numeral_limit:
             infinity.INFINITY_MIN_VALUE = minimal_numeral_limit

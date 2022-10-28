@@ -17,6 +17,10 @@ class TensorSlicePointer:
     def get_sample(self, context=None, local_domain=None):
         if context is None:
             context = SamplerContext(name="TensorSlicePointer")
+        else:
+            cache_value = context.get_sampler_value(self)
+            if not cache_value is None:
+                return cache_value, context
 
         sample = self._sample(context, local_domain, self.index)
         context.registry_sampler(self, sample)
@@ -79,7 +83,15 @@ class TensorSearchSpace(BasicSearchSpace):
 
     def __copy__(self):
         result = super().__copy__()
-        result.len_spaces = [copy(item) for item in self.len_spaces]
+        result.len_spaces = []
+        for item in self.len_spaces:
+            _copy = copy(item)
+            try:
+                _copy.set_hash(hash(item))
+            except AttributeError:
+                pass
+            result.len_spaces.append(_copy)
+
         result.type_space = self.type_space
         result.ast_constraint = self.ast_constraint
 
@@ -117,6 +129,7 @@ class TensorSearchSpace(BasicSearchSpace):
         except KeyError:
             self.samplers[index] = copy(self.type_space)
             self.samplers[index].space_name = f'{self.samplers[index].space_name}_{index}'
+            self.samplers[index].layers_append(*self.visitor_layers)
             self.samplers[index].layers_append(
                 visitors.EvalAstChecked(),
                 visitors.IndexAstModifierVisitor(self, index)

@@ -39,7 +39,7 @@ class BachedDomain(Domain, metaclass=nsp.BachedDomain):
         index = 0
         while index < len(self.domains):
             try:
-                f(self.domains[index])
+                self.domains[index] = f(self.domains[index])
                 index += 1
             except InvalidSpaceDefinition:
                 self.domains.pop(index)

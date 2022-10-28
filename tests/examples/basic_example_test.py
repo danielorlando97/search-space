@@ -91,6 +91,22 @@ class BasicExamples(TestCase):
             
             assert v1 < factorial(v)
 
+    def test_get_even_value(self):
+        def is_even(x: int):
+            for i in range(2, x//2 + 1):
+                if x % i == 0:
+                    return False
+            return True    
+
+        IsEven = FunctionalConstraint(is_even)
+        space = Domain[int](min=2, max=500) | (lambda x : IsEven(x))
+
+        @replay_function
+        def ______():
+            v, _ = space.get_sample()
+            
+            assert is_even(v)
+
     #################################################################
     #                                                               #
     #                     Other Versions                            #

@@ -101,7 +101,7 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
 {tabs}| {Color.b_green('Value')}: {result}
 {tabs}|_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _""")
 
-    def sample_error(self, sample, error, sample_num):
+    def sample_error(self, sample, error, sample_num, domain):
 
         tabs = self.tabs * '\t'
 
@@ -113,8 +113,18 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
         else:
             result = sample
 
+        if isinstance(domain, type):
+            name = domain.__name__
+        else:
+            name = domain.__class__.__name__
+
+        try:
+            limits = domain.limits
+        except:
+            limits = None
+
         print(f"""{tabs}{Color.b_red('_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _')}
-{tabs}| Invalid Sampler [Sampler: {result}] [Sample Numbs: {sample_num}]
+{tabs}| Invalid Sampler [Sampler: {result}] [Sample Numbs: {sample_num}] [Domain Type: {name}] [Domain Limits: {Color.f_red(limits)}]
 {tabs}| Error: {error}
 {tabs}{Color.b_red('|_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _')}""")
 

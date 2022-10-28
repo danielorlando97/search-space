@@ -1,6 +1,3 @@
-from doctest import Example
-from random import sample
-from token import EXACT_TOKEN_TYPES
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
 from search_space.errors import InvalidSampler, NotEvaluateError
@@ -44,7 +41,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     def visit(self, node, current_index=[]):
         for n in node.asts:
             try:
-                self.visit(n, current_index)
+                _ = self.visit(n, current_index)
             except NotEvaluateError:
                 pass
 
@@ -451,4 +448,24 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         for name, arg in node.kwargs:
             new_kw[name] = self.visit(arg, current_index)
 
-        return node.func(*new_args, **new_kw)
+        result = node.func(*new_args, **new_kw)
+
+        if not result:
+            raise InvalidSampler("False Restriction")
+
+        return result
+
+    @visitor.when(constraints.AdvancedFunctionNode)
+    def visit(self, node: constraints.FunctionNode, current_index):
+        new_args = []
+        for arg in node.args:
+            new_args.append(self.visit(arg, current_index))
+
+        new_kw = {}
+        for name, arg in node.kwargs:
+            new_kw[name] = self.visit(arg, current_index)
+
+        result = node.func(*new_args, **new_kw)
+        if not result:
+            raise InvalidSampler("False Restriction")
+        return result

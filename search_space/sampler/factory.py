@@ -19,7 +19,7 @@ class Sampler:
 
         if type(b) != Infinity:
             m = float(a)
-            return (m, b) if m < b else (b - 2*b, b)
+            return (m, b) if (m < b and abs(m) - abs(b) > 1) else (- abs(2*b), b)
 
     def generate_random_value(self, domain):
         pass
