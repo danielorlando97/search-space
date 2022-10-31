@@ -7,99 +7,74 @@ from search_space.spaces import FunctionalConstraint
 from search_space.context_manager import SearchSpaceConfig
 from search_space.utils.infinity import oo
 import random
-
+from . import tools
+from search_space.sampler.default_implementations import UniformSampler
+from search_space.spaces.domains import NaturalDomain
 
 config = SearchSpaceConfig()
 config.replay_nums = oo
 
-# %%
-print("Simple Set Experimentation")
-a, b, _iter = 0, 10000, 9500
-header = ['iter_num', 'time', 'attempts']
-data = []
 
+#################################################################
+#                                                               #
+#                  Set Randint                                  #
+#                                                               #
+#################################################################
+def set_randint(_iter=9500):
+    a, b = 0, _iter + 500
+    header = ['iter_num', 'time', 'attempts']
 
-def experiment(i):
-    result = []
-    attempts = 0
-    for _ in range(i):
-        value = random.randint(a, b)
-        while value in result:
-            attempts += 1
+    def experiment(i):
+
+        result = []
+        attempts = 0
+        start = time()
+        for _ in range(i):
             value = random.randint(a, b)
+            while value in result:
+                attempts += 1
+                value = random.randint(a, b)
 
-            # if attempts > _iter:
-            #     break
+                # if attempts > _iter:
+                #     break
 
-        result.append(value)
+            result.append(value)
 
-    assert len(result) == len(set(result))
-    return attempts
+        return [i, time() - start, attempts]
 
-
-for i in range(_iter):
-    print(f'=================== {i} ======================', end='\r')
-    start = time()
-    attempt = experiment(i)
-    result = time() - start
-
-    data.append([i, result, attempt])
+    data = tools.run_test(experiment, _iter, "Set Randint Experimentation")
+    tools.save_csv(header, data, 'set_randint_data')
 
 
-with open('experimentation/csv/simple_set.csv', 'w', encoding='UTF8', newline='') as f:
-    writer = csv.writer(f)
+#################################################################
+#                                                               #
+#                  Set DSL                                      #
+#                                                               #
+#################################################################
+def dsl_set(_iter=9500):
 
-    # write the header
-    writer.writerow(header)
+    a, b = 0, _iter + 500
+    header = ['iter_num', 'time', 'attempts']
+    data = []
 
-    # write multiple rows
-    writer.writerows(data)
+    def experiment(size):
+        d = Domain[int][size](min=a, max=b) | (lambda x, i: x[i] != x[0: i])
+        config.attempts = []
 
+        start = time()
+        _ = d. get_sample()
 
-# %%
+        return [size, time() - start, len(config.attempts)]
 
-print("System Set Experimentation")
-a, b, _iter = 0, 10000, 9500
-header = ['iter_num', 'time', 'attempts']
-data = []
-
-
-def experiment(size):
-    d = Domain[int][size](min=a, max=b) | (lambda x, i: x[i] != x[0: i-1])
-    config.attempts = []
-
-    def f():
-        value, _ = d. get_sample()
-        # assert len(value) == len(set(value)), value
-        return len(config.attempts)
-    return f
+    data = tools.run_test(experiment, _iter, "Set DSL Experimentation")
+    tools.save_csv(header, data, 'set_dsl_data')
 
 
-for i in range(_iter):
-    print(f'=================== {i} ======================', end='\r')
-
-    f = experiment(i)
-    start = time()
-    attempt = f()
-    result = time() - start
-
-    data.append([i, result, attempt])
-
-with open('experimentation/csv/system_set.csv', 'w', encoding='UTF8', newline='') as f:
-    writer = csv.writer(f)
-
-    # write the header
-    writer.writerow(header)
-
-    # write multiple rows
-    writer.writerows(data)
-
-# %%
-
-print("Simple Even Experimentation")
-_iter = 10000
-header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
-data = []
+#################################################################
+#                                                               #
+#                  Even Find Randint                            #
+#                                                               #
+#################################################################
 
 
 def is_even(x: int):
@@ -109,76 +84,105 @@ def is_even(x: int):
     return True
 
 
-def experiment(i):
-    attempts = []
-    while True:
-        value = random.randint(2, i + 100)
-        if is_even(value):
-            break
+def even_find_randint(_iter=10000):
 
-        # if len(attempts) > _iter:
-        #     break
-        attempts.append(value)
+    header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
 
-    return attempts, value
+    def experiment(i):
+        attempts = []
+        start = time()
+        while True:
+            value = random.randint(2, i + 100)
+            if is_even(value):
+                break
 
+            # if len(attempts) > _iter:
+            #     break
+            attempts.append(value)
 
-for i in range(_iter):
-    print(f'=================== {i} ======================', end='\r')
+        return [i, time() - start, len(attempts), len(attempts) - len(set(attempts)), value]
 
-    start = time()
-    attempt, value = experiment(i)
-    result = time() - start
-
-    data.append([i, result, len(attempt), len(
-        attempt) - len(set(attempt)), value])
-
-with open('experimentation/csv/simple_even.csv', 'w', encoding='UTF8', newline='') as f:
-    writer = csv.writer(f)
-
-    # write the header
-    writer.writerow(header)
-
-    # write multiple rows
-    writer.writerows(data)
-
-# %%
+    data = tools.run_test(
+        experiment, _iter, "Even Find Randint Experimentation")
+    tools.save_csv(header, data, 'even_randint_data')
 
 
-print("System Even Experimentation")
-_iter = 10000
-header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
-data = []
+#################################################################
+#                                                               #
+#                  Even Find DSL                                #
+#                                                               #
+#################################################################
+def even_find_dsl(_iter=10000):
 
-IsEven = FunctionalConstraint(is_even)
+    header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
 
+    IsEven = FunctionalConstraint(is_even)
 
-def experiment(size):
-    config.attempts = []
-    d = Domain[int](min=2, max=size + 100) | (lambda x: IsEven(x))
+    def experiment(size):
+        config.attempts = []
+        d = Domain[int](min=2, max=size + 100) | (lambda x: IsEven(x))
 
-    def f():
+        start = time()
         value, _ = d. get_sample()
-        return config.attempts, value
-    return f
+        return [size, time() - start, len(config.attempts), len(config.attempts) - len(set(config.attempts)), value]
+
+    data = tools.run_test(experiment, _iter, "Even Find DSL Experimentation")
+    tools.save_csv(header, data, 'even_dsl_data')
 
 
-for i in range(_iter):
-    print(f'=================== {i} ======================', end='\r')
+#################################################################
+#                                                               #
+#                  Even Find Trap                               #
+#                                                               #
+#################################################################
+def even_find_trap(_iter=10000):
+    header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
+    sampler = UniformSampler()
 
-    f = experiment(i)
-    start = time()
-    attempt, value = f()
-    result = time() - start
+    def experiment(i):
+        attempts = []
+        start = time()
+        domain = NaturalDomain(2, i + 100)
+        while True:
+            value = domain.get_sample(sampler)
+            if is_even(value):
+                break
 
-    data.append([i, result, len(attempt), len(
-        attempt) - len(set(attempt)), value])
+            domain = domain != value
+            attempts.append(value)
 
-with open('experimentation/csv/system_even.csv', 'w', encoding='UTF8', newline='') as f:
-    writer = csv.writer(f)
+        return [i, time() - start, len(attempts), len(attempts) - len(set(attempts)), value]
 
-    # write the header
-    writer.writerow(header)
+    data = tools.run_test(
+        experiment, _iter, "Even Find Trap Experimentation")
+    tools.save_csv(header, data, 'even_trap_data')
 
-    # write multiple rows
-    writer.writerows(data)
+
+#################################################################
+#                                                               #
+#                  Even Find fixed limits                       #
+#                                                               #
+#################################################################
+def even_find_fixed_limits(_iter=1000000):
+
+    header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
+    sampler = UniformSampler()
+    domain = NaturalDomain(2, 10000000)
+
+    def experiment(i):
+        nonlocal domain
+        attempts = []
+        start = time()
+        while True:
+            value = domain.get_sample(sampler)
+            if is_even(value):
+                break
+
+            domain = domain != value
+            attempts.append(value)
+
+        return [i, time() - start, len(attempts), len(attempts) - len(set(attempts)), value]
+
+    data = tools.run_test(
+        experiment, _iter, "Even Find Fixed Limits Experimentation")
+    tools.save_csv(header, data, 'even_fixed_data')

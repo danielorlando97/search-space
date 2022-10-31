@@ -1,103 +1,120 @@
 from time import time
-import matplotlib.pyplot as plt
+from unittest import result
 from search_space.dsl import RandomValue, Domain
 import random
+from . import tools
 
-_iter = 10000
-
-
-def plot_time_line(dsl_line, best_line, domain_line, tittle="Simple Test"):
-
-    _, ax = plt.subplots(figsize=(10, 10))
-
-    ax.set_title(tittle, color='C0')
-
-    points = []
-    results = []
-    start = time()
-    for i in range(_iter):
-        print(f'1.{i} ....', end='\r')
-
-        points.append(i)
-        dsl_line()
-        results.append(time() - start)
-
-    ax.plot(points, results, 'C1',
-            label=f'dsl compiling and generate: last time {results[-1]}')
-
-    points = []
-    results = []
-    start = time()
-    for i in range(_iter):
-        print(f'2.{i} ....', end='\r')
-
-        points.append(i)
-        domain_line()
-        results.append(time() - start)
-
-    ax.plot(points, results, 'C3',
-            label=f'dsl only generate time: last time {results[-1]}')
-
-    points = []
-    results = []
-    start = time()
-    for i in range(_iter):
-        print(f'3.{i} ....', end='\r')
-
-        points.append(i)
-        best_line()
-        results.append(time() - start)
-
-    ax.plot(points, results, 'C2',
-            label=f'natural form: last time {results[-1]}')
-
-    ax.legend()
-    plt.savefig(f'{tittle}.png')
+#################################################################
+#                                                               #
+#                  DSL Int vs Randint                           #
+#                                                               #
+#################################################################
 
 
-a, b, size = -100000, 100000, 100
+def dsl_vs_randint_int(_iter=10000):
+    a, b, _iter = -100000, 100000, 10000
+    space = Domain[int](min=a, max=b)
+    header = ['index', 'time_dsl', 'time_generation', 'time_random']
+
+    def experiment(i):
+        result = [i]
+
+        # Total DSL Time
+        start = time()
+        _ = RandomValue[int](min=a, max=b)
+        result.append(time() - start)
+
+        # DSL Generate Time
+        start = time()
+        _ = space.get_sample()[0]
+        result.append(time() - start)
+
+        start = time()
+        _ = random.randint(a, b)
+        result.append(time() - start)
+
+        return result
+
+    data = tools.run_test(
+        experiment, _iter, "Generate Int Time Experimentation")
+    tools.save_csv(header, data, 'int_times')
+
+#################################################################
+#                                                               #
+#          DSL List[Int] vs [Randint]                           #
+#                                                               #
+#################################################################
 
 
-print("Init int experimentation")
-d = Domain[int](min=a, max=b)
+def dsl_vs_randint_list_int(_iter=10000):
+
+    a, b, size = -100000, 100000, 1000
+    space = Domain[int][size](min=a, max=b)
+    header = ['index', 'time_dsl', 'time_generation', 'time_random']
+
+    def experiment(i):
+        result = [i]
+
+        # Total DSL Time
+        start = time()
+        _ = RandomValue[int][size](min=a, max=b)
+        result.append(time() - start)
+
+        # DSL Generate Time
+        start = time()
+        _ = space.get_sample()[0]
+        result.append(time() - start)
+
+        start = time()
+        _ = [random.randint(a, b) for _ in range(size)]
+        result.append(time() - start)
+
+        return result
+
+    data = tools.run_test(
+        experiment, _iter, "Generate List[Int] Time Experimentation")
+    tools.save_csv(header, data, 'list_times')
 
 
-def dsl(): return RandomValue[int](min=a, max=b)
-def best(): return random.randint(a, b)
-def domain(): return d.get_sample()[0]
+#################################################################
+#                                                               #
+#          DSL Class vs Class(Randint)                          #
+#                                                               #
+#################################################################
+def dsl_vs_randint_class(_iter=10000):
 
+    a, b = -100000, 100000
+    header = ['index', 'time_dsl', 'time_generation', 'time_random']
 
-plot_time_line(dsl, best, domain, "Init int experimentation")
+    class A:
+        def __init__(
+            self,
+            a: int = Domain[int](min=a, max=b),
+            b: int = Domain[int](min=a, max=b)
+        ) -> None:
+            self.a, self.b = a, b
 
-print("Init list of int experimentation")
-d = Domain[int][size](min=a, max=b)
+    space = Domain[A]()
 
+    def experiment(i):
+        result = [i]
 
-def best(): return [random.randint(a, b) for _ in range(size)]
-def domain(): return d.get_sample()[0]
-def dsl(): return RandomValue[int][size](min=a, max=b)
+        # Total DSL Time
+        start = time()
+        _ = RandomValue[A]()
+        result.append(time() - start)
 
+        # DSL Generate Time
+        start = time()
+        _ = space.get_sample()[0]
+        result.append(time() - start)
 
-plot_time_line(dsl, best, domain, "Init list of int experimentation")
+        start = time()
+        _ = A(random.randint(a, b), random.randint(a, b))
+        result.append(time() - start)
 
-print("Init class experimentation")
+        return result
 
-
-class A:
-    def __init__(
-        self,
-        a: int = Domain[int](min=a, max=b),
-        b: int = Domain[int](min=a, max=b)
-    ) -> None:
-        self.a, self.b = a, b
-
-
-d = Domain[A]()
-
-
-def best(): return A(random.randint(a, b), random.randint(a, b))
-def domain(): return d.get_sample()[0]
-def dsl(): return RandomValue[A]()
-
-
-plot_time_line(dsl, best, domain, "Init class experimentation")
+    data = tools.run_test(
+        experiment, _iter, "Generate Class Time Experimentation")
+    tools.save_csv(header, data, 'class_times')
