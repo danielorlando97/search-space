@@ -160,14 +160,97 @@ def even_find_trap(_iter=10000):
 
 #################################################################
 #                                                               #
+#                  Even Find Trap  Plus                         #
+#                                                               #
+#################################################################
+def even_find_trap_plus(_iter=10000):
+    header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
+    sampler = UniformSampler()
+    domain = NaturalDomain(2, 2)
+
+    def experiment(i):
+        nonlocal domain
+        attempts = []
+        start = time()
+        while True:
+            domain.extend(i+100)
+            value = domain.get_sample(sampler)
+            if is_even(value):
+                break
+
+            domain = domain != value
+            attempts.append(value)
+
+        return [i, time() - start, len(attempts), len(attempts) - len(set(attempts)), value]
+    data = tools.run_test(
+        experiment, _iter, "Even Find Trap Plus Experimentation")
+    tools.save_csv(header, data, 'even_trap_plus_data')
+
+################################################################
+#                                                               #
+#                  Even Find Randint Fixed                      #
+#                                                               #
+#################################################################
+
+
+def even_find_randint_fixed(_iter=10000):
+
+    header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
+
+    def experiment(i):
+        attempts = []
+        start = time()
+        while True:
+            value = random.randint(2, _iter)
+            if is_even(value):
+                break
+
+            # if len(attempts) > _iter:
+            #     break
+            attempts.append(value)
+
+        return [i, time() - start, len(attempts), len(attempts) - len(set(attempts)), value]
+
+    data = tools.run_test(
+        experiment, _iter, "Even Find Randint Fixed Experimentation")
+    tools.save_csv(header, data, 'even_randint_fixed_data')
+
+#################################################################
+#                                                               #
+#                  Even Find DSL Fixed                          #
+#                                                               #
+#################################################################
+
+
+def even_find_dsl_fixed(_iter=10000):
+
+    header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
+
+    IsEven = FunctionalConstraint(is_even)
+    d = Domain[int](min=2, max=_iter) | (lambda x: IsEven(x))
+
+    def experiment(size):
+        config.attempts = []
+
+        start = time()
+        value, _ = d. get_sample()
+        return [size, time() - start, len(config.attempts), len(config.attempts) - len(set(config.attempts)), value]
+
+    data = tools.run_test(
+        experiment, _iter, "Even Find DSL Fixed Experimentation")
+    tools.save_csv(header, data, 'even_dsl_fixed_data')
+
+
+#################################################################
+#                                                               #
 #                  Even Find fixed limits                       #
 #                                                               #
 #################################################################
-def even_find_fixed_limits(_iter=1000000):
+def even_find_fixed_limits(_iter=10000):
 
     header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
     sampler = UniformSampler()
-    domain = NaturalDomain(2, 10000000)
+    domain = NaturalDomain(2, _iter)
 
     def experiment(i):
         nonlocal domain

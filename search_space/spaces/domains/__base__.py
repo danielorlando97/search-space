@@ -25,6 +25,10 @@ class NumeralDomain(Domain, nsp.NumeralDomainProtocol):
     def is_invalid(self):
         return self.min > self.max
 
+    def extend(self, top):
+        if self.max < top:
+            self.max = top
+
     def __add__(self, factor):
         return nsp.New[nsp.LinealTransformed](
             original_domain=self,
@@ -78,3 +82,6 @@ class NumeralDomain(Domain, nsp.NumeralDomainProtocol):
             inverse=lambda x: x / factor,
             independent_value=0
         )
+
+    def __contains__(self, value):
+        return self.min <= value and value <= self.max

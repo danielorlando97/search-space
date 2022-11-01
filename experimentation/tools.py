@@ -31,7 +31,7 @@ class Plotting:
         ax.legend()
         _ = plt.plot()
 
-    def save(self, name):
+    def save(self, _name):
         _, ax = plt.subplots(figsize=(10, 10))
 
         for i, data in enumerate(self.data):
@@ -40,7 +40,7 @@ class Plotting:
             ax.plot(X, Y, f'C{i+1}', label=name)
 
         ax.legend()
-        plt.savefig(f'{name}.png')
+        plt.savefig(f'{_name}.png')
 
 
 def run_test(f, _iter, name):
