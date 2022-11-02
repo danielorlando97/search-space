@@ -8,6 +8,7 @@ from . import VisitorLayer
 from search_space.utils.singleton import Singleton
 from .visitor_natural_ast import NaturalAstVisitor, NaturalValuesNode
 from search_space.utils import itertools
+from typing import Iterable
 
 
 class ValidateSampler(VisitorLayer, metaclass=Singleton):
@@ -107,11 +108,11 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
-        if type(b) in [list, tuple] and not type(a) in [list, tuple]:
+        if isinstance(b, Iterable) and not isinstance(a, Iterable):
             if not a in b:
                 return self
 
-        elif type(a) in [list, tuple] and not type(b) in [list, tuple]:
+        elif isinstance(a, Iterable) and not isinstance(b, Iterable):
             if not b in a:
                 return self
 
@@ -127,11 +128,11 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
-        if type(b) in [list, tuple] and not type(a) in [list, tuple]:
+        if isinstance(b, Iterable) and not isinstance(a, Iterable):
             if a in b:
                 return self
 
-        elif type(a) in [list, tuple] and not type(b) in [list, tuple]:
+        elif isinstance(a, Iterable) and not isinstance(b, Iterable):
             if b in a:
                 return self
 
@@ -147,10 +148,10 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
-        if type(b) in [list, tuple]:
+        if isinstance(b, Iterable):
             b = min(b)
 
-        if type(a) in [list, tuple]:
+        if isinstance(a, Iterable):
             a = max(a)
 
         if a < b:
@@ -165,10 +166,10 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
-        if type(b) in [list, tuple]:
+        if isinstance(b, Iterable):
             b = min(b)
 
-        if type(a) in [list, tuple]:
+        if isinstance(a, Iterable):
             a = max(a)
 
         if a <= b:
@@ -183,10 +184,10 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
-        if type(b) in [list, tuple]:
+        if isinstance(b, Iterable):
             b = max(b)
 
-        if type(a) in [list, tuple]:
+        if isinstance(a, Iterable):
             a = min(a)
 
         if a > b:
@@ -201,10 +202,10 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
-        if type(b) in [list, tuple]:
+        if isinstance(b, Iterable):
             b = max(b)
 
-        if type(a) in [list, tuple]:
+        if isinstance(a, Iterable):
             a = min(a)
 
         if a >= b:
@@ -226,7 +227,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         value = self.visit(node.value, current_index)
 
         mod = abs(target % factor)
-        if type(value) in [list, tuple] and mod in value:
+        if isinstance(value, Iterable) and mod in value:
             return self
 
         if mod == abs(value):
@@ -243,7 +244,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
 
         mod = target % factor
         if (
-            type(value) in [list, tuple]
+            isinstance(value, Iterable)
             and not mod in value
             and not -mod in value
         ):
@@ -261,7 +262,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
 
-        if type(value) in [list, tuple]:
+        if isinstance(value, Iterable):
             value = min(value)
 
         if abs(target % factor) < abs(value):
@@ -276,7 +277,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
 
-        if type(value) in [list, tuple]:
+        if isinstance(value, Iterable):
             value = min(value)
 
         if abs(target % factor) <= abs(value):
@@ -291,7 +292,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
 
-        if type(value) in [list, tuple]:
+        if isinstance(value, Iterable):
             value = max(value)
 
         if abs(target % factor) > abs(value):
@@ -306,7 +307,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
 
-        if type(value) in [list, tuple]:
+        if isinstance(value, Iterable):
             value = max(value)
 
         if abs(target % factor) >= abs(value):

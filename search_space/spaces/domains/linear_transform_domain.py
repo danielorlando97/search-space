@@ -5,6 +5,7 @@ from search_space.spaces.domains.__base__ import Domain, NumeralDomain
 from search_space.sampler import Sampler, SamplerFactory
 from search_space.sampler.distribution_names import UNIFORM
 from . import __namespace__ as nsp
+from typing import Iterable
 
 
 class LinearTransformedDomain(Domain, metaclass=nsp.LinealTransformed):
@@ -37,7 +38,7 @@ class LinearTransformedDomain(Domain, metaclass=nsp.LinealTransformed):
         return self.inverse(value) + self.ind_v
 
     def _transform_values(self, values):
-        if not type(values) in [list, tuple]:
+        if not isinstance(values, Iterable):
             return self._transform_origin_to_new(values)
 
         return [self._transform_origin_to_new(item) for item in values]

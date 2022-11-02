@@ -2,6 +2,7 @@ from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.__base__ import Domain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
+from typing import Iterable
 
 
 class CategoricalDomain(Domain):
@@ -49,7 +50,7 @@ class CategoricalDomain(Domain):
     #################################################################
 
     def __eq__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             self.filter(lambda x: x in other)
             return self
 
@@ -57,7 +58,7 @@ class CategoricalDomain(Domain):
         return self
 
     def __ne__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             self.filter(lambda x: not x in other)
             return self
 
@@ -65,27 +66,27 @@ class CategoricalDomain(Domain):
         return self
 
     def __lt__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             other = min(other)
 
         self.filter(lambda x: x < other)
         return self
 
     def __gt__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             other = max(other)
         self.filter(lambda x: x > other)
         return self
 
     def __ge__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             other = max(other)
 
         self.filter(lambda x: x >= other)
         return self
 
     def __le__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             other = min(other)
 
         self.filter(lambda x: x <= other)

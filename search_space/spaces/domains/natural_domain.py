@@ -5,6 +5,7 @@ from search_space.spaces.domains.linear_transform_domain import LinearTransforme
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 from . import __namespace__ as nsp
+from typing import Iterable
 
 
 class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
@@ -37,7 +38,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
     #################################################################
 
     def __eq__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             return CategoricalDomain([item for item in other if self.min <= item and item <= self.max])
 
         if other > self.max or other < self.min:
@@ -50,7 +51,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         return self
 
     def __ne__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             if len(other) == 0:
                 return self
             other = [item for item in other if self.min <=
@@ -83,7 +84,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         return BachedDomain(NaturalDomain(self.min, other - 0.51), NaturalDomain(other + 0.51, self.max))
 
     def __lt__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             other = min(other)
 
         if self.min > other:
@@ -94,7 +95,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         return self
 
     def __gt__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             other = max(other)
 
         if self.max < other:
@@ -111,7 +112,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         return self.__lt__(other)
 
     def __ge__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             other = max(other)
 
         if self.max < other:
@@ -122,7 +123,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         return self
 
     def __le__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             other = min(other)
 
         if self.min > other:
@@ -143,7 +144,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
 
     def __mod_eq__(self, factor, value):
         sing = factor/abs(factor)
-        if type(value) in [list, tuple]:
+        if isinstance(value, Iterable):
 
             _range = self._get_range(factor)
             value = [i for i in value if _range[0] < i and i < _range[1]]
@@ -165,7 +166,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         )
 
     def __mod_neq__(self, factor, value):
-        if not type(value) in [list, tuple]:
+        if not isinstance(value, Iterable):
             value = [value]
 
         value = [abs(v) for v in value]
@@ -182,7 +183,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         )
 
     def __mod_lt__(self, factor, value):
-        if type(value) in [list, tuple]:
+        if isinstance(value, Iterable):
             value = min([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](
@@ -195,7 +196,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         )
 
     def __mod_gt__(self, factor, value):
-        if type(value) in [list, tuple]:
+        if isinstance(value, Iterable):
             value = max([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](
@@ -208,7 +209,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         )
 
     def __mod_ge__(self, factor, value):
-        if type(value) in [list, tuple]:
+        if isinstance(value, Iterable):
             value = max([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](
@@ -221,7 +222,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         )
 
     def __mod_le__(self, factor, value):
-        if type(value) in [list, tuple]:
+        if isinstance(value, Iterable):
             value = min([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](

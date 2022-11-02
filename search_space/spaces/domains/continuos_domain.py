@@ -4,6 +4,7 @@ from search_space.spaces.domains.__base__ import NumeralDomain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 from . import __namespace__ as nsp
+from typing import Iterable
 
 
 class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
@@ -45,7 +46,7 @@ class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
     #################################################################
 
     def __eq__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             return CategoricalDomain([item for item in other if self.min <= item and item <= self.max])
 
         if other > self.max or other < self.min:
@@ -58,8 +59,7 @@ class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
         return self
 
     def __ne__(self, other):
-        if type(other) in [list, tuple]:
-
+        if isinstance(other, Iterable):
             other = [item for item in other if self.min <=
                      item and item <= self.max]
             other = list(set(other))
@@ -91,7 +91,7 @@ class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
         return BachedDomain(ContinuosDomain(self.min, other), ContinuosDomain(other, self.max))
 
     def __lt__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             other = min(other)
 
         if self.min > other:
@@ -102,7 +102,7 @@ class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
         return self
 
     def __gt__(self, other):
-        if type(other) in [list, tuple]:
+        if isinstance(other, Iterable):
             other = max(other)
 
         if self.max < other:

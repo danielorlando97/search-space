@@ -4,6 +4,7 @@ from search_space.errors import UnSupportOpError
 from search_space.utils.singleton import Singleton
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
+from typing import Iterable
 
 
 class Color:
@@ -105,7 +106,7 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
 
         tabs = self.tabs * '\t'
 
-        if type(sample) in [list, tuple]:
+        if isinstance(sample, Iterable):
             result = "[\n"
             for i, item in enumerate(sample):
                 result += f'{tabs}| {i} -> {item},\n'
