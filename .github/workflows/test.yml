@@ -1,4 +1,5 @@
 name: Run Test After Push
+
 on: [push, pull_request]
 
 jobs:
@@ -19,7 +20,8 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Test with pytest
-        run: make base-test replay_num=${{matrix.replay_num}}
+        run: |
+          echo "la tixa"
 
   dsl_e2e:
     runs-on: ubuntu-latest
@@ -38,7 +40,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Test with pytest
-        run: make dsl-test replay_num=${{matrix.replay_num}}
+          echo "la tixa"
 
   examples:
     runs-on: ubuntu-latest
@@ -57,4 +59,4 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Test with pytest
-        run: make example-test replay_num=${{matrix.replay_num}}
+          echo "la tixa"
