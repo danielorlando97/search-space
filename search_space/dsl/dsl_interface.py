@@ -1,5 +1,5 @@
 from typing import Generic, Tuple, Type, TypeVar, List
-from search_space.spaces.build_in_spaces import TensorSearchSpace, SpacesManager, BasicCategoricalSearchSpace
+from search_space.spaces.build_in_spaces import ListSearchSpace, SpacesManager, BasicCategoricalSearchSpace, TensorSearchSpace
 from search_space.spaces import SearchSpace
 from search_space.context_manager import SamplerContext
 T = TypeVar("T")
@@ -43,8 +43,7 @@ class TypeBuilder(Generic[T]):
             result = self.space(**kwarg)
 
         if self.is_tensor_type:
-            self._space.set_type(result)
-            result = self._space
+            result = self._space.set_type(result)
 
         if constraints is None:
             return result
@@ -62,7 +61,7 @@ class TypeBuilder(Generic[T]):
             self._space.len_spaces.append(item)
         except AttributeError:
             self.__space = self._space
-            self._space = TensorSearchSpace([item])
+            self._space = ListSearchSpace([item])
 
         self.is_tensor_type = True
         return self

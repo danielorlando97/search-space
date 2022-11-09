@@ -5,6 +5,7 @@ from search_space.spaces.domains.__base__ import Domain
 from search_space.sampler import Sampler, SamplerFactory
 from search_space.sampler.distribution_names import UNIFORM
 from . import __namespace__ as nsp
+from search_space.spaces import domains
 
 
 class BachedDomain(Domain, metaclass=nsp.BachedDomain):
@@ -108,6 +109,78 @@ class BachedDomain(Domain, metaclass=nsp.BachedDomain):
 
     def __or__(self, __o):
         return self.domains.append(__o)
+
+    def __hash__(self) -> int:
+        return id(self)
+
+
+class LogBachedDomain(BachedDomain, metaclass=nsp.LogBachedDomain):
+    def __init__(self, *domains: List[Domain]) -> None:
+        super().__init__(*domains)
+
+    def __copy__(self):
+        return LogBachedDomain(*[copy(d) for d in self.domains])
+
+    def _find_bache(self, n):
+        r, l = 0, len(self.domains)
+        m = l + r >> 1
+
+        while r < l and not n in self.domains[m]:
+            _min, _max = self.domains[m].limits
+
+            if n > _max:
+                r = m + 1
+            elif n < _min:
+                l = m - 1
+
+            m = l + r >> 1
+
+        return m if m < len(self.domains) else len(self.domains) - 1
+
+    def __eq__(self, other):
+        index = self._find_bache(other)
+        return self.domains[index] == other
+
+    def __ne__(self, other):
+        index = self._find_bache(other)
+        domain = self.domains[index] != other
+
+        if isinstance(domain, BachedDomain):
+            self.domains = (
+                self.domains[:index] +
+                [d for d in domain.domains if not d.is_invalid()] +
+                self.domains[index + 1:]
+            )
+
+        return self
+
+    def __lt__(self, other):
+        index = self._find_bache(other)
+        self.domains = self.domains[:index] + [self.domains[index] < other]
+
+        return self
+
+    def __gt__(self, other):
+        index = self._find_bache(other)
+        self.domains = [self.domains[index] > other] + self.domains[index + 1:]
+        return self
+
+    def __ge__(self, other):
+        index = self._find_bache(other)
+        self.domains = [self.domains[index] >=
+                        other] + self.domains[index + 1:]
+        return self
+
+    def __le__(self, other):
+        index = self._find_bache(other)
+        self.domains = self.domains[:index] + [self.domains[index] <= other]
+
+        return self
+
+    def __or__(self, __o):
+        bd = BachedDomain(*self.domains) | __o
+        bd.sample_selector = self.sampler_selector
+        return bd
 
     def __hash__(self) -> int:
         return id(self)

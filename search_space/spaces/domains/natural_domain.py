@@ -2,10 +2,11 @@ from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
 from search_space.spaces.domains.__base__ import NumeralDomain
 from search_space.spaces.domains.linear_transform_domain import LinearTransformedDomain
-from .bached_domain import BachedDomain
+from .bached_domain import BachedDomain, LogBachedDomain
 from search_space.sampler import Sampler
 from . import __namespace__ as nsp
 from typing import Iterable
+from search_space.utils.itertools import is_iterable
 
 
 class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
@@ -38,7 +39,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
     #################################################################
 
     def __eq__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other):
             return CategoricalDomain([item for item in other if self.min <= item and item <= self.max])
 
         if other > self.max or other < self.min:
@@ -50,41 +51,69 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
 
         return self
 
+    # def __ne__(self, other):
+    #     if is_iterable(other):
+    #         if len(other) == 0:
+    #             return self
+    #         other = [item for item in other if self.min <=
+    #                  item and item <= self.max]
+
+    #         other.sort()
+    #         try:
+    #             other = [other[0]] + [other[i] for i in range(1, len(other))
+    #                                   if other[i] - other[i-1] > 0.51]
+
+    #             while len(other) > 0 and self.min == other[0]:
+    #                 other.pop(0)
+    #                 self.min += 0.51
+
+    #             while len(other) > 0 and self.max == other[-1]:
+    #                 other.pop(-1)
+    #                 self.max -= 0.51
+    #         except IndexError:
+    #             raise InvalidSpaceDefinition('NaturalDomain is empty')
+
+    #         other = [self.min - 0.51] + other + [self.max + 0.51]
+    #         return BachedDomain(
+    #             * [NaturalDomain(other[i-1] + 0.51, other[i] - 0.51) for i in range(1, len(other))]
+    #         )
+
+    #     "If other is out of current domain, it will never enter and current domain is right"
+    #     if other > self.max or other < self.min:
+    #         return self
+
+    #     return BachedDomain(NaturalDomain(self.min, other - 0.51), NaturalDomain(other + 0.51, self.max))
+
     def __ne__(self, other):
-        if isinstance(other, Iterable):
-            if len(other) == 0:
-                return self
-            other = [item for item in other if self.min <=
-                     item and item <= self.max]
+        """
+        This operation don't have to computing in less than nlogn.
+        Is the only way that we can create the correctly baches 
+        """
 
-            other.sort()
-            try:
-                other = [other[0]] + [other[i] for i in range(1, len(other))
-                                      if other[i] - other[i-1] > 0.51]
+        if not is_iterable(other):
+            other = [other]
 
-                while len(other) > 0 and self.min == other[0]:
-                    other.pop(0)
-                    self.min += 0.51
+        other = [item for item in other
+                 if self.min <= item and item <= self.max]
+        other.sort()
 
-                while len(other) > 0 and self.max == other[-1]:
-                    other.pop(-1)
-                    self.max -= 0.51
-            except IndexError:
-                raise InvalidSpaceDefinition('NaturalDomain is empty')
-
-            other = [self.min - 0.51] + other + [self.max + 0.51]
-            return BachedDomain(
-                * [NaturalDomain(other[i-1] + 0.51, other[i] - 0.51) for i in range(1, len(other))]
-            )
-
-        "If other is out of current domain, it will never enter and current domain is right"
-        if other > self.max or other < self.min:
+        if len(other) == 0:
             return self
 
-        return BachedDomain(NaturalDomain(self.min, other - 0.51), NaturalDomain(other + 0.51, self.max))
+        if other[0] != self.min:
+            other = [self.min - 0.51] + other
+        if other[-1] != self.max:
+            other = other + [self.max + 0.51]
+
+        other = [other[0]] + [other[i] for i in range(1, len(other))
+                              if abs(other[i] - other[i-1]) > 0.51]
+
+        return LogBachedDomain(
+            * [NaturalDomain(other[i-1] + 0.51, other[i] - 0.51) for i in range(1, len(other))]
+        )
 
     def __lt__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other):
             other = min(other)
 
         if self.min > other:
@@ -95,7 +124,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         return self
 
     def __gt__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other):
             other = max(other)
 
         if self.max < other:
@@ -112,7 +141,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         return self.__lt__(other)
 
     def __ge__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other):
             other = max(other)
 
         if self.max < other:
@@ -123,7 +152,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         return self
 
     def __le__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other):
             other = min(other)
 
         if self.min > other:
@@ -144,7 +173,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
 
     def __mod_eq__(self, factor, value):
         sing = factor/abs(factor)
-        if isinstance(value, Iterable):
+        if is_iterable(value):
 
             _range = self._get_range(factor)
             value = [i for i in value if _range[0] < i and i < _range[1]]
@@ -166,7 +195,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         )
 
     def __mod_neq__(self, factor, value):
-        if not isinstance(value, Iterable):
+        if not is_iterable(value):
             value = [value]
 
         value = [abs(v) for v in value]
@@ -183,7 +212,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         )
 
     def __mod_lt__(self, factor, value):
-        if isinstance(value, Iterable):
+        if is_iterable(value):
             value = min([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](
@@ -196,7 +225,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         )
 
     def __mod_gt__(self, factor, value):
-        if isinstance(value, Iterable):
+        if is_iterable(value):
             value = max([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](
@@ -209,7 +238,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         )
 
     def __mod_ge__(self, factor, value):
-        if isinstance(value, Iterable):
+        if is_iterable(value):
             value = max([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](
@@ -222,7 +251,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         )
 
     def __mod_le__(self, factor, value):
-        if isinstance(value, Iterable):
+        if is_iterable(value):
             value = min([abs(v) for v in value])
 
         return nsp.New[nsp.BachedDomain](

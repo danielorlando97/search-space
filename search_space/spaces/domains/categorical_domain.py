@@ -3,6 +3,7 @@ from search_space.spaces.domains.__base__ import Domain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 from typing import Iterable
+from search_space.utils.itertools import is_iterable
 
 
 class CategoricalDomain(Domain):
@@ -50,7 +51,7 @@ class CategoricalDomain(Domain):
     #################################################################
 
     def __eq__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other) and not isinstance(other, str):
             self.filter(lambda x: x in other)
             return self
 
@@ -58,7 +59,7 @@ class CategoricalDomain(Domain):
         return self
 
     def __ne__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other) and not isinstance(other, str):
             self.filter(lambda x: not x in other)
             return self
 
@@ -66,27 +67,27 @@ class CategoricalDomain(Domain):
         return self
 
     def __lt__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other):
             other = min(other)
 
         self.filter(lambda x: x < other)
         return self
 
     def __gt__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other) and not isinstance(other, str):
             other = max(other)
         self.filter(lambda x: x > other)
         return self
 
     def __ge__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other) and not isinstance(other, str):
             other = max(other)
 
         self.filter(lambda x: x >= other)
         return self
 
     def __le__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other):
             other = min(other)
 
         self.filter(lambda x: x <= other)

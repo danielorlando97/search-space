@@ -1,9 +1,7 @@
 from time import time
 from unittest import result
 from search_space.dsl import RandomValue, Domain
-from search_space.spaces.build_in_spaces.tensor_space import StaticTensorSearchSpace, TensorSearchSpace
 from search_space.spaces.build_in_spaces import BasicNaturalSearchSpace
-import random
 from . import tools
 
 #################################################################
@@ -14,7 +12,7 @@ from . import tools
 
 
 def dsl_vs_randint_int(_iter=10000):
-    a, b, _iter = -100000, 100000, 10000
+    a, b = -100000, 100000
     space = Domain[int](min=a, max=b)
     header = ['index', 'time_dsl', 'time_generation', 'time_random']
 
@@ -32,7 +30,7 @@ def dsl_vs_randint_int(_iter=10000):
         result.append(time() - start)
 
         start = time()
-        _ = random.randint(a, b)
+        _ = tools.randint(a, b)
         result.append(time() - start)
 
         return result
@@ -41,43 +39,40 @@ def dsl_vs_randint_int(_iter=10000):
         experiment, _iter, "Generate Int Time Experimentation")
     tools.save_csv(header, data, 'int_times')
 
-
 #################################################################
 #                                                               #
-#          DSL List[Int] vs [Randint]                           #
+#                  Choice                                       #
 #                                                               #
 #################################################################
 
 
-def list_test(_iter, f, name='list_test_2'):
-
-    a, b, size = -100000, 100000, 1000
-    natural = BasicNaturalSearchSpace(a, b)
-
-    header = ['index', 'static', 'tensor']
+def dsl_choice(_iter=10000):
+    options = [str(i) for i in range(1000)]
+    space = Domain[str](options=options)
+    header = ['index', 'time_dsl', 'time_generation', 'time_random']
 
     def experiment(i):
         result = [i]
 
-        static = StaticTensorSearchSpace(f(i))
-        static = static.set_type(natural)
-
-        tensor = TensorSearchSpace(f(i))
-        tensor = tensor.set_type(natural)
-
+        # Total DSL Time
         start = time()
-        _ = static.get_sample()
+        _ = RandomValue[str](options=options)
+        result.append(time() - start)
+
+        # DSL Generate Time
+        start = time()
+        _ = space.get_sample()[0]
         result.append(time() - start)
 
         start = time()
-        _ = tensor.get_sample()
+        _ = tools.choice(options)
         result.append(time() - start)
 
         return result
 
-    data = tools.run_test(experiment, _iter, name)
-    tools.save_csv(header, data, name)
-
+    data = tools.run_test(
+        experiment, _iter, "Choice Time Experimentation")
+    tools.save_csv(header, data, 'choice_times')
 
 #################################################################
 #                                                               #
@@ -90,7 +85,7 @@ def dsl_vs_randint_list_int(_iter=10000):
 
     a, b, size = -100000, 100000, 1000
     space = Domain[int][size](min=a, max=b)
-    d = Domain[int](min=a, max=b)
+    d = BasicNaturalSearchSpace(min=a, max=b)
     header = ['index', 'time_dsl', 'time_generation',
               'time_random', 'time_generation_single']
 
@@ -108,11 +103,11 @@ def dsl_vs_randint_list_int(_iter=10000):
         result.append(time() - start)
 
         start = time()
-        _ = [random.randint(a, b) for _ in range(size)]
+        _ = [tools.randint(a, b) for _ in range(size)]
         result.append(time() - start)
 
         start = time()
-        _ = [d.get_sample() for _ in range(size)]
+        _ = [d.get_sample()[0] for _ in range(size)]
         result.append(time() - start)
 
         return result
@@ -130,7 +125,9 @@ def dsl_vs_randint_list_int(_iter=10000):
 def dsl_vs_randint_class(_iter=10000):
 
     a, b = -100000, 100000
-    header = ['index', 'time_dsl', 'time_generation', 'time_random']
+    header = ['index', 'time_dsl', 'time_generation',
+              'time_random', 'time_generation_single']
+    d = BasicNaturalSearchSpace(min=a, max=b)
 
     class A:
         def __init__(
@@ -156,7 +153,11 @@ def dsl_vs_randint_class(_iter=10000):
         result.append(time() - start)
 
         start = time()
-        _ = A(random.randint(a, b), random.randint(a, b))
+        _ = A(tools.randint(a, b), tools.randint(a, b))
+        result.append(time() - start)
+
+        start = time()
+        _ = A(d.get_sample()[0], d.get_sample()[0])
         result.append(time() - start)
 
         return result

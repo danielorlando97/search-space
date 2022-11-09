@@ -1,6 +1,8 @@
 from search_space.errors import UnSupportOpError
 from search_space.utils.ast_tools import check_params_type
+from search_space.utils.itertools import is_iterable
 from . import __namespace__ as nsp
+from typing import Iterable
 
 
 class UniversalVariableNode:
@@ -195,7 +197,7 @@ class AstRoot(UniversalVariableNode):
         self.asts = [] if asts is None else asts
 
     def add_constraint(self, ast):
-        if type(ast) in [list, tuple]:
+        if is_iterable(ast):
             self.asts += ast
         else:
             self.asts.append(ast)
@@ -206,7 +208,7 @@ class AstRoot(UniversalVariableNode):
 
         n = AstRoot([])
 
-        if type(other) in [list, tuple]:
+        if is_iterable(other):
             n.asts = self.asts + other
         else:
             n.asts = self.asts + other.asts

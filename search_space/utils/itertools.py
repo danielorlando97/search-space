@@ -1,5 +1,5 @@
 from itertools import zip_longest
-from typing import Iterator
+from typing import Iterable, Iterator
 
 
 def mapper(a, b, f):
@@ -85,3 +85,7 @@ def filter(a, b, f):
             continue
 
         yield item
+
+
+def is_iterable(item):
+    return isinstance(item, Iterable) and not isinstance(item, str)

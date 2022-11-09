@@ -1,4 +1,4 @@
-from .bached_domain import BachedDomain
+from .bached_domain import BachedDomain, LogBachedDomain
 from .linear_transform_domain import LinearTransformedDomain
 from .natural_domain import NaturalDomain
 from .continuos_domain import ContinuosDomain

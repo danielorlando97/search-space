@@ -5,6 +5,7 @@ from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
 from . import __namespace__ as nsp
 from typing import Iterable
+from search_space.utils.itertools import is_iterable
 
 
 class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
@@ -46,7 +47,7 @@ class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
     #################################################################
 
     def __eq__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other):
             return CategoricalDomain([item for item in other if self.min <= item and item <= self.max])
 
         if other > self.max or other < self.min:
@@ -59,39 +60,40 @@ class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
         return self
 
     def __ne__(self, other):
-        if isinstance(other, Iterable):
-            other = [item for item in other if self.min <=
-                     item and item <= self.max]
-            other = list(set(other))
+        return self
+        # if is_iterable(other):
+        #     other = [item for item in other if self.min <=
+        #              item and item <= self.max]
+        #     other = list(set(other))
 
-            if not self.min in other:
-                other.append(self.min)
+        #     if not self.min in other:
+        #         other.append(self.min)
 
-            if not self.max in other:
-                other.append(self.max)
+        #     if not self.max in other:
+        #         other.append(self.max)
 
-            other.sort()
+        #     other.sort()
 
-            if len(other) == 2:
-                return self
+        #     if len(other) == 2:
+        #         return self
 
-            return BachedDomain(
-                * [ContinuosDomain(other[i-1], other[i]) for i in range(1, len(other))]
-            )
+        #     return BachedDomain(
+        #         * [ContinuosDomain(other[i-1], other[i]) for i in range(1, len(other))]
+        #     )
 
-        "If other is out of current domain, it will never enter and current domain is right"
-        if other > self.max or other < self.min:
-            return self
+        # "If other is out of current domain, it will never enter and current domain is right"
+        # if other > self.max or other < self.min:
+        #     return self
 
-        """If other is equal that one of limit, we can't limit 
-           to domain only can check this condition after we sampler"""
-        if other == self.max or self.min == other:
-            return self
+        # """If other is equal that one of limit, we can't limit
+        #    to domain only can check this condition after we sampler"""
+        # if other == self.max or self.min == other:
+        #     return self
 
-        return BachedDomain(ContinuosDomain(self.min, other), ContinuosDomain(other, self.max))
+        # return BachedDomain(ContinuosDomain(self.min, other), ContinuosDomain(other, self.max))
 
     def __lt__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other):
             other = min(other)
 
         if self.min > other:
@@ -102,7 +104,7 @@ class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
         return self
 
     def __gt__(self, other):
-        if isinstance(other, Iterable):
+        if is_iterable(other):
             other = max(other)
 
         if self.max < other:

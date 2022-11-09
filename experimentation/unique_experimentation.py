@@ -6,7 +6,6 @@ from search_space.dsl import Domain
 from search_space.spaces import FunctionalConstraint
 from search_space.context_manager import SearchSpaceConfig
 from search_space.utils.infinity import oo
-import random
 from . import tools
 from search_space.sampler.default_implementations import UniformSampler
 from search_space.spaces.domains import NaturalDomain
@@ -14,36 +13,33 @@ from search_space.spaces.domains import NaturalDomain
 config = SearchSpaceConfig()
 config.replay_nums = oo
 
-
 #################################################################
 #                                                               #
 #                  Set Randint                                  #
 #                                                               #
 #################################################################
-def set_randint(_iter=9500):
-    a, b = 0, _iter + 500
+
+
+def set_randint(_iter=9500, n=''):
+    a, b = 0, _iter + 1
     header = ['iter_num', 'time', 'attempts']
 
     def experiment(i):
-
         result = []
         attempts = 0
         start = time()
         for _ in range(i):
-            value = random.randint(a, b)
+            value = tools.randint(a, b)
             while value in result:
                 attempts += 1
-                value = random.randint(a, b)
-
+                value = tools.randint(a, b)
                 # if attempts > _iter:
                 #     break
-
             result.append(value)
-
         return [i, time() - start, attempts]
 
-    data = tools.run_test(experiment, _iter, "Set Randint Experimentation")
-    tools.save_csv(header, data, 'set_randint_data')
+    data = tools.run_test(experiment, _iter, f"Set Randint Experimentation{n}")
+    tools.save_csv(header, data, f'set_randint_data')
 
 
 #################################################################
@@ -51,23 +47,119 @@ def set_randint(_iter=9500):
 #                  Set DSL                                      #
 #                                                               #
 #################################################################
-def dsl_set(_iter=9500):
-
-    a, b = 0, _iter + 500
+def dsl_set(_iter=9500, n=''):
+    a, b = 0, _iter + 1
     header = ['iter_num', 'time', 'attempts']
     data = []
 
     def experiment(size):
         d = Domain[int][size](min=a, max=b) | (lambda x, i: x[i] != x[0: i])
         config.attempts = []
-
         start = time()
         _ = d. get_sample()
-
         return [size, time() - start, len(config.attempts)]
 
-    data = tools.run_test(experiment, _iter, "Set DSL Experimentation")
-    tools.save_csv(header, data, 'set_dsl_data')
+    data = tools.run_test(experiment, _iter, f"Set DSL Experimentation{n}")
+    tools.save_csv(header, data, f'set_dsl_data')
+
+
+#################################################################
+#                                                               #
+#                  Set 2 Randint                                #
+#                                                               #
+#################################################################
+def set_2_randint(_iter=9500, n=''):
+    a, b = 0, _iter + 1
+    header = ['iter_num', 'time', 'attempts']
+
+    def experiment(i):
+        result = []
+        attempts = 0
+        start = time()
+        for _ in range(i):
+            value = tools.randint(a, i + 2)
+            while value in result:
+                attempts += 1
+                value = tools.randint(a, i + 2)
+                # if attempts > _iter:
+                #     break
+            result.append(value)
+        return [i, time() - start, attempts]
+
+    data = tools.run_test(experiment, _iter, f"Set Randint Experimentation{n}")
+    tools.save_csv(header, data, f'set_2_randint_data')
+
+
+#################################################################
+#                                                               #
+#                  Set 2 DSL                                    #
+#                                                               #
+#################################################################
+def dsl_2_set(_iter=9500, n=''):
+    a, b = 0, _iter + 1
+    header = ['iter_num', 'time', 'attempts']
+    data = []
+
+    def experiment(size):
+        d = Domain[int][size](
+            min=a, max=size + 2) | (lambda x, i: x[i] != x[0: i])
+        config.attempts = []
+        start = time()
+        _ = d. get_sample()
+        return [size, time() - start, len(config.attempts)]
+
+    data = tools.run_test(experiment, _iter, f"Set DSL Experimentation{n}")
+    tools.save_csv(header, data, f'set_2_dsl_data')
+
+
+#################################################################
+#                                                               #
+#                  Matrix Randint                               #
+#                                                               #
+#################################################################
+def matrix_randint(_iter=9500, n=''):
+    a, b = 0, 100000
+    header = ['iter_num', 'time', 'attempts']
+
+    def experiment(size):
+        result = [[0] * (size + 1) for _ in range(size + 1)]
+        attempts = 0
+        start = time()
+        for i in range(size + 1):
+            for j in range(i, size + 1):
+                value = tools.randint(a, b)
+                result[i][j] = value
+                result[j][i] = value
+
+        return [i, time() - start, attempts]
+
+    data = tools.run_test(
+        experiment, _iter, f"Matrix Randint Experimentation{n}")
+    tools.save_csv(header, data, f'matrix_randint_data')
+
+
+#################################################################
+#                                                               #
+#                  Matrix DSL                                   #
+#                                                               #
+#################################################################
+def dsl_matrix(_iter=9500, n=''):
+    a, b = 0, 100000
+    header = ['iter_num', 'time', 'attempts']
+    data = []
+
+    def experiment(size):
+        d = Domain[int][size+1][size + 1](min=a, max=b) | (
+            lambda x, i, j: x[i][j] == x[j][i]
+        )
+
+        config.attempts = []
+        start = time()
+        _ = d. get_sample()
+        return [size, time() - start, len(config.attempts)]
+
+    data = tools.run_test(experiment, _iter, f"Matrix DSL Experimentation{n}")
+    tools.save_csv(header, data, f'matrix_dsl_data')
 
 
 #################################################################
@@ -92,7 +184,7 @@ def even_find_randint(_iter=10000):
         attempts = []
         start = time()
         while True:
-            value = random.randint(2, i + 100)
+            value = tools.randint(2, i + 100)
             if is_even(value):
                 break
 
@@ -201,7 +293,7 @@ def even_find_randint_fixed(_iter=10000):
         attempts = []
         start = time()
         while True:
-            value = random.randint(2, _iter)
+            value = tools.randint(2, _iter/2)
             if is_even(value):
                 break
 
@@ -227,7 +319,7 @@ def even_find_dsl_fixed(_iter=10000):
     header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
 
     IsEven = FunctionalConstraint(is_even)
-    d = Domain[int](min=2, max=_iter) | (lambda x: IsEven(x))
+    d = Domain[int](min=2, max=_iter/2) | (lambda x: IsEven(x))
 
     def experiment(size):
         config.attempts = []
@@ -250,7 +342,7 @@ def even_find_fixed_limits(_iter=10000):
 
     header = ['iter_num', 'time', 'attempts', 'value_repetition', 'value']
     sampler = UniformSampler()
-    domain = NaturalDomain(2, _iter)
+    domain = NaturalDomain(2, _iter/2)
 
     def experiment(i):
         nonlocal domain

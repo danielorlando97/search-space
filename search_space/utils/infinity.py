@@ -87,6 +87,12 @@ class Infinity:
     def __repr__(self) -> str:
         return self.__str__()
 
+    def __abs__(self):
+        if self.positive:
+            return float(INFINITY_MAX_VALUE)
+
+        return float(INFINITY_MIN_VALUE)
+
 
 # Instancia global de infinito
 oo = Infinity()

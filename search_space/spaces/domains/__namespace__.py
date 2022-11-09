@@ -34,6 +34,11 @@ class BachedDomain(DomainProtocol, InjectorMetaclass):
         pass
 
 
+class LogBachedDomain(BachedDomain, InjectorMetaclass):
+    def __init__(self, *domain: list[DomainProtocol]) -> None:
+        pass
+
+
 class LinealTransformed(DomainProtocol, InjectorMetaclass):
     def __init__(
         self,

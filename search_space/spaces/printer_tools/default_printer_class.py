@@ -5,6 +5,7 @@ from search_space.utils.singleton import Singleton
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints
 from typing import Iterable
+from search_space.utils.itertools import is_iterable
 
 
 class Color:
@@ -106,7 +107,7 @@ class DefaultPrinter(SearchSpacePrinter, metaclass=Singleton):
 
         tabs = self.tabs * '\t'
 
-        if isinstance(sample, Iterable):
+        if is_iterable(sample):
             result = "[\n"
             for i, item in enumerate(sample):
                 result += f'{tabs}| {i} -> {item},\n'
