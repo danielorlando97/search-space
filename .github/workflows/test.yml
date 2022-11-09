@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       python-version: "3.9"
-    step:
+    steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ python-version }}
         uses: actions/setup-python@v4
@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       python-version: "3.9"
-    step:
+    steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ python-version }}
         uses: actions/setup-python@v4
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       python-version: "3.9"
-    step:
+    steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ python-version }}
         uses: actions/setup-python@v4
