@@ -3,6 +3,8 @@ from search_space.errors import UnSupportOpError
 from search_space.spaces.search_space import BasicSearchSpace
 from search_space.spaces.asts import constraints
 from test_syntaxes_valid import cmp_ast
+from search_space.dsl import Domain
+from search_space.errors import InvalidSampler
 
 
 class ConstraintInvalidBasicSyntaxes(TestCase):
@@ -10,14 +12,17 @@ class ConstraintInvalidBasicSyntaxes(TestCase):
         self.space = BasicSearchSpace((), None)
 
     def test_basic_rmod(self):
-        ast = self.space.__build_constraint__(lambda x: 10 % x)
+        try:
+            ast = self.space.__build_constraint__(lambda x: 10 % x)
+            sample_ast = constraints.SegmentationModOp(
+                constraints.NaturalValue(10),
+                constraints.SelfNode
+            )
 
-        sample_ast = constraints.SegmentationModOp(
-            constraints.NaturalValue(10),
-            constraints.SelfNode
-        )
-
-        cmp_ast(sample_ast, ast)
+            cmp_ast(sample_ast, ast)
+            assert False
+        except TypeError:
+            pass
 
     def test_invalid_or(self):
         try:
@@ -122,3 +127,21 @@ class ConstraintInvalidBasicSyntaxes(TestCase):
             assert False, 'lambda x: x % 3 == 1 < 5'
         except UnSupportOpError:
             pass
+
+    def test_list_space(self):
+        try:
+            matrix_space = Domain[int][6][6][6]() | (
+                lambda x, i, j: x[i][j] == x[j][i])
+            matrix, _ = matrix_space.get_sample()
+            assert False
+        except InvalidSampler:
+            pass
+
+        # def test():
+        #     matrix, _ = matrix_space.get_sample()
+
+        #     for i, row in enumerate(matrix):
+        #         for j, item in enumerate(row):
+        #             assert item == matrix[j][i]
+
+        # replay_function(test)

@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .DS_Store
-
+experimentation/csv
 to_do.ipynb
 last
 last_tests

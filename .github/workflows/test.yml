@@ -1,5 +1,4 @@
-name: Run Test After Push
-
+name: unit and statistic testing
 on: [push, pull_request]
 
 jobs:

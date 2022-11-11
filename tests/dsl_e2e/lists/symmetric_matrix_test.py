@@ -83,19 +83,6 @@ class SymmetricMatrix(TestCase):
 
         replay_function(test)
 
-    def test_list_space(self):
-        matrix_space = Domain[int][6][6][6]() | (
-            lambda x, i, j: x[i][j] == x[j][i])
-
-        def test():
-            matrix, _ = matrix_space.get_sample()
-
-            for i, row in enumerate(matrix):
-                for j, item in enumerate(row):
-                    assert item == matrix[j][i]
-
-        replay_function(test)
-
     def test_obj_space(self):
 
         class ATestClass:
