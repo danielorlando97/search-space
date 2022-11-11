@@ -50,7 +50,7 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
 
         for n in node.asts:
             try:
-                label, _ = self.visit(n)
+                label, n = self.visit(n)
                 if label == self.NATURAL:
                     continue
 
@@ -72,7 +72,7 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
         b, node_B = self.visit(node.other)
 
         if isinstance(node, constraints.SegmentationExprNode):
-            c, _ = self.visit(node.value)
+            c, node_C = self.visit(node.value)
 
             s = list(set([a, b, c]))
 
@@ -89,18 +89,17 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
                     raise NotEvaluateError()
 
             label = self.choice_result(s[0], s[1], f)
-            n = type.__call__(node.__class__, a, b, c)
+            n = type.__call__(node.__class__, node_A, node_B, node_C)
             return label, n
 
         def f():
             raise InvalidSpaceDefinition('Auto Constraint Definition')
 
         label = self.choice_result(a, b, f)
-
-        if a != self.SELF and b == self.SELF:
-            result = node.inverted_op(node_A, node_B)
-        else:
-            result = type.__call__(node.__class__, node_A, node_B)
+        result = type.__call__(node.__class__, node_A, node_B)
+        # if a != self.SELF and b == self.SELF:
+        #     result = node.inverted_op(node_A, node_B)
+        # else:
 
         return label, result
 
@@ -132,7 +131,7 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
         def f():
             return self.SELF
 
-        return self.choice_result(a, b, f), constraints.AndOp(node_A, node_B)
+        return self.choice_result(a, b, f), constraints.OrOp(node_A, node_B)
 
     #################################################################
     #                                                               #
@@ -172,6 +171,38 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
             raise NotEvaluateError()
 
         return self.NATURAL, constraints.FunctionNode(node.func, node_list, kws)
+
+    @visitor.when(constraints.AdvancedFunctionNode)
+    def visit(self, node: constraints.AdvancedFunctionNode):
+        tag_set, node_list, self_index = set(), [], node.args_target
+        for i, arg in enumerate(node.args):
+            label, n = self.visit(arg)
+            tag_set.add(label)
+            node_list.append(n)
+
+            if i in self_index and label != self.SELF:
+                self_index.remove(i)
+
+        kws, self_kws = {}, node.kw_target
+        for name, arg in node.kwargs:
+            label, n = self.visit(arg)
+            tag_set.add(label)
+            kws[name] = n
+
+            if name in self_kws and label != self.SELF:
+                self_kws.remove(name)
+
+        if (self.NOT_EVAL in tag_set):
+            raise NotEvaluateError()
+
+        if not (self.SELF in tag_set):
+            return self.NATURAL, constraints.FunctionNode(node.func, node_list, kws)
+
+        return self.NATURAL, constraints.AdvancedFunctionNode(
+            (self_index, self_kws),
+            node.func, node_list, kws,
+            node.cls
+        )
 
     @visitor.when(constraints.SelfNode)
     def visit(self, node):

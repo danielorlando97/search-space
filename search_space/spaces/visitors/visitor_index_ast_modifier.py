@@ -119,7 +119,8 @@ class IndexAstModifierVisitor(VisitorLayer):
                     naturals_values.SpaceSelfNode(self.space[current_index])
                 )
 
-            value = self.space[current_index].get_sample(context=self.context)
+            value = self.space[current_index].get_sample(
+                context=self.context)[0]
         except NotEvaluateError:
             return constraints.NotEvaluate()
         except CircularDependencyDetected:
@@ -154,3 +155,19 @@ class IndexAstModifierVisitor(VisitorLayer):
             new_kw[name] = self.visit(arg, current_index)
 
         return constraints.FunctionNode(node.func, new_args, new_kw)
+
+    @visitor.when(constraints.AdvancedFunctionNode)
+    def visit(self, node: constraints.AdvancedFunctionNode, current_index):
+        new_args = []
+        for arg in node.args:
+            new_args.append(self.visit(arg, current_index))
+
+        new_kw = {}
+        for name, arg in node.kwargs:
+            new_kw[name] = self.visit(arg, current_index)
+
+        return constraints.AdvancedFunctionNode(
+            (node.args_target, node.kw_target),
+            node.func, new_args, new_kw,
+            node.cls
+        )

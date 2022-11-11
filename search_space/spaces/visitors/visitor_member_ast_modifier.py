@@ -111,3 +111,31 @@ class MemberAstModifierVisitor(VisitorLayer):
                 return constraints.NotEvaluate()
 
         return node
+
+    @visitor.when(constraints.FunctionNode)
+    def visit(self, node: constraints.FunctionNode):
+        new_args = []
+        for arg in node.args:
+            new_args.append(self.visit(arg))
+
+        new_kw = {}
+        for name, arg in node.kwargs:
+            new_kw[name] = self.visit(arg)
+
+        return constraints.FunctionNode(node.func, new_args, new_kw)
+
+    @visitor.when(constraints.AdvancedFunctionNode)
+    def visit(self, node: constraints.AdvancedFunctionNode):
+        new_args = []
+        for arg in node.args:
+            new_args.append(self.visit(arg))
+
+        new_kw = {}
+        for name, arg in node.kwargs:
+            new_kw[name] = self.visit(arg)
+
+        return constraints.AdvancedFunctionNode(
+            (node.args_target, node.kw_target),
+            node.func, new_args, new_kw,
+            node.cls
+        )

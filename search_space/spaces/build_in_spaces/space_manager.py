@@ -104,11 +104,12 @@ class FunctionParamInfo:
 
 
 class ClassFunction:
-    def __init__(self, func, sub_space: list, _self, context=None, params=None) -> None:
+    def __init__(self, func, sub_space: list, _self, context=None, params=None, instance=None) -> None:
         self.func = func
         self.params = params
         self.context = context
         self.sub_space = []
+        self.instance = instance
 
         if params is None:
             func_data = inspect.getfullargspec(func)
@@ -159,8 +160,9 @@ class ClassFunction:
             for arg in self.params:
                 arg.type_init()
 
-    def get_new_func(self, context, sub_space):
-        result = ClassFunction(self.func, [], None, context, self.params)
+    def get_new_func(self, context, sub_space, instance=None):
+        result = ClassFunction(self.func, [], None,
+                               context, self.params, instance)
         result.sub_space = sub_space
 
         return result
@@ -184,8 +186,22 @@ class ClassFunction:
         return new_args
 
     def __call__(self, *args, **kwds):
-        new_args = self.sample_params(*args, **kwds)
-        return self.func(*new_args)
+        inner_context = self.context
+        self.context = self.context.create_child(
+            f'called_{self.func.__name__}')
+
+        try:
+            new_args = self.sample_params(*args, **kwds)
+        except Exception as e:
+            error = e
+
+        self.context = inner_context
+
+        try:
+            raise error
+        except NameError:
+
+            return self.func(*([self.instance] + new_args))
 
 
 class SpaceFactory(SearchSpace):
@@ -253,7 +269,7 @@ class SpaceFactory(SearchSpace):
                 continue
 
             setattr(class_instance, name,
-                    class_func.get_new_func(instance_context, key_list))
+                    class_func.get_new_func(instance_context, key_list, class_instance))
 
         return class_instance, instance_context
 

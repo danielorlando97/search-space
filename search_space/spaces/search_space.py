@@ -58,10 +58,12 @@ class BasicSearchSpace:
     def __copy__(self):
         try:
             domain = self.initial_domain.limits
+
         except AttributeError:
             domain = self.initial_domain,
 
-        result = type(self)(*domain, distribute_like=self.__distribute_like__)
+        result = type(self)(
+            *domain, distribute_like=self.__distribute_like__)
         result.initial_domain = copy(self.initial_domain)
         result.space_name = f"{result.space_name}'"
         result.visitor_layers = [item for item in self.visitor_layers]

@@ -19,7 +19,7 @@ class ListSlicePointer:
         dynamic_result = context.get_sampler_value(self.tensor)
 
         for index in range(*self.slice.indices(self.dims)):
-            if dynamic_result[index] == np.nan:
+            if np.isnan(dynamic_result[index]):
                 dynamic_result[index], context = self.tensor.__sample_index__(
                     (index,), context, local_domain)
 
@@ -96,6 +96,7 @@ class ListSearchSpace(BasicSearchSpace):
         if isinstance(self.len_spaces[0], BasicSearchSpace):
             return self
 
+        self._current_shape = self.len_spaces[0]
         for index in range(self.len_spaces[0]):
             self._create_sampler_by_index((index,))
 
@@ -137,17 +138,17 @@ class ListSearchSpace(BasicSearchSpace):
     #################################################################
 
     def _check_limits(self, index):
-        if len(index) != len(self.len_spaces):
+        if len(index) != 1:
             raise InvalidSampler(
                 f"shape error, the index {index} in dimension {self.len_spaces}")
-
-        for i, shape in zip(index, self.len_spaces):
-            try:
-                if i < 0 or i >= shape:
-                    raise NotEvaluateError()
-            except TypeError:
-                if i.start < 0 or i.stop >= shape:
-                    raise NotEvaluateError()
+        i = index[0]
+        shape = self._current_shape
+        try:
+            if i < 0 or i >= shape:
+                raise NotEvaluateError()
+        except TypeError:
+            if i.start < 0 or i.stop >= shape:
+                raise NotEvaluateError()
 
     def _create_sampler_by_index(self, index):
         try:
@@ -176,7 +177,7 @@ class ListSearchSpace(BasicSearchSpace):
             self._create_sampler_by_index(index)
             return TensorIndexPointer(index, self)
 
-        return ListSlicePointer(index, self, self.len_spaces[0])
+        return ListSlicePointer(index, self, self._current_shape)
 
     #################################################################
     #                                                               #

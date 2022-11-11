@@ -36,14 +36,14 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         return self.transform_to_check_sample(node, sample, context)
 
     @visitor.on("node")
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
         pass
 
     @visitor.when(constraints.AstRoot)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
         for n in node.asts:
             try:
-                _ = self.visit(n, current_index)
+                _ = self.visit(n, current_index, is_main_node=True)
             except NotEvaluateError:
                 pass
 
@@ -54,28 +54,28 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     #################################################################
 
     @visitor.when(constraints.AddOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
         return a + b
 
     @visitor.when(constraints.SubOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
         return a - b
 
     @visitor.when(constraints.MultiOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
         return a * b
 
     @visitor.when(constraints.DivOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
 
@@ -88,7 +88,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     #################################################################
 
     @visitor.when(constraints.AndOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
         a = self.visit(node.target, current_index)
 
         if type(a) == bool and not a:
@@ -97,7 +97,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         return self.visit(node.other, current_index)
 
     @visitor.when(constraints.OrOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
         a = False
         try:
             a = self.visit(node.target, current_index)
@@ -116,7 +116,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     #################################################################
 
     @visitor.when(constraints.NotEqualOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
 
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
@@ -136,7 +136,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             f"inconsistent sampler => [ {a} != {b} ]")
 
     @visitor.when(constraints.EqualOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
 
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
@@ -156,7 +156,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             f"inconsistent sampler => [ {a} == {b} ]")
 
     @visitor.when(constraints.LessOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
 
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
@@ -174,7 +174,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             f"inconsistent sampler => [ {a} < {b} ]")
 
     @visitor.when(constraints.LessOrEqualOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
 
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
@@ -192,7 +192,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             f"inconsistent sampler => [ {a} < {b} ]")
 
     @visitor.when(constraints.GreatOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
 
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
@@ -210,7 +210,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             f"inconsistent sampler => [ {a} > {b} ]")
 
     @visitor.when(constraints.GreatOrEqualOp)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
 
         a = self.visit(node.target, current_index)
         b = self.visit(node.other, current_index)
@@ -234,7 +234,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     #################################################################
 
     @visitor.when(constraints.SegmentationEqualOp)
-    def visit(self, node: constraints.SegmentationEqualOp, current_index=[]):
+    def visit(self, node: constraints.SegmentationEqualOp, current_index=[], is_main_node=False):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
@@ -250,7 +250,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             f"inconsistent sampler => [ {target} % {factor} == {value} ]")
 
     @visitor.when(constraints.SegmentationNotEqualOp)
-    def visit(self, node: constraints.SegmentationNotEqualOp, current_index=[]):
+    def visit(self, node: constraints.SegmentationNotEqualOp, current_index=[], is_main_node=False):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
@@ -270,7 +270,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             f"inconsistent sampler => [ {target} % {factor} != {value} ]")
 
     @visitor.when(constraints.SegmentationLessOp)
-    def visit(self, node: constraints.SegmentationLessOp, current_index=[]):
+    def visit(self, node: constraints.SegmentationLessOp, current_index=[], is_main_node=False):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
@@ -285,7 +285,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             f"inconsistent sampler => [ {target} % {factor} < {value} ]")
 
     @visitor.when(constraints.SegmentationLessOrEqualOp)
-    def visit(self, node: constraints.SegmentationLessOrEqualOp, current_index=[]):
+    def visit(self, node: constraints.SegmentationLessOrEqualOp, current_index=[], is_main_node=False):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
@@ -300,7 +300,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             f"inconsistent sampler => [ {target} % {factor} <= {value} ]")
 
     @visitor.when(constraints.SegmentationGreatOp)
-    def visit(self, node: constraints.SegmentationGreatOp, current_index=[]):
+    def visit(self, node: constraints.SegmentationGreatOp, current_index=[], is_main_node=False):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
@@ -315,7 +315,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             f"inconsistent sampler => [ {target} % {factor} > {value} ]")
 
     @visitor.when(constraints.SegmentationGreatOrEqualOp)
-    def visit(self, node: constraints.SegmentationGreatOrEqualOp, current_index=[]):
+    def visit(self, node: constraints.SegmentationGreatOrEqualOp, current_index=[], is_main_node=False):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
         value = self.visit(node.value, current_index)
@@ -330,7 +330,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             f"inconsistent sampler => [ {target} % {factor} >= {value} ]")
 
     @visitor.when(constraints.SegmentationAddOp)
-    def visit(self, node: constraints.SegmentationAddOp, current_index=[]):
+    def visit(self, node: constraints.SegmentationAddOp, current_index=[], is_main_node=False):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.value, current_index)
 
@@ -340,7 +340,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         self.domain = self.domain.__mod_add__(factor, 0)
 
     @visitor.when(constraints.SegmentationSubOp)
-    def visit(self, node: constraints.SegmentationSubOp, current_index=[]):
+    def visit(self, node: constraints.SegmentationSubOp, current_index=[], is_main_node=False):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
 
@@ -350,7 +350,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         self.domain = self.domain.__mod_sub__(factor, 0)
 
     @visitor.when(constraints.SegmentationMultiOp)
-    def visit(self, node: constraints.SegmentationMultiOp, current_index=[]):
+    def visit(self, node: constraints.SegmentationMultiOp, current_index=[], is_main_node=False):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
 
@@ -360,7 +360,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         self.domain = self.domain.__mod_mult__(factor, 0)
 
     @visitor.when(constraints.SegmentationDivOp)
-    def visit(self, node: constraints.SegmentationDivOp, current_index=[]):
+    def visit(self, node: constraints.SegmentationDivOp, current_index=[], is_main_node=False):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
 
@@ -370,7 +370,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         self.domain = self.domain.__mod_div__(factor, 0)
 
     @visitor.when(constraints.SegmentationModOp)
-    def visit(self, node: constraints.SegmentationModOp, current_index=[]):
+    def visit(self, node: constraints.SegmentationModOp, current_index=[], is_main_node=False):
         target = self.visit(node.target, current_index)
         factor = self.visit(node.other, current_index)
 
@@ -386,7 +386,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     #################################################################
 
     @visitor.when(constraints.GetItem)
-    def visit(self, node: constraints.GetItem, current_index=[]):
+    def visit(self, node: constraints.GetItem, current_index=[], is_main_node=False):
 
         b = self.visit(node.other, current_index)
         if type(b) == bool:
@@ -403,7 +403,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
                 f"inconsistent sampler => sample isn't indexed")
 
     @visitor.when(constraints.GetAttr)
-    def visit(self, node: constraints.GetAttr, current_index=[]):
+    def visit(self, node: constraints.GetAttr, current_index=[], is_main_node=False):
 
         b = self.visit(node.other, current_index)
         a = self.visit(node.target, current_index)
@@ -423,11 +423,11 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         return sampler(context=a.__instance_context__)[0]
 
     @ visitor.when(constraints.SelfNode)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
         return self.sample
 
     @ visitor.when(constraints.NaturalValue)
-    def visit(self, node, current_index=[]):
+    def visit(self, node, current_index=[], is_main_node=False):
         if isinstance(node.target, NaturalValuesNode):
             try:
                 index = self.current_index
@@ -441,7 +441,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         return node.target
 
     @visitor.when(constraints.FunctionNode)
-    def visit(self, node: constraints.FunctionNode, current_index):
+    def visit(self, node: constraints.FunctionNode, current_index=[], is_main_node=False):
         new_args = []
         for arg in node.args:
             new_args.append(self.visit(arg, current_index))
@@ -452,13 +452,13 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
 
         result = node.func(*new_args, **new_kw)
 
-        if not result:
+        if not result and is_main_node:
             raise InvalidSampler("False Restriction")
 
         return result
 
     @visitor.when(constraints.AdvancedFunctionNode)
-    def visit(self, node: constraints.FunctionNode, current_index):
+    def visit(self, node: constraints.FunctionNode, current_index=[], is_main_node=False):
         new_args = []
         for arg in node.args:
             new_args.append(self.visit(arg, current_index))
@@ -468,6 +468,6 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             new_kw[name] = self.visit(arg, current_index)
 
         result = node.func(*new_args, **new_kw)
-        if not result:
+        if not result and is_main_node:
             raise InvalidSampler("False Restriction")
         return result
