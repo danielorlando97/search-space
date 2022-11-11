@@ -25,7 +25,7 @@ def AdjColors(_map: List[List[bool]], country_colored: List[int], color_len):
 
 
 class ColorMapProblem:
-    CountryLenDomain = Domain[int](min=5, max=20)
+    CountryLenDomain = Domain[int](min=3, max=6)
     ColorLenDomain = Domain[int](min=1) | (
         lambda x, cl=CountryLenDomain: x < cl)
 
