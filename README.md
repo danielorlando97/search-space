@@ -9,7 +9,7 @@ A Python library that defines a DSL to describe search spaces. The DSL defines
 design patterns with which the user can decorate their Python classes to describe
 their space of interest. The resulting descriptions are declarative, expressive,
 context sensitive, extensible and scalable. In addition, the system has a sample
-generator system that is consistent and coherent with the selected description.
+generator system that is consistent and coherent with the selected description.\
 **Principal Skills**: `Python` `Metaprogramming` `DSL` `AST` `Visitor Pattern`
 
 ## 🤓 Motivation
@@ -29,7 +29,7 @@ dimension spaces. The list of tools studied include a:
 
 ## ⭐ Quickstart
 
-#### Factory of Search Space
+### Factory of Search Space
 
 The `Domain` space factory is the main public interface to the Python Search Space.
 This factory is generic to the type of space you want to generate. In addition,
@@ -65,9 +65,9 @@ value, sample_context = sample.get_sample()
 # value is 1 or 0
 ```
 
-The get_sample method, in addition to the generated sample,
+The `get_sample` method, in addition to the generated sample,
 returns the sampling context relative to that sample.
-This context can be used as a parameter to the get_sample
+This context can be used as a parameter to the `get_sample`
 function and ensures that whenever an attempt is made to
 generate a sample from the same space with the same context,
 the same sample will be generated.
@@ -80,7 +80,7 @@ value1, _ = sample.get_sample(context = sample_context)
 # value1 = 1
 ```
 
-#### Tensorial Spaces
+### Tensorial Spaces
 
 With the `Domain` factory we can also create tensor spaces.
 To describe each of the dimensions of the tensors that belong
@@ -102,13 +102,13 @@ Mnx2 = Domain[float][random_len][2]()
 In the case of tensor spaces, the parameters of the constructor of the Domain
 factory are applied to each of the internal spaces of the domain.
 
-#### Constraint Function
+### Constraint Function
 
 The DSL defines a syntax to be able to describe the details of the search
 spaces we are defining. This syntax is inspired by the definition of
 mathematical domains, where a set is described from the particular
 characteristics of any element of the set. To describe these characteristics we use
-the python lambda function syntax. And to use these restriction functions we must
+the lambda function syntax of Python. And to use these restriction functions we must
 know the following characteristics.
 
 - The constraint functions can define as many parameters as we need,
@@ -128,7 +128,7 @@ know the following characteristics.
 
 - The constraint functions support all Python arithmetic and
   comparison operations but some settings are not valid.
-  Check these tests for some of the [valid]() and [invalid]() combinations
+  Check these tests for some of the [valid](https://github.com/danielorlando97/search-space/blob/main/tests/constraint/test_syntaxes_valid.py) and [invalid](https://github.com/danielorlando97/search-space/blob/main/tests/constraint/test_syntaxes_invalid.py) combinations
 
   ```python
   valid_space = Domain[int] | (lambda x : x / 10 < 0) # OK
@@ -160,10 +160,10 @@ know the following characteristics.
   C = Domain[int] | (lambda x: (x < 0) | (x > 100))
   ```
 
-#### Custom Spaces
+### Custom Spaces
 
 Among the main objectives of the DSL is to define a design pattern
-for writing a search space using Python classes. To define a custom
+for writing a search space using Python's classes. To define a custom
 space we only have to assign to each of the parameters of the functions
 of the classes a search space as a default value.
 
@@ -210,7 +210,7 @@ line_instance.contains(0, 0) # OK
 line_instance.contains() # Error
 ```
 
-#### Contextual Dependencies
+### Contextual Dependencies
 
 To describe contextual dependencies, a reference to a previously
 defined search space is needed. This reference will be used as the
@@ -243,15 +243,16 @@ class CenterPoint:
       self.x, self.y = x, y
 ```
 
-#### Examples of Use Cases
+### Examples of Use Cases
 
-- [Simple Cases, Lines, CenterPoint and LogisticRegression]()
-- [Graph Description, Adjacency Matrix and Object Oriented]() (integration with typing, `Optional` and `Self` spaces)
-- [Transformation of classical problems to search problems, The Bag]() (hierarchical descriptions, inheritance and reference between classes)
-- [Detailed description of combinatorial spaces, Color Map]() (Imperative constrains)
-- [AutoML, model selection and parametric description, Semi-supervised Model]()
+- [Simple Cases, Lines, CenterPoint and LogisticRegression](https://github.com/danielorlando97/search-space/blob/main/tests/examples/basic_class_example_test.py)
+- [Graph Description, Adjacency Matrix and Object Oriented](https://github.com/danielorlando97/search-space/blob/main/tests/examples/graph_examples_test.py) (integration with typing, `Optional` and `Self` spaces)
+- [Transformation of classical problems to search problems, The Bag](https://github.com/danielorlando97/search-space/blob/main/tests/examples/greedy_or_dp_example.py) (hierarchical descriptions, inheritance and reference between classes)
+- [Detailed description of combinatorial spaces, Color Map](https://github.com/danielorlando97/search-space/blob/main/tests/examples/ia_examples_test.py) (Imperative constrains)
+- [AutoML, model selection and parametric description, Semi-supervised Model](https://github.com/danielorlando97/search-space/blob/main/tests/examples/auto_ml_example_test.py)
 
-<!-- #### Valid Syntaxes
+<!-- 
+#### Valid Syntaxes
 
 ```python
 Domain[int] | (lambda x: x | True)
@@ -313,7 +314,3 @@ Domain[int][6][6][6]() | (lambda x, i, j: x[i][j] == x[j][i])
 
 ## 📚 Documentation
 -->
-
-```
-
-```
