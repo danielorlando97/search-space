@@ -48,14 +48,27 @@ class BasicClassExamples(TestCase):
         """
 
         class CenterPoint:
-            Y_Domain = Domain[int]()
+            """
+            We want to find the pointer more centered and with more 
+            density around it. For some reason, we know that our data 
+            looks like a heavy diagonal 20u thick. All our points lie 
+            between the lines y = x + 10 and y = x - 10.
+            """
+
+            # To describe the contextual dependencies it is
+            # necessary to define how much reference to the
+            # independent space
+            X_Domain = Domain[int](min=0, max=100)
 
             def __init__(
                 self,
-                x: float = Domain[float]() | (
-                    lambda x, y=Y_Domain: (x < y - 10) | (x > y + 10)
+                x: int = X_Domain,
+                y: float = Domain[float] | (
+                    # To reference a previously defined space within a constraint function,
+                    # simply define a new parameter and assign the space in question as
+                    # the default value.
+                    lambda y, x=X_Domain: (x - 10 < y, y < x + 10)
                 ),
-                y: int = Y_Domain
             ) -> None:
                 self.x, self.y = x, y
 
@@ -64,7 +77,7 @@ class BasicClassExamples(TestCase):
         @replay_function
         def ______():
             v, _ = space.get_sample()
-            assert abs(v.x - v.y) >= 10
+            assert abs(v.x - v.y) <= 10
 
     def test_example_param_opt_sklearn(self):
         """
@@ -86,6 +99,9 @@ class BasicClassExamples(TestCase):
         """
 
         class LogisticRegression:
+            "Space described in Sklean Documentation"
+
+            # Independent space
             Solver_Domain = Domain[str](
                 options=['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'])
 
@@ -93,11 +109,19 @@ class BasicClassExamples(TestCase):
                 self,
                 solver: str = Solver_Domain,
                 intercept_scaling: float = Domain[float] | (
+                    # The DSL does not define any flow control structure,
+                    # but proposes the use of the logical operators AND and OR
+                    # to describe conditional constraints (these operators present a
+                    # cut-through implementation).
                     lambda x, s=Solver_Domain: (s != 'liblinear') & (x == 1)
                 ),
                 random_state: int = Domain[Optional[int]] | (
-                    lambda x, s=Solver_Domain: (s != [
-                        'liblinear', 'sag', 'saga']) & (x == None)
+                    lambda x, s=Solver_Domain: (
+                        # If s in ['liblinear', 'sag', 'saga']
+                        # then the x's domain is N
+                        # else x is None
+                        (s != ['liblinear', 'sag', 'saga']) & (x == None)
+                    )
                 )
             ) -> None:
                 self.s, self.i, self.r = solver, intercept_scaling, random_state

@@ -33,3 +33,6 @@ exp_even:
 
 exp_even_fixed:
 	./run_exp.sh -n 1 -e even_fixed -i 500000
+
+center:
+	./run_exp.sh -n 1 -e center -i 100

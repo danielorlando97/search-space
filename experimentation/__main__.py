@@ -27,12 +27,15 @@ if exp == 'even':
     ue.even_find_dsl(n)
 
 if exp == 'even_fixed':
-    ue.even_find_randint_fixed(n)
-    ue.even_find_dsl_fixed(n)
-    ue.even_find_fixed_limits(n)
+    ue.even_find_randint_fixed(n, 2)
+    ue.even_find_dsl_fixed(n, 2)
+    ue.even_find_fixed_limits(n, 2)
 
 if exp == 'basic':
     se.dsl_vs_randint_int()
     se.dsl_vs_randint_list_int()
     se.dsl_vs_randint_class()
     se.dsl_choice()
+
+if exp == 'center':
+    se.center_point(n)

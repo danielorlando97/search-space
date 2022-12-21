@@ -165,3 +165,29 @@ def dsl_vs_randint_class(_iter=10000):
     data = tools.run_test(
         experiment, _iter, "Generate Class Time Experimentation")
     tools.save_csv(header, data, 'class_times')
+
+
+class CenterPoint:
+    X_Domain = Domain[int](min=0, max=100)
+
+    def __init__(
+        self,
+        x: int = X_Domain,
+        y: float = Domain[float] | (
+            lambda y, x=X_Domain: (x - 10 < y, y < x + 10)
+        ),
+    ) -> None:
+        self.x, self.y = x, y
+
+
+def center_point(_iter=10000):
+    header = ['index', 'x', 'y']
+    space = Domain[CenterPoint]()
+
+    def experiment(i):
+        point, _ = space.get_sample()
+        return i, point.x, point.y
+
+    data = tools.run_test(
+        experiment, _iter, "Generate Points Experimentation")
+    tools.save_csv(header, data, 'points')

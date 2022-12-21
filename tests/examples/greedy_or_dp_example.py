@@ -30,12 +30,6 @@ class BagProblem:
         self.w, self.items = w, items
 
 
-# @FunctionalConstraint
-# def ComputingCurrentCapacity(w: float, items: List[BagItem], i: int):
-#     if i < 1:
-#         return w
-#     return (w - sum([item.w for item in items[:i]])) / items[i].w
-
 @FunctionalConstraint
 def ComputingCurrentCapacity(w: float, items: List[BagItem], current_counts: List[float]):
     current_w = sum([count * item.w for count,
@@ -45,7 +39,8 @@ def ComputingCurrentCapacity(w: float, items: List[BagItem], current_counts: Lis
 
 class BagSolution(BagProblem):
     SolutionDomain = Domain[int][BagProblem.ItemsLenDomain] | (
-        lambda x, i, w=BagProblem.WeightDomain, items=BagProblem.ItemsDomain: (
+        lambda x, i,
+        w=BagProblem.WeightDomain, items=BagProblem.ItemsDomain: (
             x[i] < ComputingCurrentCapacity(w, items, x[:i - 1])
         )
     )

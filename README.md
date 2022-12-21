@@ -117,7 +117,7 @@ know the following characteristics.
   value declared, will represent dimensions of the space we are describing.
 
   ```python
-  # x is a any element of A space,
+  # x is any element of A space,
   # So A = {x in Z, x != 10}
   A = Domain[int] | (lambda x: x != 10)
   # B is the space of all strictly increasing lists with size 10
@@ -251,7 +251,7 @@ class CenterPoint:
 - [Detailed description of combinatorial spaces, Color Map](https://github.com/danielorlando97/search-space/blob/main/tests/examples/ia_examples_test.py) (Imperative constrains)
 - [AutoML, model selection and parametric description, Semi-supervised Model](https://github.com/danielorlando97/search-space/blob/main/tests/examples/auto_ml_example_test.py)
 
-<!-- 
+<!--
 #### Valid Syntaxes
 
 ```python
