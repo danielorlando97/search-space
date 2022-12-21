@@ -64,39 +64,56 @@ class Sampler:
         return self.history[domain][-1]
 
 
-class SamplerFactory(metaclass=Singleton):
+class SamplerDataBase(metaclass=Singleton):
     def __init__(self) -> None:
         self.db = {}
-        self.__instances = {}
 
     def registry_sampler(self, name, cclass):
         self.db[name] = cclass
+
+    def get_sampler(self, distribute_name):
+        try:
+            return self.db[distribute_name]()
+        except:
+            return None
+
+
+class SamplerFactory:
+    def __init__(self) -> None:
+        self.db = SamplerDataBase()
+
+    def create_sampler(self, distribute_name, search_space=None):
+        return self.db.get_sampler(distribute_name)
+
+
+class SamplerFactoryWithMemory(SamplerFactory):
+    def __init__(self) -> None:
+        super().__init__()
+        self.__instances = {}
 
     def create_sampler(self, distribute_name, search_space=None):
         if distribute_name is None:
             return None
 
         if search_space is None:
-            return self.db[distribute_name]()
+            return self.db.get_sampler(distribute_name)
 
         try:
             return self.__instances[(search_space, distribute_name)]
         except KeyError:
             self.__instances[(search_space, distribute_name)
-                             ] = self.db[distribute_name]()
+                             ] = self.db.get_sampler(distribute_name)
+
             return self.__instances[(search_space, distribute_name)]
 
     def refresh_all_samplers(self):
         for sample in self.__instances.values():
             sample._refresh()
 
-    def get_eval_feel_back(self, value):
-        pass
-
 
 def distribution(name=''):
     def f(classs):
-        s = SamplerFactory()
+        s = SamplerDataBase()
         s.registry_sampler(name, classs)
         classs.__distribute_name__ = name
         return classs

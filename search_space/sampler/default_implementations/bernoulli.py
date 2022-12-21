@@ -1,5 +1,5 @@
 from random import uniform
-from search_space.sampler import distribution, Sampler
+from search_space.sampler import Sampler, distribution
 from search_space.sampler.distribution_names import UNIFORM_BERNOULLI
 
 

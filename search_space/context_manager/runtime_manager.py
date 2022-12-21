@@ -1,6 +1,7 @@
 from typing import Protocol, Union
 from search_space.utils.singleton import Singleton
 from search_space.utils import infinity
+from search_space.sampler import SamplerFactory
 
 
 class SearchSpacePrinter:
@@ -35,13 +36,15 @@ class SearchSpaceConfig(metaclass=Singleton):
         ast_optimizations:  bool = True,
         printer: SearchSpacePrinter = None,
         minimal_numeral_limit=None,
-        maximal_numeral_limit=None
+        maximal_numeral_limit=None,
+        sampler_manager: SamplerFactory = SamplerFactory
     ) -> None:
         self.verbose = verbose
         self.replay_nums = replay_nums
         self.ast_optimizations = ast_optimizations
         self.printer = printer
         self.attempts = []
+        self.sampler_manager = sampler_manager()
 
         if minimal_numeral_limit:
             infinity.INFINITY_MIN_VALUE = minimal_numeral_limit

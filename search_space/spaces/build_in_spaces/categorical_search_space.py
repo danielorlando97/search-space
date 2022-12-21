@@ -26,23 +26,23 @@ class BasicCategoricalSearchSpace(BasicSearchSpace):
     #     return advance_space
 
 
-class CategoricalSearchSpace(SearchSpace):
-    def __init__(self, domain, distribute_like=UNIFORM) -> None:
-        super().__init__(domain, distribute_like=distribute_like)
-        self.visitor_layers.append(visitors.DomainModifierVisitor())
+# class CategoricalSearchSpace(SearchSpace):
+#     def __init__(self, domain, distribute_like=UNIFORM) -> None:
+#         super().__init__(domain, distribute_like=distribute_like)
+#         self.visitor_layers.append(visitors.DomainModifierVisitor())
 
-    def __sampler__(self, domain, context):
-        return domain.get_sample(self._distribution), context
+#     def __sampler__(self, domain, context):
+#         return domain.get_sample(self._distribution), context
 
-    def __domain_filter__(self, domain, context):
-        c_domain = CategoricalDomain(domain)
-        return super().__domain_filter__(c_domain, context)
+#     def __domain_filter__(self, domain, context):
+#         c_domain = CategoricalDomain(domain)
+#         return super().__domain_filter__(c_domain, context)
 
-    def __copy__(self):
-        clone = CategoricalSearchSpace(*self.initial_domain)
-        clone.set_sampler(SamplerFactory().create_sampler(
-            self._distribution.__distribute_name__, search_space=clone))
-        return clone
+#     def __copy__(self):
+#         clone = CategoricalSearchSpace(*self.initial_domain)
+#         clone.set_sampler(SamplerFactory().create_sampler(
+#             self._distribution.__distribute_name__, search_space=clone))
+#         return clone
 
 
 @SpacesManager.registry(bool)
@@ -61,12 +61,12 @@ class BasicBooleanSearchSpace(BasicSearchSpace):
     #     return advance_space
 
 
-class BooleanSearchSpace(CategoricalSearchSpace):
-    def __init__(self, domain, distribute_like=UNIFORM) -> None:
-        super().__init__(domain, distribute_like=distribute_like)
+# class BooleanSearchSpace(CategoricalSearchSpace):
+#     def __init__(self, domain, distribute_like=UNIFORM) -> None:
+#         super().__init__(domain, distribute_like=distribute_like)
 
-    def __copy__(self):
-        clone = BooleanSearchSpace()
-        clone.set_sampler(SamplerFactory().create_sampler(
-            self._distribution.__distribute_name__, search_space=clone))
-        return clone
+#     def __copy__(self):
+#         clone = BooleanSearchSpace()
+#         clone.set_sampler(SamplerFactory().create_sampler(
+#             self._distribution.__distribute_name__, search_space=clone))
+#         return clone

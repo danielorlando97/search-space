@@ -1,6 +1,5 @@
 from threading import currentThread
 from search_space.errors import CircularDependencyDetected, DetectedRuntimeDependency, InvalidSpaceConstraint, NotEvaluateError
-from search_space.utils.singleton import Singleton
 from ..asts import constraints
 from search_space.utils import visitor
 from search_space.spaces.asts import constraints, naturals_values

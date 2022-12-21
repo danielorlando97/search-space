@@ -2,7 +2,7 @@ from copy import copy
 from search_space.errors import InvalidSpaceDefinition
 from search_space.spaces.domains.bached_domain import BachedDomain
 from search_space.spaces.domains.__base__ import Domain, NumeralDomain
-from search_space.sampler import Sampler, SamplerFactory
+from search_space.sampler import Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from . import __namespace__ as nsp
 from typing import Iterable

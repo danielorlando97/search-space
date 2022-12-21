@@ -1,4 +1,3 @@
-from search_space.sampler.factory import SamplerFactory
 from search_space.spaces import SearchSpace, BasicSearchSpace
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.spaces.visitors import visitors

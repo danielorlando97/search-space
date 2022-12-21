@@ -1,8 +1,9 @@
 from copy import copy
 from typing import List
+from search_space.context_manager.runtime_manager import SearchSpaceConfig
 from search_space.errors import InvalidSpaceDefinition
 from search_space.spaces.domains.__base__ import Domain
-from search_space.sampler import Sampler, SamplerFactory
+from search_space.sampler import Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from . import __namespace__ as nsp
 from search_space.spaces import domains
@@ -34,7 +35,8 @@ class BachedDomain(Domain, metaclass=nsp.BachedDomain):
 
     def get_sample(self, sampler: Sampler):
         if self.sampler_selector is None:
-            self.sampler_selector = SamplerFactory().create_sampler(UNIFORM, self)
+            self.sampler_selector = SearchSpaceConfig(
+            ).sampler_manager.create_sampler(UNIFORM, self)
         bache = self.sampler_selector.choice(self.domains)
         return bache.get_sample(sampler)
 

@@ -3,7 +3,7 @@ from distutils.command.config import config
 from typing import List
 
 from search_space.context_manager.runtime_manager import SearchSpaceConfig
-from search_space.sampler import SamplerFactory, Sampler
+from search_space.sampler import Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
 from search_space.errors import ArgumentFunctionError, DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint, InvalidSpaceDefinition, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
@@ -35,12 +35,12 @@ class BasicSearchSpace:
         self._clean_asts = ast_constraint.AstRoot([])
         self.space_name = self.__class__.__name__ if name is None else name
 
-        self._distribution: Sampler = SamplerFactory().create_sampler(
+        self._distribution: Sampler = SearchSpaceConfig().sampler_manager.create_sampler(
             self.__distribute_like__, self) if sampler is None else sampler
 
     def change_distribution(self, distribution):
         self.__distribute_like__ = distribution
-        self._distribution = SamplerFactory().create_sampler(
+        self._distribution = SearchSpaceConfig().sampler_manager.create_sampler(
             self.__distribute_like__, self)
 
     def layers_append(self, *args):
