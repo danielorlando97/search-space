@@ -1,10 +1,8 @@
 from copy import copy
 import inspect
-from logging import warn
 from typing_extensions import Self
-from unittest import result
 from search_space.context_manager.sampler_context import SamplerContext
-from search_space.sampler.distribution_names import UNIFORM, UNIFORM_BERNOULLI
+from search_space.sampler.distribution_names import UNIFORM
 from search_space.spaces.visitors import visitors
 from search_space.spaces import BasicSearchSpace
 import imp
@@ -14,8 +12,6 @@ from search_space.spaces import SearchSpace
 from search_space.spaces.asts import constraints as ast_constraint
 from typing import _UnionGenericAlias
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
-from search_space.errors import RecursionErrorSpaceDefinition
-# TODO: Change to Multiply definitions
 
 
 class SpacesManager(metaclass=Singleton):
