@@ -30,24 +30,21 @@ class Sampler:
 
         return self.__add_to_history__(domain, self.generate_random_value(domain))
 
-    def get_int(self, min, max, repeat_last_value=False):
+    def get_int(self, min, max):
         value = self.__random_value__(
-            self._get_true_range(min, max), repeat_last_value=repeat_last_value)
+            self._get_true_range(min, max))
         decimal = value - int(value)
         return int(value) if decimal <= 0.5 else int(value) + 1
 
-    def get_float(self, min, max, repeat_last_value=False):
-        return self.__random_value__(self._get_true_range(min, max), repeat_last_value=repeat_last_value)
+    def get_float(self, min, max):
+        return self.__random_value__(self._get_true_range(min, max))
 
-    def choice(self, domain, repeat_last_value=False):
-        index = self.get_int(
-            0, len(domain) - 1, repeat_last_value=repeat_last_value)
-
+    def choice(self, domain):
+        index = self.get_int(0, len(domain) - 1)
         return domain[index]
 
-    def get_boolean(self, domain=(0, 1), repeat_last_value=False):
-        value = self.__random_value__(
-            domain, repeat_last_value=repeat_last_value)
+    def get_boolean(self, domain=(0, 1)):
+        value = self.__random_value__(domain)
         return True if value > 0.5 else False
 
     def __add_to_history__(self, domain, value):
@@ -65,15 +62,16 @@ class Sampler:
 
 
 class SamplerDataBase(metaclass=Singleton):
+
     def __init__(self) -> None:
         self.db = {}
 
     def registry_sampler(self, name, cclass):
         self.db[name] = cclass
 
-    def get_sampler(self, distribute_name):
+    def get_sampler(self, distribute_name, *args, **kwd):
         try:
-            return self.db[distribute_name]()
+            return self.db[distribute_name].create_new_instance(*args, **kwd)
         except:
             return None
 
@@ -116,6 +114,7 @@ def distribution(name=''):
         s = SamplerDataBase()
         s.registry_sampler(name, classs)
         classs.__distribute_name__ = name
+
         return classs
 
     return f

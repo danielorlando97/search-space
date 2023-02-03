@@ -96,3 +96,24 @@ class Infinity:
 
 # Instancia global de infinito
 oo = Infinity()
+
+
+def get_true_range(a, b):
+    if not Infinity in [type(a), type(b)]:
+        return a, b
+    if type(a) == Infinity and type(b) == Infinity:
+        return float(a), float(b)
+    if type(a) != Infinity:
+        m = float(b)
+        return (a, m) if a < m else (a, a*2)
+    if type(b) != Infinity:
+        m = float(a)
+        return (m, b) if (m < b and abs(m) - abs(b) > 1) else (- abs(2*b), b)
+
+
+def check_slice_limits(f):
+    def ff(self, min, max, *args, **kws):
+        min, max = get_true_range(min, max)
+        return f(self, min, max, *args, **kws)
+
+    return ff

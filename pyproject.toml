@@ -1,0 +1,46 @@
+# pyproject.toml
+
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py-search-space"
+version = "1.0.7"
+description = "Python's DSL to describe the search space of search problems"
+readme = "README.md"
+authors = [{ name = "Daniel Orlando Ortiz Pacheco", email = "danielorlandoortizpacheco@gmial.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Development Status :: 5 - Production/Stable",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+
+]
+keywords = ["describe", "problems", "space", "search"]
+dependencies = [
+    "typing-extensions==4.4.0",
+    "numpy==1.23.3"
+]
+
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+dev = [
+    "ipykernel",
+    "autopep8",
+    "pytest==7.1.2",
+    "matplotlib==3.5.3",
+    "pandas==1.5.1"
+]
+
+[tool.setuptools.packages.find]
+# All the following settings are optional:
+include = ["search_space*"]  # ["*"] by default
+namespaces = false  # true by default
+
+[project.urls]
+Homepage = "https://github.com/danielorlando97/search-space"
