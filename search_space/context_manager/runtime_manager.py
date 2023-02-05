@@ -2,6 +2,7 @@ from typing import Protocol, Union
 from search_space.utils.singleton import Singleton
 from search_space.utils import infinity
 from search_space.sampler import SamplerFactory
+from random import Random
 
 
 class SearchSpacePrinter:
@@ -37,7 +38,10 @@ class SearchSpaceConfig(metaclass=Singleton):
         printer: SearchSpacePrinter = None,
         minimal_numeral_limit=None,
         maximal_numeral_limit=None,
-        sampler_manager: SamplerFactory = SamplerFactory
+        sampler_manager: SamplerFactory = SamplerFactory,
+        simply_leaning_rate: float = 1,
+        dynamic_leaning_rate: float = 0.5,
+        random_seed=0
     ) -> None:
         self.verbose = verbose
         self.replay_nums = replay_nums
@@ -45,7 +49,9 @@ class SearchSpaceConfig(metaclass=Singleton):
         self.printer = printer
         self.attempts = []
         self.sampler_manager = sampler_manager()
-
+        self.simply_learning_rate = simply_leaning_rate
+        self.dynamic_learning_rate = dynamic_leaning_rate
+        self.random_instance = Random(random_seed)
         if minimal_numeral_limit:
             infinity.INFINITY_MIN_VALUE = minimal_numeral_limit
 
