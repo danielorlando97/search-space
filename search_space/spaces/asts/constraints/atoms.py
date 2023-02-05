@@ -113,6 +113,8 @@ class FunctionalConstraintFactory:
     def __mro_entries__(self, x):
         return FunctionalConstraintClass, object,
 
+    # def __cls_getitem__(self, x)
+
     def __call__(self, func):
         def f(*args, **kwargs):
             return params_analyze(func, args, kwargs)

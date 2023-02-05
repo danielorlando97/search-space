@@ -1,58 +1,93 @@
-from unittest import result
-from search_space.context_manager.sampler_context import SamplerContext
-from search_space.errors import DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint, NotEvaluateError
-from search_space.spaces import BasicSearchSpace
+from search_space.errors import DetectedRuntimeDependency, InvalidSampler, NotEvaluateError
+from search_space.spaces.search_space import BasicSearchSpace, GetSampleParameters, GetSampleResult
 from copy import copy
 from search_space.spaces.visitors import visitors
 from search_space.spaces.asts import constraints as ast_constraint
+from typing import Dict, Tuple
 # TODO: check space types
 import numpy as np
 
 
 class ListSlicePointer:
+    """
+        This class is a pointer to some ListSpace slice
+        The ListSpace is different that TensorSpace, because
+        to build ListSpace samples is lineal. This space create
+        a first list with NA and it was building index by index
+
+        For Example:
+            Let's x the sample list in the context, list dims is 4
+            and we want the random slice [1:]. So:
+            ```python
+            >>> x = context.get_sampler_value(self.tensor)
+            >>> # x == [NA, 1, NA, 3]
+            ```
+            In this case, we only need to generate a random value
+            to the third index
+    """
+
     def __init__(self, _slice, tensor, dims) -> None:
         self.slice: slice = _slice[0]
         self.tensor: ListSearchSpace = tensor
         self.dims = dims
 
-    def get_sample(self, context: SamplerContext = None, local_domain=None):
-        dynamic_result = context.get_sampler_value(self.tensor)
+    def get_sample(self, params: GetSampleParameters) -> GetSampleResult:
+        # The first step of the ListSpace's generative mechanic
+        # is to registry a list like ([NA] * len) as sample in the context.
+        # After that, this sample can build index by index
+        dynamic_result = params.context.get_sampler_value(self.tensor)
 
         for index in range(*self.slice.indices(self.dims)):
             if np.isnan(dynamic_result[index]):
-                dynamic_result[index], context = self.tensor.__sample_index__(
-                    (index,), context, local_domain)
+                # If one of slice's indexes hasn't sampled yet
+                # We have to get a nue sample for it
+                result = self.tensor.__sample_index__(
+                    (index,), params
+                )
 
-        return dynamic_result[self.slice], context
+                dynamic_result[index] = result.sample
+                params.context = result.context
+
+        # return sampled slice
+        return params.build_result(dynamic_result[self.slice])
 
 
 class TensorSlicePointer:
+    """
+        This class is a pointer to some TensorSpace slice.
+        In this case, we alway have to iterate for all index into
+        the slice and to generate a sample or to get a sample from the context
+
+        This process only can be by recursivity because as parameter we only have
+        matrix dimensions.
+    """
 
     def __init__(self, index, tensor, dims) -> None:
         self.index = index
         self.tensor: TensorSearchSpace = tensor
         self.dims = dims
 
-    def get_sample(self, context=None, local_domain=None):
-        if context is None:
-            context = SamplerContext(name="TensorSlicePointer")
-        else:
-            cache_value = context.get_sampler_value(self)
-            if not cache_value is None:
-                return cache_value, context
+    def get_sample(self, params: GetSampleParameters) -> GetSampleResult:
+        params.initialize("TensorSlicePointer")
 
-        sample = self._sample(context, local_domain, self.index)
-        context.registry_sampler(self, sample)
+        # TODO: check if this cache is successful
+        cache_value = params.context.get_sampler_value(self)
+        if not cache_value is None:
+            return params.build_result(cache_value)
 
-        return sample, context
+        # The only way we can build a matrix slice is by recursivity
+        sample = self._sample(self.index, params)
+        params.context.registry_sampler(self, sample)
 
-    def _sample(self, context, local_domain, index):
+        return params.build_result(sample)
+
+    def _sample(self, index, params: GetSampleParameters):
         if type(index) == type(tuple()):
-            return self.tensor.samplers[index].get_sample(context, local_domain)[0]
+            return self.tensor.samplers[index].get_sample(params).sample
 
         result = []
         for item in index:
-            result.append(self._sample(context, local_domain, item))
+            result.append(self._sample(item, params))
 
         return result
 
@@ -62,12 +97,16 @@ class TensorSlicePointer:
 
 class TensorIndexPointer:
 
+    """
+        This a pointer to one index into a ListSpace or a TensorSpace
+    """
+
     def __init__(self, index, tensor) -> None:
         self.index = index
         self.tensor: TensorSearchSpace = tensor
 
-    def get_sample(self, context=None, local_domain=None):
-        return self.tensor.__sample_index__(self.index, context, local_domain)
+    def get_sample(self, params: GetSampleParameters) -> GetSampleResult:
+        return self.tensor.__sample_index__(self.index, params)
 
 
 class ListSearchSpace(BasicSearchSpace):
@@ -78,35 +117,55 @@ class ListSearchSpace(BasicSearchSpace):
     #                                                               #
     #################################################################
 
-    def __init__(self, shape_space: list, distribute_like=None) -> None:
-        super().__init__((), None)
-        self.len_spaces = shape_space if type(
-            shape_space) in [type(list()), type(tuple())] else [shape_space]
+    def __init__(self, shape_space: list, distribute_like=None, path=None) -> None:
+        path = 'list_space' if path is None else path
+        super().__init__((), None, path=path)
 
-        self.samplers = {}
+        # space configs
+        self.samplers: Dict[Tuple, BasicSearchSpace] = {}
+        self.len_spaces = shape_space if type(
+            shape_space) in [list, tuple] else [shape_space]
+
+        # generation configs
         self.ast_constraint = ast_constraint.AstRoot([])
         self.visitor_layers = []
 
     def set_type(self, space: BasicSearchSpace):
+        """
+            The DSL add tensor dims one by one.
+            So, when the user finished to add them
+            the DSL interface calls this function
+            to end to build the tensor space
+        """
+
         if len(self.len_spaces) > 1:
+            # The class ListSearchSpace is a particular case of tensors space
+            # I was created this class to generate simply sample faster
+            # But, In more difficult cases we have use TensorSearchSpace class
             return TensorSearchSpace(self.len_spaces).set_type(space)
 
         self.type_space = space
 
+        # If the list space's length is a SearchSpace, then
+        # this ListSpace is a Space with dynamic dimension
+        # So, we cannot prepare more thinks in compile time
         if isinstance(self.len_spaces[0], BasicSearchSpace):
             return self
 
+        # If this space is a static list space, we can create
+        # one space for each index and to reduce the operations number
+        # at sampling time
         self._current_shape = self.len_spaces[0]
         for index in range(self.len_spaces[0]):
             self._create_sampler_by_index((index,))
 
         return self
 
-    def _get_range_iter(self, limit, length):
-        if isinstance(limit, int):
-            return range(limit)
+    # def _get_range_iter(self, limit, length):
+    #     if isinstance(limit, int):
+    #         return range(limit)
 
-        return range(*limit.indices(length))
+    #     return range(*limit.indices(length))
 
     def __copy__(self):
         result = super().__copy__()
@@ -151,33 +210,48 @@ class ListSearchSpace(BasicSearchSpace):
                 raise NotEvaluateError()
 
     def _create_sampler_by_index(self, index):
+        """
+            This function initialize and get the space of index
+        """
+
         try:
             self.samplers[index]
         except KeyError:
             self.samplers[index] = copy(self.type_space)
             self.samplers[index].space_name = f'{self.samplers[index].space_name}_{index}'
+            self.samplers[index].path_space = f'{self.samplers[index].path_space}_{index}'
+            # To transform the constraint about one tensor index
+            # we need to apply all of transformations that
+            # the tensor space needs
             self.samplers[index].layers_append(*self.visitor_layers)
+            # After we have moved all constraint to the tensor spaces node
+            # we need transform those constraint for they refer the index space
             self.samplers[index].layers_append(
-                visitors.EvalAstChecked(),
+                visitors.EvalAstChecked(),  # check integration and coherence
+                # transform tensor[index] in self
                 visitors.IndexAstModifierVisitor(self, index)
             )
 
+            # Process all of tensor constraint to select which do refer to
+            # this tensor's index
             self.samplers[index] = self.samplers[index].__ast_optimization__(
-                self.ast_constraint)
+                self.ast_constraint
+            )
 
     def __getitem__(self, index):
         self._check_limits(index)
-        if type(index) == type(list()):
-            index = tuple(index)
+        # if type(index) == type(list()):
+        #     index = tuple(index)
 
-        for i in index:
-            if isinstance(i, slice):
-                break
-        else:
-            self._create_sampler_by_index(index)
-            return TensorIndexPointer(index, self)
+        # for i in index:
+        #     if isinstance(i, slice):
+        #         break
+        # else:
+        if isinstance(index, slice):
+            return ListSlicePointer(index, self, self._current_shape)
 
-        return ListSlicePointer(index, self, self._current_shape)
+        self._create_sampler_by_index(index)
+        return TensorIndexPointer(index, self)
 
     #################################################################
     #                                                               #
@@ -212,30 +286,38 @@ class ListSearchSpace(BasicSearchSpace):
     #                                                               #
     #################################################################
 
-    def __sampler__(self, domain, context: SamplerContext):
+    def __sampler__(self, domain, params: GetSampleParameters):
 
         try:
-            self._current_shape = self.len_spaces[0].get_sample(context)[0]
+            # If this space is a dynamic list space
+            # Before sampling this space we need to generate
+            # a random length
+            self._current_shape = self.len_spaces[0].get_sample(params).sample
         except AttributeError:
             self._current_shape = self.len_spaces[0]
 
+        # How the list is a simply structure
+        # We can create a void first sample
         result = [np.nan] * self._current_shape
-        context = context.create_child(f'{self.space_name}_index')
-        context.registry_sampler(self, result)
-        for index in range(self._current_shape):
-            index = index,
+
+        # We create a new context to discard samples easily
+        # if there are some errors
+        params = params.create_child_context(f'{self.space_name}_index')
+        params.context.registry_sampler(self, result)
+
+        for index in map(lambda x: (x,), range(self._current_shape)):
             self._create_sampler_by_index(index)
-            result[index[0]] = self.samplers[index].get_sample(context)[0]
+            result[index[0]] = self.samplers[index].get_sample(params).sample
 
-        return result, context
+        return params.build_result(result)
 
-    def __sample_index__(self, index, context: SamplerContext, domain):
-        dynamic_result = context.get_sampler_value(self)
-        dynamic_result[index[0]], context = self.samplers[index].get_sample(
-            context)
-        return dynamic_result[index[0]], context
+    def __sample_index__(self, index, params: GetSampleParameters):
+        dynamic_result = params.context.get_sampler_value(self)
+        result = self.samplers[index].get_sample(params)
+        dynamic_result[index[0]] = result.sample
+        return result
 
-    def __domain_filter__(self, domain, context):
+    def __domain_filter__(self, domain, params: GetSampleParameters):
         return domain, self.ast_constraint
 
     # TODO: Check list
@@ -258,30 +340,44 @@ class TensorSearchSpace(BasicSearchSpace):
     #                                                               #
     #################################################################
 
-    def __init__(self, shape_space: list, distribute_like=None) -> None:
-        super().__init__((), None)
-        self.len_spaces = shape_space if type(
-            shape_space) in [type(list()), type(tuple())] else [shape_space]
+    def __init__(self, shape_space: list, distribute_like=None, path=None) -> None:
+        path = 'list_space' if path is None else path
+        super().__init__((), None, path=path)
 
+        # space configs
         self.samplers = {}
-        self.ast_constraint = ast_constraint.AstRoot([])
         self._current_shape = []
+        self.len_spaces = shape_space if type(
+            shape_space) in [list, tuple] else [shape_space]
+
+        # generation configs
+        self.ast_constraint = ast_constraint.AstRoot([])
         self.visitor_layers = []
 
     def set_type(self, space: BasicSearchSpace):
+        """
+            The DSL add tensor dims one by one. 
+            So, when the user finished to add them 
+            the DSL interface calls this function 
+            to end to build the tensor space
+        """
+
         self.type_space = space
 
         for size in self.len_spaces:
             if isinstance(size, BasicSearchSpace):
                 break
         else:
-
+            # If this space is a static tensor space, we can create
+            # one space for each index and
+            # to reduce the operations number at sampling time
             self._current_shape = self.len_spaces
             self.iter_virtual_list(
                 self.len_spaces, [], lambda index: self[index])
 
         return self
 
+    # TODO: copies by tag_names
     def __copy__(self):
         result = super().__copy__()
         result.len_spaces = []
@@ -330,12 +426,21 @@ class TensorSearchSpace(BasicSearchSpace):
         except KeyError:
             self.samplers[index] = copy(self.type_space)
             self.samplers[index].space_name = f'{self.samplers[index].space_name}_{index}'
+            self.samplers[index].path_space = f'{self.samplers[index].path_space}_{index}'
+            # To transform the constraint about one tensor index
+            # we need to apply all of transformations that
+            # the tensor space needs
             self.samplers[index].layers_append(*self.visitor_layers)
+            # After we have moved all constraint to the tensor spaces node
+            # we need transform those constraint for they refer the index space
             self.samplers[index].layers_append(
-                visitors.EvalAstChecked(),
+                visitors.EvalAstChecked(),  # check integration and coherence
+                # transform tensor[index] in self
                 visitors.IndexAstModifierVisitor(self, index)
             )
 
+            # Process all of tensor constraint to select which do refer to
+            # this tensor's index
             self.samplers[index] = self.samplers[index].__ast_optimization__(
                 self.ast_constraint)
 
@@ -402,24 +507,35 @@ class TensorSearchSpace(BasicSearchSpace):
     #                                                               #
     #################################################################
 
-    def __sampler__(self, domain, context: SamplerContext):
+    def __sampler__(self, domain, params: GetSampleParameters):
 
         shape = []
         for ls in self.len_spaces:
             try:
-                shape.append(ls.get_sample(context)[0])
+                # If this space is a dynamic tensor space
+                # Before sampling this space we need to generate
+                # a random length
+                shape.append(ls.get_sample(params).sample)
             except AttributeError:
                 shape.append(ls)
 
         self._current_shape = tuple(shape)
-        context = context.create_child(f'{self.space_name}_index')
-        return self.iter_virtual_list(
-            shape, [], lambda index: self[index].get_sample(context)[0]), context
 
-    def __sample_index__(self, index, context: SamplerContext, domain):
-        return self.samplers[index].get_sample(context, domain)
+        # We create a new context to discard samples easily
+        # if there are some errors
+        params = params.create_child_context(f'{self.space_name}_index')
 
-    def __domain_filter__(self, domain, context):
+        return params.build_result(
+            self.iter_virtual_list(
+                shape, [],
+                lambda index: self[index].get_sample(params).sample
+            )
+        )
+
+    def __sample_index__(self, index, params: GetSampleParameters):
+        return self.samplers[index].get_sample(params)
+
+    def __domain_filter__(self, domain, params: GetSampleParameters):
         return domain, self.ast_constraint
 
     # TODO: Check list

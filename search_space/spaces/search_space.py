@@ -1,19 +1,59 @@
 from copy import copy
-from distutils.command.config import config
-from typing import List
-
+from typing import List, Generic, TypeVar, Any
 from search_space.context_manager.runtime_manager import SearchSpaceConfig
-from search_space.sampler import Sampler
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
-from search_space.errors import ArgumentFunctionError, DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint, InvalidSpaceDefinition, NotEvaluateError, CircularDependencyDetected, UndefinedSampler
+from search_space.errors import ArgumentFunctionError, DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint
+from search_space.errors import NotEvaluateError, CircularDependencyDetected
 from .asts import constraints as ast_constraint
 from .asts import naturals_values as ast_natural
 from .visitors import visitors
 from .visitors import VisitorLayer
 from .printer_tools.default_printer_class import DefaultPrinter
-
+from search_space.sampler import ModelSampler
 import inspect
+from dataclasses import dataclass
+
+T = TypeVar('T')
+
+
+@dataclass
+class GetSampleResult(Generic[T]):
+    sample: T
+    context: SamplerContext = None
+    sampler: ModelSampler = None
+
+
+@dataclass
+class GetSampleParameters:
+    context: SamplerContext = None
+    sampler: ModelSampler = None
+    # local_domain: Any = None
+
+    def build_result(self, sample: T):
+        return GetSampleResult(
+            sample,
+            context=self.context,
+            sampler=self.sampler
+        )
+
+    def initialize(self, context_name=""):
+
+        if self.context is None:
+            # We need a SamplerContext to ensure the consistence and
+            # coherence in the generative process
+
+            self.context = SamplerContext(context_name)
+
+        if self.sampler is None:
+            # We need a sampling mechanism to generate random structures
+            self.sampler = ModelSampler()
+
+    def create_child_context(self, context_name) -> 'GetSampleParameters':
+        return GetSampleParameters(
+            context=self.context.create_child(context_name),
+            sampler=self.sampler
+        )
 
 
 class BasicSearchSpace:
@@ -24,24 +64,28 @@ class BasicSearchSpace:
     #                                                               #
     #################################################################
 
-    def __init__(self, initial_domain, distribute_like=UNIFORM, sampler=None, name=None) -> None:
+    def __init__(self, initial_domain, distribute_like=UNIFORM, name=None, path="") -> None:
         # super().__init__()
+
+        # space basic vars
         self.initial_domain = initial_domain
         self.__distribute_like__: str = distribute_like
+        self.space_name = self.__class__.__name__ if name is None else name
+        self.path_space = path
 
+        # generation vars
         self.visitor_layers: List[VisitorLayer] = [
             visitors.DomainModifierVisitor()]
         self._inner_hash = None
         self._clean_asts = ast_constraint.AstRoot([])
-        self.space_name = self.__class__.__name__ if name is None else name
 
-        self._distribution: Sampler = SearchSpaceConfig().sampler_manager.create_sampler(
-            self.__distribute_like__, self) if sampler is None else sampler
+        # global config vars
+        self.config = SearchSpaceConfig(printer=DefaultPrinter())
+        self.printer = self.config.printer_class
+        self.learning_rate = self.config.simply_learning_rate
 
     def change_distribution(self, distribution):
         self.__distribute_like__ = distribution
-        self._distribution = SearchSpaceConfig().sampler_manager.create_sampler(
-            self.__distribute_like__, self)
 
     def layers_append(self, *args):
         self.visitor_layers += list(args)
@@ -51,7 +95,7 @@ class BasicSearchSpace:
 
     def __hash__(self) -> int:
         if self._inner_hash is None:
-            return id(self)
+            return hash(self.path_space)
 
         return self._inner_hash
 
@@ -63,7 +107,7 @@ class BasicSearchSpace:
             domain = self.initial_domain,
 
         result = type(self)(
-            *domain, distribute_like=self.__distribute_like__)
+            *domain, distribute_like=self.__distribute_like__, path=self.path_space)
         result.initial_domain = copy(self.initial_domain)
         result.space_name = f"{result.space_name}'"
         result.visitor_layers = [item for item in self.visitor_layers]
@@ -141,13 +185,13 @@ class BasicSearchSpace:
         ss = SearchSpace(
             domain=self.initial_domain,
             distribute_like=self.__distribute_like__,
-            sampler=self._distribution,
             ast=ast,
             clean_asts=self._clean_asts,
             layers=self.visitor_layers,
+            path=self.path_space
         )
         ss.space_name = self.space_name
-        ss.set_hash(hash(self))
+        # ss.set_hash(hash(self))
         return ss
 
     #################################################################
@@ -156,71 +200,119 @@ class BasicSearchSpace:
     #                                                               #
     #################################################################
 
-    def get_sample(self, context=None, local_domain=None):
-        config = SearchSpaceConfig(printer=DefaultPrinter())
-        printer = config.printer_class
+    def get_sample(self, params: GetSampleParameters) -> GetSampleResult:
 
-        printer.init_search(hash(self), self.space_name)
+        params.initialize(self.space_name)
+        self.printer.init_search(hash(self), self.space_name)
 
-        if not context is None:
-            cache_value = context.get_sampler_value(self)
-            if not cache_value is None:
-                printer.sample_value(cache_value, True)
-                return cache_value, context
+        # Check in the generate context if this
+        # instance of Search Space has been sampling already
+        cache_value = params.context.get_sampler_value(self)
+        if not cache_value is None:
+            self.printer.sample_value(cache_value, True)
+            return params.build_result(cache_value)
 
-            precess_is_initialize = context.check_sampling_status(self)
-            if not precess_is_initialize is None:
-                raise CircularDependencyDetected(
-                    f'in {self.__class__.__name__}')
-        else:
-            context = SamplerContext(self.space_name)
+        # If this space instance hasn't been sampling yet
+        # We need to check if this space already has begun its generation
+        # Because in that case, this try is a circular dependency
+        # And this is a problem, a definition error
+        precess_is_initialize = params.context.check_sampling_status(self)
+        if not precess_is_initialize is None:
+            raise CircularDependencyDetected(
+                f'in {self.__class__.__name__}')
 
-        context.registry_init_sampler_process(self)
-        printer.context_name(context)
+        # We have to notify that this space has begun
+        # its generative process to check circular dependencies late on
+        params.context.registry_init_sampler_process(self)
+        self.printer.context_name(params.context)
+        # domain = self.initial_domain if params.local_domain is None else params.local_domain
 
-        domain = self.initial_domain if local_domain is None else local_domain
-        printer.domain_init(domain)
+        # Before to generate a new sample we need to register
+        # our space into the sampler. At that time this class
+        # can create all of structures that it need to create
+        # new random values
 
-        printer.tabs += 1
-        domain, ast_result = self.__domain_filter__(domain, context)
-        printer.tabs -= 1
+        params.sampler.register_space(
+            self.path_space,
+            self.__distribute_like__,
+            domain=self.initial_domain,
+            # How we have context dependency, it isn't enough
+            # one hyperparameter as learning rate. We have to
+            # control how much lean the sampler, but we also have
+            # to control the different between simply spaces and
+            # contextual spaces. We can't permit that the seconds lean
+            # faster than firsts, because domains of seconds depend on
+            # values of firsts
+            space_learning_rate=self.learning_rate
 
+        )
+
+        # We describe search spaces with a context-sensitive grammar
+        # So, We have to filter the initial domain by current context
+        # To get the more faceable domain
+        # This process we call inference time
+        self.printer.domain_init(self.initial_domain)
+        self.printer.tabs += 1
+        domain, ast_result = self.__domain_filter__(
+            self.initial_domain, params
+        )
+        self.printer.tabs -= 1
+
+        # Some constraint couldn't check neither at compile time nor
+        # inference time. So, we have to solve it by back tracking.
+        # And sometimes we can't solve it. For that we count how many
+        # samples we already have generated
         sample_index = 0
+
         while True:
 
-            printer.tabs += 1
-            sample, sample_context = self.__sampler__(domain, context)
-            printer.tabs -= 1
+            # Get a new sample
+            self.printer.tabs += 1
+            sample, sample_context = self.__sampler__(domain, params)
+            self.printer.tabs -= 1
 
             try:
+                # Check if the new sample is consistent with all of constraints
                 self.__check_sample__(sample, ast_result, sample_context)
 
-                context.registry_sampler(self, sample)
-                printer.sample_value(sample)
-                return sample, context
+                # How we can have contextual dependencies. We have to registry
+                # all of generated samples to take easily if some space depends on them
+                params.context.registry_sampler(self, sample)
+
+                self.printer.sample_value(sample)
+                return params.build_result(sample)
 
             except InvalidSampler as e:
-                if not config.replay_nums is None and config.replay_nums <= sample_index:
+                # Throw the error if we have done to much attempts.
+                # In that case, it's a very complex space to obtain random values.
+                if not self.config.replay_nums is None and self.config.replay_nums <= sample_index:
                     raise e
 
-                config.attempts.append(sample)
+                self.config.attempts.append(sample)
+
+                # If this space was a simply space, then it's very easy to drop
+                # one value from its domain. So, if we already know that one
+                # value is unfeasible we can drop it from the dynamic domain.
+                # If the space is a combined space to drop one option isn't trivial
                 try:
                     domain = domain != sample
                 except:
                     pass
 
-                printer.sample_error(sample, e.text, sample_index, domain)
+                self.printer.sample_error(sample, e.text, sample_index, domain)
 
             sample_index += 1
 
-    def __domain_filter__(self, domain, context):
+    def __domain_filter__(self, domain, params: GetSampleParameters):
         return domain, self._clean_asts
 
-    def __sampler__(self, domain, context):
+    def __sampler__(self, domain, params: GetSampleParameters):
         if domain.is_invalid():
             raise InvalidSpaceConstraint(
-                "the constraints change to domain in invalid")
-        return domain.get_sample(self._distribution), context
+                "the constraints change to domain in invalid"
+            )
+
+        return domain.get_sample(params.sampler, space_name=self.path_space), params.context
 
     def __check_sample__(self, sample, ast_result, context):
         visitors.ValidateSampler().transform_to_check_sample(ast_result, sample, context)
@@ -228,8 +320,11 @@ class BasicSearchSpace:
 
 class SearchSpace(BasicSearchSpace):
 
-    def __init__(self, domain, distribute_like, sampler, ast, clean_asts, layers, _hash=None) -> None:
-        super().__init__(domain, distribute_like, sampler)
+    def __init__(self, domain, distribute_like, sampler, ast, clean_asts, layers, path) -> None:
+        super().__init__(domain, distribute_like, sampler, path)
+        self.learning_rate = self.config.dynamic_learning_rate
+
+        # generation config
         self.ast_constraint: ast_constraint.AstRoot = ast
         self._clean_asts: ast_constraint.AstRoot = clean_asts
         self.visitor_layers = layers
@@ -240,17 +335,14 @@ class SearchSpace(BasicSearchSpace):
     def __ast_result_filter__(self, result):
         return result + self._clean_asts
 
-    def __domain_filter__(self, domain, context):
+    def __domain_filter__(self, domain, params: GetSampleParameters):
         ast_result = self.__ast_init_filter__()
         if len(ast_result.asts) == 0:
             return domain, self.__ast_result_filter__(ast_result)
 
-        config = SearchSpaceConfig(printer=DefaultPrinter())
-        printer = config.printer_class
-
         domain = copy(domain)
 
-        printer.ast_transformation(domain, ast_result)
+        self.printer.ast_transformation(domain, ast_result)
 
         for visitor in reversed(self.visitor_layers):
             if not visitor.do_transform_to_modifier:
@@ -259,9 +351,10 @@ class SearchSpace(BasicSearchSpace):
             # The last one return the restricted domain
 
             ast_result, domain = visitor.transform_to_modifier(
-                ast_result, domain, context)
+                ast_result, domain, params
+            )
 
-            printer.ast_transformation(
+            self.printer.ast_transformation(
                 domain, ast_result, visitor.__class__.__name__)
 
         return domain, self.__ast_result_filter__(ast_result)
@@ -277,5 +370,6 @@ class SearchSpace(BasicSearchSpace):
             sampler=None,
             ast=ast_constraint.AstRoot(copy(self.ast_constraint.asts)),
             clean_asts=ast_constraint.AstRoot(copy(self._clean_asts.asts)),
-            layers=copy(self.visitor_layers)
+            layers=copy(self.visitor_layers),
+            path=self.path_space
         )
