@@ -1,7 +1,8 @@
 from typing import Generic, Tuple, Type, TypeVar, List
 from search_space.spaces.build_in_spaces import ListSearchSpace, SpacesManager, BasicCategoricalSearchSpace, TensorSearchSpace
-from search_space.spaces import SearchSpace
+from search_space.spaces.search_space import SearchSpace, GetSampleParameters
 from search_space.context_manager import SamplerContext
+from search_space.sampler import ModelSampler
 T = TypeVar("T")
 
 
@@ -97,8 +98,10 @@ class SpaceDomain(Generic[T]):
         self.space = self.space.__ast_optimization__(func_constraint)
         return self
 
-    def get_sample(self, context: SamplerContext = None) -> Tuple[T, SamplerContext]:
-        return self.space.get_sample(context=context)
+    def get_sample(self, context: SamplerContext = None, sampler: ModelSampler = None) -> Tuple[T, SamplerContext]:
+        params = GetSampleParameters(context, sampler)
+        result = self.space.get_sample(params)
+        return result.sample, result
 
     @property
     def random_sample(self) -> T:
