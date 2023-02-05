@@ -1,18 +1,15 @@
 from copy import copy
 from typing import List
-from search_space.context_manager.runtime_manager import SearchSpaceConfig
 from search_space.errors import InvalidSpaceDefinition
 from search_space.spaces.domains.__base__ import Domain
-from search_space.sampler import Sampler
-from search_space.sampler.distribution_names import UNIFORM
 from . import __namespace__ as nsp
-from search_space.spaces import domains
+from search_space.sampler import ModelSampler, BERNOULLI
 
 
 class BachedDomain(Domain, metaclass=nsp.BachedDomain):
     def __init__(self, *domains: List[Domain]) -> None:
         self.domains: List[Domain] = list(domains)
-        self.sampler_selector: Sampler = None
+        self.model_sample_name = None
 
     def extend(self, top):
         self.domains[-1].extend(top)
@@ -33,12 +30,17 @@ class BachedDomain(Domain, metaclass=nsp.BachedDomain):
         self.is_invalid()
         return tuple([d.limits for d in self.domains])
 
-    def get_sample(self, sampler: Sampler):
-        if self.sampler_selector is None:
-            self.sampler_selector = SearchSpaceConfig(
-            ).sampler_manager.create_sampler(UNIFORM, self)
-        bache = self.sampler_selector.choice(self.domains)
-        return bache.get_sample(sampler)
+    def get_sample(self, sampler: ModelSampler, space_name: str = None):
+        if not self.model_sample_name:
+            self.model_sample_name = sampler.expand_space(
+                space_name, 'segmentation', BERNOULLI,
+                options=[d.tag for d in self.domains]
+            )
+
+        bache = sampler.choice(self.domains, self.model_sample_name)
+        bach_tag = sampler.expand_space(space_name, bache.tag)
+
+        return bache.get_sample(sampler, bach_tag)
 
     def __copy__(self):
         return BachedDomain(*[copy(d) for d in self.domains])

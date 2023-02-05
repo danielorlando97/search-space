@@ -1,4 +1,5 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
+from search_space.sampler.model_sampler import ModelSampler
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
 from search_space.spaces.domains.__base__ import NumeralDomain
 from .bached_domain import BachedDomain
@@ -15,8 +16,8 @@ class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
     def __copy__(self):
         return ContinuosDomain(self.min, self.max)
 
-    def get_sample(self, sampler: Sampler):
-        return sampler.get_float(self.min, self.max)
+    def get_sample(self, sampler: ModelSampler, space_name: str = None):
+        return sampler.get_float(self.min, self.max, space_name=space_name)
 
     @property
     def limits(self):

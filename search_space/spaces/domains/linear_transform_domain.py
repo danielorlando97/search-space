@@ -25,6 +25,10 @@ class LinearTransformedDomain(Domain, metaclass=nsp.LinealTransformed):
         self.original_domain.max = self._transform_origin_to_new(
             self.original_domain.max)
 
+    @property
+    def tag(self):
+        return self.original_domain.tag
+
     def is_invalid(self):
         return self.original_domain.is_invalid()
 
@@ -44,8 +48,10 @@ class LinearTransformedDomain(Domain, metaclass=nsp.LinealTransformed):
 
         return [self._transform_origin_to_new(item) for item in values]
 
-    def get_sample(self, sampler: Sampler):
-        return self._transform_new_to_origin(self.original_domain.get_sample(sampler))
+    def get_sample(self, sampler: Sampler, space_name=None):
+        return self._transform_new_to_origin(
+            self.original_domain.get_sample(sampler, space_name=space_name)
+        )
 
     def __eq__(self, __o: object) -> bool:
         self.original_domain = self.original_domain == self._transform_values(

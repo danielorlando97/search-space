@@ -1,4 +1,5 @@
 from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
+from search_space.sampler.model_sampler import ModelSampler
 from search_space.spaces.domains.__base__ import Domain
 from .bached_domain import BachedDomain
 from search_space.sampler import Sampler
@@ -10,6 +11,11 @@ class CategoricalDomain(Domain):
     def __init__(self, _list) -> None:
         self.list = _list
         self.maps = []
+        self.tag = tuple(_list)
+
+    @property
+    def tag(self):
+        return self.tag
 
     def is_invalid(self):
         return len(self.list) == 0
@@ -17,8 +23,8 @@ class CategoricalDomain(Domain):
     def __copy__(self):
         return CategoricalDomain(self.list)
 
-    def get_sample(self, sampler: Sampler):
-        return sampler.choice(self.list)
+    def get_sample(self, sampler: ModelSampler, space_name: str = None):
+        return sampler.choice(self.list, space_name=space_name)
 
     @property
     def limits(self):

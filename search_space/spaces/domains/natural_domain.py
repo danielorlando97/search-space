@@ -16,8 +16,8 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
     def __copy__(self):
         return NaturalDomain(self.min, self.max)
 
-    def get_sample(self, sampler: Sampler):
-        return sampler.get_int(self.min, self.max)
+    def get_sample(self, sampler: Sampler, space_name=None):
+        return sampler.get_int(self.min, self.max, space_name=space_name)
 
     @property
     def limits(self):
