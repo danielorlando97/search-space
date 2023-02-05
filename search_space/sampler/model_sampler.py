@@ -2,6 +2,7 @@ from random import random, Random
 from .factory import SamplerDataBase
 from search_space.utils.infinity import check_slice_limits
 from typing import Dict, List, Tuple, Any
+from search_space.context_manager.runtime_manager import SearchSpaceConfig
 
 
 class Distribution:
@@ -32,8 +33,8 @@ class Distribution:
 
 class Sampler:
 
-    def __init__(self, random_state: int = None):
-        self.rand: Random = random.Random(random_state)
+    def __init__(self):
+        self.rand: Random = SearchSpaceConfig().random_instance
 
     def get_int(self, min, max):
         return self.rand.randint(min, max)
@@ -50,19 +51,38 @@ class Sampler:
 
 class ModelSampler(Sampler):
 
-    def __init__(self, model=None, random_state=0) -> None:
-        super().__init__(random_state)
+    def __init__(self, model=None) -> None:
+        super().__init__()
 
         self._model: Dict[str, Distribution] = {} if model is None else model
         self._updates: Dict[str, List] = {}
         self._db = SamplerDataBase()
 
     def register_space(self, space_name, distribution, *args, **kwd):
+        if distribution is None:
+            return
+
         self._model[space_name] = self._db.get_sampler(
             distribute_name=distribution,
             random_instance=self.rand,
             *args, **kwd
         )
+
+    def expand_space(self, space_name, tag, distribution=None, *args, **kwd):
+        subspace_name = space_name + '_' + tag
+
+        if not subspace_name in self._model:
+            model = self._model[space_name]
+
+            self.register_space(
+                space_name=subspace_name,
+                distribution=model.__distribute_name__ if distribution is None else distribution,
+                space_learning_rate=model.space_learning_rate,
+                random_instance=model.rand,
+                *args, **kwd
+            )
+
+        return subspace_name
 
     def __register_sample__(self, space_name, value):
         try:

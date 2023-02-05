@@ -1,10 +1,14 @@
 from .factory import distribution, SamplerDataBase
 from .model_sampler import Distribution
 from statistics import mean, stdev
-from typing import List, Dict, Hashable
+from typing import List, Dict, Hashable, Iterable
 
 
 class SelectDistributionError(Exception):
+    pass
+
+
+class SelectDomainError(Exception):
     pass
 
 
@@ -21,7 +25,15 @@ class NormalDistribution(Distribution):
         self.initial_values = (args, kwds)
 
     @staticmethod
-    def create_new_instance(min, max, *args, **kwds):
+    def create_new_instance(domain, *args, **kwds):
+        try:
+            min, max = domain.limits
+        except TypeError:
+            raise SelectDistributionError(
+                'NormalDistribution need a domain with limited domain')
+        except AttributeError:
+            raise SelectDomainError("The selected domain don't have limits")
+
         return NormalDistribution(
             mean=(min + max) / 2,
             dev=(max - min),
@@ -36,10 +48,14 @@ class NormalDistribution(Distribution):
     def get_random_value(self, a, b):
         x = self.rand.gauss(self.mean, self.dev)
 
-        if x < a:
-            return a
-        if x > b:
-            return b
+        # BUG: to show
+        if x < a or x > b:
+            return self.rand.uniform(a, b)
+
+        # if x < a:
+        #     return a
+        # if x > b:
+        #     return b
         return x
 
     def update(self, updates: List, learning_rate=1) -> 'Distribution':
@@ -67,7 +83,16 @@ class BernoulliDistribution(Distribution):
         self.initial_values = (args, kwds)
 
     @staticmethod
-    def create_new_instance(options, *args, **kwds):
+    def create_new_instance(domain, *args, **kwds):
+        try:
+            options = domain.limits
+            assert isinstance(options, Iterable)
+        except AssertionError:
+            raise SelectDistributionError(
+                'BernoulliDistribution need a domain with an option list')
+        except AttributeError:
+            raise SelectDomainError("The selected domain don't have limits")
+
         return BernoulliDistribution(
             df=dict([(op, 1) for op in options])
             * args, **kwds
@@ -78,8 +103,29 @@ class BernoulliDistribution(Distribution):
             "The bernoulli distribution can't generate a random number into a subset"
         )
 
+    def find_option(self, option):
+        try:
+            return self.df[option]
+        except KeyError:
+            # The only case when into the options there are
+            # an options that it wasn't at first time
+            # is when a domain has been segmented.
+            # In that case there is only one option,
+            # a delimited domain has been divide in two half.
+            # So, Let's x =(y, z) the new option, into old options
+            # there is either (y, _) or (_, z)
+
+            y, z = option
+            old_option = next(
+                filter(lambda x: x[0] == y or x[1] == z),
+                self.df.keys()
+            )
+
+            self.df[option] = self.df[old_option]
+            return self.df[option]
+
     def choice_random_option(self, options):
-        weighs = [self.df[op] for op in options]
+        weighs = [self.find_option[op] for op in options]
         weighs = list(map(lambda x: x/sum(weighs), weighs))
 
         value = next(self.rand.choices(options, weights=weighs, k=1))
@@ -116,7 +162,7 @@ class BooleanBernoulliDistribution(Distribution):
         self.initial_values = (args, kwds)
 
     @staticmethod
-    def create_new_instance(options, *args, **kwds):
+    def create_new_instance(*args, **kwds):
         return BooleanBernoulliDistribution(
             p=0.5, *args, **kwds
         )

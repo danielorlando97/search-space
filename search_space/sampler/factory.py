@@ -72,7 +72,7 @@ class SamplerDataBase(metaclass=Singleton):
     def get_sampler(self, distribute_name, *args, **kwd):
         try:
             return self.db[distribute_name].create_new_instance(*args, **kwd)
-        except:
+        except KeyError:
             return None
 
 
