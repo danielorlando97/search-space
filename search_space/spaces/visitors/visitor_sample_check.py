@@ -27,13 +27,13 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     def do_transform_to_modifier(self):
         return False
 
-    def transform_to_check_sample(self, node, sample, context):
-        self.sample, self.context = sample, context
+    def transform_to_check_sample(self, node, sample, params):
+        self.sample, self.params = sample, params
         return self.visit(node)
 
-    def check_sample_by_index(self, node, sample, context, index):
+    def check_sample_by_index(self, node, sample, params, index):
         self.current_index = index
-        return self.transform_to_check_sample(node, sample, context)
+        return self.transform_to_check_sample(node, sample, params)
 
     @visitor.on("node")
     def visit(self, node, current_index=[], is_main_node=False):
@@ -420,7 +420,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             raise InvalidSampler(
                 f"inconsistent sampler => {a}.{b} isn't search space")
 
-        return sampler(context=a.__instance_context__)[0]
+        return sampler(a.__instance_context__).sample
 
     @ visitor.when(constraints.SelfNode)
     def visit(self, node, current_index=[], is_main_node=False):
@@ -435,7 +435,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
                 index = []
             return self.natural_visitor.get_value(
                 node.target,
-                context=self.context,
+                params=self.params,
                 current_index=index
             )
         return node.target

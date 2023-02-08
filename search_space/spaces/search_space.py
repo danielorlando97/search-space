@@ -95,7 +95,7 @@ class BasicSearchSpace:
 
     def __hash__(self) -> int:
         if self._inner_hash is None:
-            return hash(self.path_space)
+            return id(self)
 
         return self._inner_hash
 
@@ -191,7 +191,7 @@ class BasicSearchSpace:
             path=self.path_space
         )
         ss.space_name = self.space_name
-        # ss.set_hash(hash(self))
+        ss.set_hash(hash(self))
         return ss
 
     #################################################################
@@ -273,7 +273,10 @@ class BasicSearchSpace:
 
             try:
                 # Check if the new sample is consistent with all of constraints
-                self.__check_sample__(sample, ast_result, sample_context)
+                pre_sample_context = params.context
+                params.context = sample_context
+                self.__check_sample__(sample, ast_result, params)
+                params.context = pre_sample_context
 
                 # How we can have contextual dependencies. We have to registry
                 # all of generated samples to take easily if some space depends on them
@@ -314,8 +317,8 @@ class BasicSearchSpace:
 
         return domain.get_sample(params.sampler, space_name=self.path_space), params.context
 
-    def __check_sample__(self, sample, ast_result, context):
-        visitors.ValidateSampler().transform_to_check_sample(ast_result, sample, context)
+    def __check_sample__(self, sample, ast_result, params: GetSampleParameters):
+        visitors.ValidateSampler().transform_to_check_sample(ast_result, sample, params)
 
 
 class SearchSpace(BasicSearchSpace):

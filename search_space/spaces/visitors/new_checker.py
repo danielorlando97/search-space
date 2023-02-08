@@ -17,8 +17,8 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
     def __init__(self) -> None:
         self.natural_visitor = NaturalAstVisitor()
 
-    def transform_to_check_sample(self, node, sample, context):
-        self.sample, self.context = sample, context
+    def transform_to_check_sample(self, node, sample, params):
+        self.sample, self.params = sample, params
         return self.visit(node)
 
     @visitor.on("node")
@@ -412,7 +412,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
                 raise InvalidSampler(
                     f"inconsistent sampler => {a}.{b} isn't search space")
 
-            return sampler(context=a.__instance_context__)[0]
+            return sampler(a.__instance_context__).sample
 
         return itertools.map_reduce(a, b, f)
 
@@ -425,7 +425,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         if isinstance(node.target, NaturalValuesNode):
             return self.natural_visitor.get_value(
                 node.target,
-                context=self.context,
+                params=self.params,
             )
         return node.target
 
@@ -610,7 +610,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
             except AttributeError:
                 return value
 
-            return value.get_sample(a.__instance_context__)[0]
+            return value.get_sample(a.__instance_context__).sample
 
         yield itertools.map_reduce(a, b, f)
 
@@ -630,7 +630,7 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
 
     @visitor.when(naturals_values.SpaceSelfNode)
     def visit_natural(self, node: naturals_values.SpaceSelfNode, _len=None):
-        return node.a.get_sample(self.context)[0]
+        return node.a.get_sample(self.params).sample
 
     @visitor.when(naturals_values.NaturalValue)
     def visit_natural(self, node: naturals_values.NaturalValue, _len=None):

@@ -6,15 +6,15 @@ from search_space.spaces.asts.naturals_values import NaturalValuesNode
 
 
 class NaturalAstVisitor:
-    def get_value(self, node, current_index=[], context=None):
-        self.current_index, self._context = current_index, context
+    def get_value(self, node, current_index=[], params=None):
+        self.current_index, self._params = current_index, params
         return self.visit(node)
 
     @property
-    def context(self):
+    def sampler_params(self):
         try:
-            if self._context != None:
-                return self._context
+            if self._params != None:
+                return self._params
         except AttributeError:
             pass
 
@@ -157,7 +157,7 @@ class NaturalAstVisitor:
         except AttributeError:
             return value
 
-        return value.get_sample(a.__instance_context__)[0]
+        return value.get_sample(a.__instance_context__).sample
 
     @ visitor.when(naturals_values.GetItem)
     def visit(self, node: naturals_values.GetItem):
@@ -168,7 +168,7 @@ class NaturalAstVisitor:
 
     @ visitor.when(naturals_values.SpaceSelfNode)
     def visit(self, node: naturals_values.SpaceSelfNode):
-        return node.a.get_sample(self.context)[0]
+        return node.a.get_sample(self.sampler_params).sample
 
     @ visitor.when(naturals_values.NaturalValue)
     def visit(self, node: naturals_values.NaturalValue):

@@ -14,16 +14,16 @@ class IndexAstModifierVisitor(VisitorLayer):
         self.natural_visitor = NaturalAstVisitor()
 
     def domain_optimization(self, node, domain):
-        self.context = None
+        self.params = None
         return self.visit(node), domain
 
-    def transform_to_modifier(self, node, domain=None, context=None):
-        self.context = context
+    def transform_to_modifier(self, node, domain=None, params=None):
+        self.params = params
         return self.visit(node), domain
 
-    def transform_to_check_sample(self, node, sample, context=None):
-        self.context = context
-        return self.visit(node, context=context)
+    # def transform_to_check_sample(self, node, sample, params=None):
+    #     self.context = context
+    #     return self.visit(node, context=context)
 
     @visitor.on("node")
     def visit(self, node, current_index=[]):
@@ -113,13 +113,12 @@ class IndexAstModifierVisitor(VisitorLayer):
             return node
 
         try:
-            if self.context is None:
+            if self.params is None:
                 return constraints.NaturalValue(
                     naturals_values.SpaceSelfNode(self.space[current_index])
                 )
 
-            value = self.space[current_index].get_sample(
-                context=self.context)[0]
+            value = self.space[current_index].get_sample(self.params).sample
         except NotEvaluateError:
             return constraints.NotEvaluate()
         except CircularDependencyDetected:
@@ -134,7 +133,7 @@ class IndexAstModifierVisitor(VisitorLayer):
             try:
                 result = self.natural_visitor.get_value(
                     node.target,
-                    context=self.context,
+                    params=self.params,
                     current_index=self.current_index
                 )
                 return constraints.NaturalValue(result)

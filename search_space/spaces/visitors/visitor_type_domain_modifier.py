@@ -17,11 +17,11 @@ class TypeDomainModifierVisitor(VisitorLayer):
         return False
 
     def domain_optimization(self, node, domain):
-        self.domain, self._context = domain, None
+        self.domain, self._params = domain, None
         return self.visit(node)
 
-    def transform_to_modifier(self, node, domain, context):
-        self.domain, self._context = domain, context
+    def transform_to_modifier(self, node, domain, params):
+        self.domain, self._params = domain, params
         return self.visit(node)
 
     def __op_apply__(self, a, b, op):
@@ -141,7 +141,7 @@ class TypeDomainModifierVisitor(VisitorLayer):
     def visit(self, node):
         if isinstance(node.target, NaturalValuesNode):
             return self.natural_visitor.get_value(
-                node.target, context=self._context
+                node.target, params=self._params
             )
 
         return node.target

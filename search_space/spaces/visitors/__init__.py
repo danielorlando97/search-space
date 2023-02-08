@@ -18,10 +18,10 @@ class VisitorLayer:
     def domain_optimization(self, node, domain):
         return node, domain
 
-    def transform_to_modifier(self, node, domain, context):
+    def transform_to_modifier(self, node, domain, params):
         return node, domain
 
-    def transform_to_check_sample(self, node, sample, context):
+    def transform_to_check_sample(self, node, sample, params):
         return node
 
 

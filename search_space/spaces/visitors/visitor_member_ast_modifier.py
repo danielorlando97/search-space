@@ -14,26 +14,26 @@ class MemberAstModifierVisitor(VisitorLayer):
         self.natural_visitor = NaturalAstVisitor()
 
     @property
-    def context(self):
+    def sampler_params(self):
         try:
-            if self._context != None:
-                return self._context
+            if self._params != None:
+                return self._params
         except AttributeError:
             pass
 
         raise DetectedRuntimeDependency()
 
     def domain_optimization(self, node, domain):
-        self._context = None
+        self._params = None
         return self.visit(node), domain
 
-    def transform_to_modifier(self, node, domain=None, context=None):
-        self._context = context
+    def transform_to_modifier(self, node, domain=None, params=None):
+        self._params = params
         return self.visit(node), domain
 
-    def transform_to_check_sample(self, node, sample, context=None):
-        self._context = context
-        return self.visit(node, context=context)
+    # def transform_to_check_sample(self, node, sample, params=None):
+    #     self._params = params
+    #     return self.visit(node, context=context)
 
     @visitor.on("node")
     def visit(self, node):
@@ -104,7 +104,7 @@ class MemberAstModifierVisitor(VisitorLayer):
         if isinstance(node.target, NaturalValuesNode):
             try:
                 result = self.natural_visitor.get_value(
-                    node.target, context=self._context
+                    node.target, params=self._params
                 )
                 return constraints.NaturalValue(result)
             except CircularDependencyDetected:

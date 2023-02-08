@@ -19,15 +19,15 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
         super().__init__()
         self.natural_visitor = NaturalAstVisitor()
 
-    def transform_to_modifier(self, node, domain=None, context=None):
-        self.context = context
+    def transform_to_modifier(self, node, domain=None, params=None):
+        self.params = params
         return self.visit(node), domain
 
-    def transform_to_check_sample(self, node, sample, context=None):
+    def transform_to_check_sample(self, node, sample, params=None):
         return self.visit(node)
 
     def domain_optimization(self, node, domain):
-        self.context = None
+        self.params = None
         return self.visit(node), domain
 
     def choice_result(self, a, b, two_self_func):
@@ -211,10 +211,10 @@ class EvalAstChecked(VisitorLayer, metaclass=Singleton):
     @visitor.when(constraints.NaturalValue)
     def visit(self, node):
 
-        if not self.context is None and isinstance(node.target, NaturalValuesNode):
+        if not self.params is None and isinstance(node.target, NaturalValuesNode):
             try:
                 _ = self.natural_visitor.get_value(
-                    node.target, context=self._context
+                    node.target, params=self.params
                 )
                 return self.NATURAL, node
             except AttributeError:
