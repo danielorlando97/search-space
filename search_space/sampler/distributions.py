@@ -36,7 +36,7 @@ class NormalDistribution(Distribution):
     def choice_random_option(self, options):
         idx = self.get_random_value(0, len(options) - 1)
 
-        return idx, options[idx]
+        return idx, options[int(idx)]
 
     def get_random_value(self, a, b):
         x = self.rand.gauss(self.mean, self.dev)
@@ -63,6 +63,20 @@ class NormalDistribution(Distribution):
             *args, **kwds
         )
 
+    def segmentation(self, domain, *args, **kwds) -> 'Distribution':
+        if len(domain) == 2:
+            min, max = domain
+        else:
+            min, max = 0, len(domain)
+
+        mean = self.mean if min <= self.mean and self.mean <= max else (
+            max + min)/2
+        dev = min(self.dev, (max - min))
+
+        return NormalDistribution(
+            mean=mean, dev=dev, *args, **kwds
+        )
+
 
 BERNOULLI = 'Bernoulli'
 
@@ -77,10 +91,13 @@ class BernoulliDistribution(Distribution):
 
     @staticmethod
     def create_new_instance(domain: List, *args, **kwds):
+        df = {}
+        for op in domain:
+            df[op] = 1
 
         return BernoulliDistribution(
-            df=dict([(op, 1) for op in domain])
-            * args, **kwds
+            df=df,
+            *args, **kwds
         )
 
     def get_random_value(self, a, b):
@@ -102,7 +119,7 @@ class BernoulliDistribution(Distribution):
 
             y, z = option
             old_option = next(
-                filter(lambda x: x[0] == y or x[1] == z),
+                filter(lambda x: len(x) == 2 and x[0] == y or x[1] == z),
                 self.df.keys()
             )
 
@@ -110,12 +127,12 @@ class BernoulliDistribution(Distribution):
             return self.df[option]
 
     def choice_random_option(self, options):
-        weighs = [self.find_option[op] for op in options]
-        weighs = list(map(lambda x: x/sum(weighs), weighs))
+        weighs = [self.find_option(op) for op in options]
+        weighs = [x/sum(weighs) for x in weighs]
 
-        value = next(self.rand.choices(options, weights=weighs, k=1))
+        value = self.rand.choices(options, weights=weighs, k=1)
 
-        return value, value
+        return value[0], value[0]
 
     def update(self, updates: List, learning_rate=1) -> 'Distribution':
         weighs = dict(self.df)

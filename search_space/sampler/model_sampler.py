@@ -1,9 +1,10 @@
 from random import random, Random
 from .factory import SamplerDataBase
 from search_space.utils.infinity import check_slice_limits
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, Union
 from search_space.context_manager.runtime_manager import SearchSpaceConfig
 from abc import abstractmethod, ABC
+from collections import defaultdict
 
 
 class Distribution(ABC):
@@ -29,6 +30,16 @@ class Distribution(ABC):
         and return a new instance of the same class. This also should 
         to transform its parameter learning_rate by the function alpha_param
         """
+
+    # The dynamic segmentation is only in the numerical domains.
+    # In categorical domains we only drop unfeasible options
+    def segmentation(self, domain, *args, **kwds) -> 'Distribution':
+        """
+        This function should check the conditions of the segmentation and
+        create the best distribution for the new segment. 
+        """
+
+        return self.__class__.create_new_instance(domain, *args, **kwds)
 
     @staticmethod
     @abstractmethod
@@ -59,70 +70,66 @@ class ModelSampler(Sampler):
     def __init__(self, model=None) -> None:
         super().__init__()
 
-        self._model: Dict[str, Distribution] = {} if model is None else model
-        self._updates: Dict[str, List] = {}
+        self._model: Dict[str, Dict[Union[str, tuple], Distribution]] = defaultdict(
+            dict) if model is None else model
+        self._updates: Dict[str, Dict[Union[str, tuple], List]
+                            ] = defaultdict(lambda: defaultdict(list))
         self._db = SamplerDataBase()
-
-    # def register_space(self, space_name, distribution, *args, **kwd):
-    #     if distribution is None:
-    #         return
-
-    #     self._model[space_name] = self._db.get_sampler(
-    #         distribute_name=distribution,
-    #         random_instance=self.rand,
-    #         *args, **kwd
-    #     )
-
-    # def expand_space(self, space_name, tag, distribution=None, *args, **kwd):
-    #     subspace_name = space_name + '_' + tag
-
-    #     if not subspace_name in self._model:
-    #         model = self._model[space_name]
-
-    #         self.register_space(
-    #             space_name=subspace_name,
-    #             distribution=model.__distribute_name__ if distribution is None else distribution,
-    #             space_learning_rate=model.space_learning_rate,
-    #             random_instance=model.rand,
-    #             *args, **kwd
-    #         )
-
-    #     return subspace_name
 
     def __get_sampler(
         self,
         domain,  # This param should send when a domain class ask a random value
-        tag='',  # This param should send when a domain is segmented
+        # This param should send when a domain is segmented
+        tag: Union[str, tuple] = '',
 
         # Other next params are space informations and
         # They are from the class SearchSpace, from its SpaceInfo params
-        space_name=None,
+        path_space=None,
         distribution=None,
-        space_learning_rate=1
+        learning_rate=1,
+        check_segmentation=False
     ):
 
-        if space_name is None:
+        if path_space is None:
             return None, None
 
-        name = space_name + tag
-        try:
-            return self._model[name], name
-        except KeyError:
-            self._model[name] = self._db.get_sampler(
+        section = self._model[path_space]
+
+        if not tag in section:
+            if check_segmentation:
+                # If these conditions are true, it means that
+                # Some subdomain has been segmented dynamically.
+                # It also means that tag is like (a, b) and into
+                # section there should be a tag like (a, x) or (y, b)
+
+                previous_domains = [
+                    (abs(x[1] - x[0]), x) for x in section.keys()
+                    if type(x) == tuple and (x[0] == tag[0] or x[1] == tag[1])
+                ]
+
+                if any(previous_domains):
+                    _, base = min(previous_domains)
+
+                    section[tag] = section[base].segmentation(
+                        domain=tag,
+                        random_instance=self.rand,
+                        space_learning_rate=learning_rate,
+                    )
+
+                    return section[tag], (path_space, tag)
+
+            section[tag] = self._db.get_sampler(
                 distribute_name=distribution,
                 random_instance=self.rand,
-                space_learning_rate=space_learning_rate,
+                space_learning_rate=learning_rate,
                 domain=domain,
             )
 
-        return self._model[name], name
+        return section[tag], (path_space, tag)
 
-    def __register_sample__(self, space_name, value):
-        try:
-            self._updates[space_name].append(value)
-        except KeyError:
-            self._updates[space_name] = [value]
-
+    def __register_sample__(self, path, value):
+        (space_name, tag) = path
+        self._updates[space_name][tag].append(value)
         return value
 
     #################################################################
@@ -133,7 +140,9 @@ class ModelSampler(Sampler):
 
     @check_slice_limits
     def get_int(self, min, max, **kwd):
-        model, model_key = self.__get_sampler(**kwd)
+        model, model_key = self.__get_sampler(
+            domain=(min, max), check_segmentation=True, **kwd
+        )
 
         if model is None:
             return super().get_int(min, max)
@@ -146,7 +155,9 @@ class ModelSampler(Sampler):
 
     @check_slice_limits
     def get_float(self, min, max, **kwd):
-        model, model_key = self.__get_sampler(**kwd)
+        model, model_key = self.__get_sampler(
+            domain=(min, max), check_segmentation=True, **kwd
+        )
 
         if model is None:
             return super().get_float(min, max)
@@ -156,7 +167,7 @@ class ModelSampler(Sampler):
         return self.__register_sample__(model_key, value)
 
     def choice(self, options, **kwd):
-        model, model_key = self.__get_sampler(**kwd)
+        model, model_key = self.__get_sampler(domain=options, **kwd)
 
         if model is None:
             return super().choice(options)
@@ -167,7 +178,7 @@ class ModelSampler(Sampler):
         return value
 
     def get_boolean(self, **kwd):
-        model, model_key = self.__get_sampler(**kwd)
+        model, model_key = self.__get_sampler(domain=None, **kwd)
         if model is None:
             return super().get_boolean()
 
