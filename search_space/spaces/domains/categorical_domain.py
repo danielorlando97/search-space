@@ -11,11 +11,11 @@ class CategoricalDomain(Domain):
     def __init__(self, _list) -> None:
         self.list = _list
         self.maps = []
-        self.tag = tuple(_list)
+        self._tag = tuple(_list)
 
     @property
     def tag(self):
-        return self.tag
+        return self._tag
 
     def is_invalid(self):
         return len(self.list) == 0
