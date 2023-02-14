@@ -1,11 +1,12 @@
 from typing import Protocol, Callable, Union
 from search_space.utils.namespace_injection import InjectorMetaclass, New
 from search_space.sampler import Sampler
+from search_space.spaces.search_space import SpaceInfo
 
 
 class DomainProtocol:
 
-    def get_sample(self, sampler: Sampler):
+    def get_sample(self, sampler: Sampler, space_info: SpaceInfo):
         pass
 
     def __copy__(self):
