@@ -89,3 +89,11 @@ def filter(a, b, f):
 
 def is_iterable(item):
     return isinstance(item, Iterable) and not isinstance(item, str)
+
+
+class UncompressClass:
+    def keys(self):
+        return self.__dict__.keys()
+
+    def __getitem__(self, key):
+        return self.__dict__[key]

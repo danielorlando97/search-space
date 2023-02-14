@@ -1,10 +1,11 @@
 from copy import copy
-from typing import List, Generic, TypeVar, Any
+from typing import List, Generic, TypeVar
 from search_space.context_manager.runtime_manager import SearchSpaceConfig
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
 from search_space.errors import ArgumentFunctionError, DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint
 from search_space.errors import NotEvaluateError, CircularDependencyDetected
+from search_space.utils.itertools import UncompressClass
 from .asts import constraints as ast_constraint
 from .asts import naturals_values as ast_natural
 from .visitors import visitors
@@ -26,6 +27,13 @@ class GetSampleResult(Generic[T]):
 
 @dataclass
 class GetSampleParameters:
+    """
+    This struct contain all of dependencies that 
+    the function get_sample need to generate a new
+    sample. It also have some function to transform and 
+    mute this dependencies. 
+    """
+
     context: SamplerContext = None
     sampler: ModelSampler = None
     # local_domain: Any = None
@@ -56,6 +64,26 @@ class GetSampleParameters:
         )
 
 
+@dataclass
+class SpaceInfo(UncompressClass):
+    """
+    This struct is to send some info about the space 
+    to its domain and sampler as easy and maintained way  
+    """
+
+    path_space: str
+    distribution: str
+
+    # How we have context dependency, it isn't enough
+    # one hyperparameter as learning rate. We have to
+    # control how much lean the sampler, but we also have
+    # to control the different between simply spaces and
+    # contextual spaces. We can't permit that the seconds lean
+    # faster than firsts, because domains of seconds depend on
+    # values of firsts
+    learning_rate: float
+
+
 class BasicSearchSpace:
 
     #################################################################
@@ -83,6 +111,13 @@ class BasicSearchSpace:
         self.config = SearchSpaceConfig(printer=DefaultPrinter())
         self.printer = self.config.printer_class
         self.learning_rate = self.config.simply_learning_rate
+
+        # space info structure
+        self.__info__ = SpaceInfo(
+            path_space=path,
+            distribution=distribute_like,
+            learning_rate=self.config.simply_learning_rate
+        )
 
     def change_distribution(self, distribution):
         self.__distribute_like__ = distribution
@@ -232,20 +267,14 @@ class BasicSearchSpace:
         # can create all of structures that it need to create
         # new random values
 
-        params.sampler.register_space(
-            self.path_space,
-            self.__distribute_like__,
-            domain=self.initial_domain,
-            # How we have context dependency, it isn't enough
-            # one hyperparameter as learning rate. We have to
-            # control how much lean the sampler, but we also have
-            # to control the different between simply spaces and
-            # contextual spaces. We can't permit that the seconds lean
-            # faster than firsts, because domains of seconds depend on
-            # values of firsts
-            space_learning_rate=self.learning_rate
+        # params.sampler.register_space(
+        #     self.path_space,
+        #     self.__distribute_like__,
+        #     domain=self.initial_domain,
 
-        )
+        #     space_learning_rate=self.learning_rate
+
+        # )
 
         # We describe search spaces with a context-sensitive grammar
         # So, We have to filter the initial domain by current context
@@ -315,7 +344,15 @@ class BasicSearchSpace:
                 "the constraints change to domain in invalid"
             )
 
-        return domain.get_sample(params.sampler, space_name=self.path_space), params.context
+        # For generating a simply sample we need three things
+        # - Limits or domains. They're in the param domain, it has this info.
+        # - A sampler, some mechanic to get random values and make decisions
+        #   it's into the var params. it's one of the dependencies of get_sample function
+        # - Some other information about the space like its distribution, its name, its position
+        #   into the main space, .... All of those are into the struct SpaceInfo,
+        #   it save in self.__info__
+
+        return domain.get_sample(params.sampler, self.__info__), params.context
 
     def __check_sample__(self, sample, ast_result, params: GetSampleParameters):
         visitors.ValidateSampler().transform_to_check_sample(ast_result, sample, params)
@@ -323,8 +360,8 @@ class BasicSearchSpace:
 
 class SearchSpace(BasicSearchSpace):
 
-    def __init__(self, domain, distribute_like, sampler, ast, clean_asts, layers, path) -> None:
-        super().__init__(domain, distribute_like, sampler, path)
+    def __init__(self, domain, distribute_like, ast, clean_asts, layers, path) -> None:
+        super().__init__(domain, distribute_like, path)
         self.learning_rate = self.config.dynamic_learning_rate
 
         # generation config
@@ -370,7 +407,6 @@ class SearchSpace(BasicSearchSpace):
         return type(self)(
             self.initial_domain,
             distribute_like=self.__distribute_like__,
-            sampler=None,
             ast=ast_constraint.AstRoot(copy(self.ast_constraint.asts)),
             clean_asts=ast_constraint.AstRoot(copy(self._clean_asts.asts)),
             layers=copy(self.visitor_layers),
