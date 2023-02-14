@@ -3,9 +3,10 @@ from .factory import SamplerDataBase
 from search_space.utils.infinity import check_slice_limits
 from typing import Dict, List, Tuple, Any
 from search_space.context_manager.runtime_manager import SearchSpaceConfig
+from abc import abstractmethod, ABC
 
 
-class Distribution:
+class Distribution(ABC):
     def __init__(self, random_instance: Random, space_learning_rate=1) -> None:
         self.rand = random_instance
         self.space_learning_rate = space_learning_rate
@@ -13,12 +14,15 @@ class Distribution:
     def alpha_param(self, learning_rate):
         return learning_rate * self.space_learning_rate
 
+    @abstractmethod
     def get_random_value(self, a, b):
         """This function should return an random value by the limits"""
 
+    @abstractmethod
     def choice_random_option(self, options) -> Tuple[int, Any]:
         """This function should return a random chosen index and its value"""
 
+    @abstractmethod
     def update(self, updates: List, learning_rate=1) -> 'Distribution':
         """
         This function should update the distribution's hyperparameters
@@ -27,7 +31,8 @@ class Distribution:
         """
 
     @staticmethod
-    def create_new_instance(*args, **kwds):
+    @abstractmethod
+    def create_new_instance(domain, *args, **kwds):
         """By this function the user could create a default instance"""
 
 
@@ -58,31 +63,59 @@ class ModelSampler(Sampler):
         self._updates: Dict[str, List] = {}
         self._db = SamplerDataBase()
 
-    def register_space(self, space_name, distribution, *args, **kwd):
-        if distribution is None:
-            return
+    # def register_space(self, space_name, distribution, *args, **kwd):
+    #     if distribution is None:
+    #         return
 
-        self._model[space_name] = self._db.get_sampler(
-            distribute_name=distribution,
-            random_instance=self.rand,
-            *args, **kwd
-        )
+    #     self._model[space_name] = self._db.get_sampler(
+    #         distribute_name=distribution,
+    #         random_instance=self.rand,
+    #         *args, **kwd
+    #     )
 
-    def expand_space(self, space_name, tag, distribution=None, *args, **kwd):
-        subspace_name = space_name + '_' + tag
+    # def expand_space(self, space_name, tag, distribution=None, *args, **kwd):
+    #     subspace_name = space_name + '_' + tag
 
-        if not subspace_name in self._model:
-            model = self._model[space_name]
+    #     if not subspace_name in self._model:
+    #         model = self._model[space_name]
 
-            self.register_space(
-                space_name=subspace_name,
-                distribution=model.__distribute_name__ if distribution is None else distribution,
-                space_learning_rate=model.space_learning_rate,
-                random_instance=model.rand,
-                *args, **kwd
+    #         self.register_space(
+    #             space_name=subspace_name,
+    #             distribution=model.__distribute_name__ if distribution is None else distribution,
+    #             space_learning_rate=model.space_learning_rate,
+    #             random_instance=model.rand,
+    #             *args, **kwd
+    #         )
+
+    #     return subspace_name
+
+    def __get_sampler(
+        self,
+        domain,  # This param should send when a domain class ask a random value
+        tag='',  # This param should send when a domain is segmented
+
+        # Other next params are space informations and
+        # They are from the class SearchSpace, from its SpaceInfo params
+        space_name=None,
+        distribution=None,
+        space_learning_rate=1
+    ):
+
+        if space_name is None:
+            return None, None
+
+        name = space_name + tag
+        try:
+            return self._model[name], name
+        except KeyError:
+            self._model[name] = self._db.get_sampler(
+                distribute_name=distribution,
+                random_instance=self.rand,
+                space_learning_rate=space_learning_rate,
+                domain=domain,
             )
 
-        return subspace_name
+        return self._model[name], name
 
     def __register_sample__(self, space_name, value):
         try:
@@ -99,42 +132,49 @@ class ModelSampler(Sampler):
     #################################################################
 
     @check_slice_limits
-    def get_int(self, min, max, space_name=None):
-        if space_name is None:
+    def get_int(self, min, max, **kwd):
+        model, model_key = self.__get_sampler(**kwd)
+
+        if model is None:
             return super().get_int(min, max)
 
-        value = self._model[space_name].get_random_value(min, max)
+        value = model.get_random_value(min, max)
         decimal = value - int(value)
         value = int(value) if decimal <= 0.5 else int(value) + 1
 
-        return self.__register_sample__(space_name, value)
+        return self.__register_sample__(model_key, value)
 
     @check_slice_limits
-    def get_float(self, min, max, space_name=None):
-        if space_name is None:
+    def get_float(self, min, max, **kwd):
+        model, model_key = self.__get_sampler(**kwd)
+
+        if model is None:
             return super().get_float(min, max)
 
-        value = self._model[space_name].get_random_value(min, max)
+        value = model.get_random_value(min, max)
 
-        return self.__register_sample__(space_name, value)
+        return self.__register_sample__(model_key, value)
 
-    def choice(self, options, space_name=None):
-        if space_name is None:
+    def choice(self, options, **kwd):
+        model, model_key = self.__get_sampler(**kwd)
+
+        if model is None:
             return super().choice(options)
 
-        idx, value = self._model[space_name].choice_random_option(options)
-        self.__register_sample__(space_name, idx)
+        idx, value = model.choice_random_option(options)
+        self.__register_sample__(model_key, idx)
 
         return value
 
-    def get_boolean(self, space_name=None):
-        if space_name is None:
+    def get_boolean(self, **kwd):
+        model, model_key = self.__get_sampler(**kwd)
+        if model is None:
             return super().get_boolean()
 
-        value = self._model[space_name].get_random_value(0, 1)
+        value = model.get_random_value(0, 1)
         value = 0 if value <= 0.5 else int(value) + 1
 
-        return self.__register_sample__(space_name, value)
+        return self.__register_sample__(model_key, value)
 
     #################################################################
     #                                                               #

@@ -8,10 +8,6 @@ class SelectDistributionError(Exception):
     pass
 
 
-class SelectDomainError(Exception):
-    pass
-
-
 NORMAL = 'Normal'
 
 
@@ -25,14 +21,11 @@ class NormalDistribution(Distribution):
         self.initial_values = (args, kwds)
 
     @staticmethod
-    def create_new_instance(domain, *args, **kwds):
-        try:
-            min, max = domain.limits
-        except TypeError:
-            raise SelectDistributionError(
-                'NormalDistribution need a domain with limited domain')
-        except AttributeError:
-            raise SelectDomainError("The selected domain don't have limits")
+    def create_new_instance(domain: List, *args, **kwds):
+        if len(domain) == 2:
+            min, max = domain
+        else:
+            min, max = 0, len(domain)
 
         return NormalDistribution(
             mean=(min + max) / 2,
@@ -83,18 +76,10 @@ class BernoulliDistribution(Distribution):
         self.initial_values = (args, kwds)
 
     @staticmethod
-    def create_new_instance(domain, *args, **kwds):
-        try:
-            options = domain.limits
-            assert isinstance(options, Iterable)
-        except AssertionError:
-            raise SelectDistributionError(
-                'BernoulliDistribution need a domain with an option list')
-        except AttributeError:
-            raise SelectDomainError("The selected domain don't have limits")
+    def create_new_instance(domain: List, *args, **kwds):
 
         return BernoulliDistribution(
-            df=dict([(op, 1) for op in options])
+            df=dict([(op, 1) for op in domain])
             * args, **kwds
         )
 
@@ -162,7 +147,7 @@ class BooleanBernoulliDistribution(Distribution):
         self.initial_values = (args, kwds)
 
     @staticmethod
-    def create_new_instance(*args, **kwds):
+    def create_new_instance(domain, *args, **kwds):
         return BooleanBernoulliDistribution(
             p=0.5, *args, **kwds
         )
