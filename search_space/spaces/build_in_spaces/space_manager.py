@@ -237,7 +237,6 @@ class SpaceFactory(SearchSpace):
     def __init__(
         self, _type,
         distribute_like=None,
-        sampler=None,
         ast=None,
         clean_asts=None,
         layers=[],
@@ -248,7 +247,6 @@ class SpaceFactory(SearchSpace):
         super().__init__(
             _type,
             distribute_like,
-            sampler,
             ast_constraint.AstRoot() if ast is None else ast,
             ast_constraint.AstRoot() if ast is None else clean_asts,
             layers,
@@ -351,6 +349,9 @@ class SelfSpace:
         return params.build_result(result.sample)
 
     def __getattr__(self, __name: str):
+        if __name == 'self_space':
+            return super().__getattr__(__name)
+
         return getattr(self.self_space, __name)
 
     def __setattr__(self, __name: str, __value: Any) -> None:
@@ -393,7 +394,6 @@ class UnionSpace(SearchSpace):
         self,
         *domain,
         distribute_like=BERNOULLI,
-        sampler=None,
         ast=None,
         clean_asts=None,
         layers=[],
@@ -403,12 +403,11 @@ class UnionSpace(SearchSpace):
         super().__init__(
             CategoricalDomain(domain),
             distribute_like,
-            sampler,
             ast_constraint.AstRoot() if ast is None else ast,
             ast_constraint.AstRoot() if ast is None else clean_asts,
+            path=path,
             layers=[visitors.TypeDomainModifierVisitor()] if len(
-                layers) == 0 else layers,
-            path=path
+                layers) == 0 else layers
         )
 
     def get_sample(self, params: GetSampleParameters) -> GetSampleResult:
@@ -461,7 +460,6 @@ class UnionSpace(SearchSpace):
 
         result = type(self)(
             distribute_like=self.__distribute_like__,
-            sampler=None,
             ast=ast_constraint.AstRoot(copy(self.ast_constraint.asts)),
             clean_asts=ast_constraint.AstRoot(copy(self._clean_asts.asts)),
             layers=copy(self.visitor_layers),
