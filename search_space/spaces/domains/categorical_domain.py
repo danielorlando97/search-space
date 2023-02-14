@@ -17,14 +17,17 @@ class CategoricalDomain(Domain):
     def tag(self):
         return self._tag
 
+    def __hash__(self) -> int:
+        return hash(self.tag)
+
     def is_invalid(self):
         return len(self.list) == 0
 
     def __copy__(self):
         return CategoricalDomain(self.list)
 
-    def get_sample(self, sampler: ModelSampler, space_name: str = None):
-        return sampler.choice(self.list, space_name=space_name)
+    def get_sample(self, sampler: ModelSampler, **kwd):
+        return sampler.choice(self.list, **kwd)
 
     @property
     def limits(self):
@@ -101,3 +104,6 @@ class CategoricalDomain(Domain):
 
     def __or__(self, __o):
         return BachedDomain(self, __o)
+
+    def __hash__(self) -> int:
+        return self.limits

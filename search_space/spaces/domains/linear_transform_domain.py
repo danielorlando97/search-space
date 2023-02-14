@@ -10,6 +10,7 @@ from search_space.utils.itertools import is_iterable
 
 
 class LinearTransformedDomain(Domain, metaclass=nsp.LinealTransformed):
+
     def __init__(
         self,
         original_domain: NumeralDomain,
@@ -25,9 +26,12 @@ class LinearTransformedDomain(Domain, metaclass=nsp.LinealTransformed):
         self.original_domain.max = self._transform_origin_to_new(
             self.original_domain.max)
 
+    def __hash__(self) -> int:
+        return hash(self.tag)
+
     @property
     def tag(self):
-        return self.original_domain.tag
+        return self.original_domain.min, self.original_domain.max, self.ind_v
 
     def is_invalid(self):
         return self.original_domain.is_invalid()
@@ -48,9 +52,9 @@ class LinearTransformedDomain(Domain, metaclass=nsp.LinealTransformed):
 
         return [self._transform_origin_to_new(item) for item in values]
 
-    def get_sample(self, sampler: Sampler, space_name=None):
+    def get_sample(self, sampler: Sampler, **kwd):
         return self._transform_new_to_origin(
-            self.original_domain.get_sample(sampler, space_name=space_name)
+            self.original_domain.get_sample(sampler, **kwd)
         )
 
     def __eq__(self, __o: object) -> bool:

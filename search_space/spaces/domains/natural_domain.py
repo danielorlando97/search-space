@@ -2,7 +2,6 @@ from search_space.errors import InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
 from search_space.spaces.domains.__base__ import NumeralDomain
 from search_space.spaces.domains.linear_transform_domain import LinearTransformedDomain
-from search_space.spaces.search_space import SpaceInfo
 from .bached_domain import BachedDomain, LogBachedDomain
 from search_space.sampler import Sampler
 from . import __namespace__ as nsp
@@ -17,10 +16,11 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
     def __copy__(self):
         return NaturalDomain(self.min, self.max)
 
-    # BUG: Refactor get_sample of domains class
-    #      because SpaceInfo class have been created
-    def get_sample(self, sampler: Sampler, space_info: SpaceInfo = None):
-        return sampler.get_int(self.min, self.max, **space_info)
+    def get_sample(self, sampler: Sampler, **kwd):
+        return sampler.get_int(self.min, self.max, **kwd)
+
+    def __hash__(self) -> int:
+        return hash(self.tag)
 
     @property
     def limits(self):

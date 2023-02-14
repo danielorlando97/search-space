@@ -6,7 +6,7 @@ from search_space.spaces.search_space import SpaceInfo
 
 class DomainProtocol:
 
-    def get_sample(self, sampler: Sampler, space_info: SpaceInfo):
+    def get_sample(self, sampler: Sampler, **kwd):
         pass
 
     def __copy__(self):

@@ -93,6 +93,9 @@ class Infinity:
 
         return float(INFINITY_MIN_VALUE)
 
+    def __hash__(self) -> int:
+        return hash('oo') if self.positive else hash('-oo')
+
 
 # Instancia global de infinito
 oo = Infinity()

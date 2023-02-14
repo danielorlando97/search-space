@@ -16,8 +16,11 @@ class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
     def __copy__(self):
         return ContinuosDomain(self.min, self.max)
 
-    def get_sample(self, sampler: ModelSampler, space_name: str = None):
-        return sampler.get_float(self.min, self.max, space_name=space_name)
+    def get_sample(self, sampler: ModelSampler, **kwd):
+        return sampler.get_float(self.min, self.max, **kwd)
+
+    def __hash__(self) -> int:
+        return hash(self.tag)
 
     @property
     def limits(self):

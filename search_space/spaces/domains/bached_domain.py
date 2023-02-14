@@ -30,17 +30,12 @@ class BachedDomain(Domain, metaclass=nsp.BachedDomain):
         self.is_invalid()
         return tuple([d.limits for d in self.domains])
 
-    def get_sample(self, sampler: ModelSampler, space_name: str = None):
-        if not self.model_sample_name:
-            self.model_sample_name = sampler.expand_space(
-                space_name, 'segmentation', BERNOULLI,
-                options=[d.tag for d in self.domains]
-            )
+    def get_sample(self, sampler: ModelSampler, **kwd):
+        bache = sampler.choice(
+            self.domains, tag='segmentation', ** (kwd | {'distribution': BERNOULLI})
+        )
 
-        bache = sampler.choice(self.domains, self.model_sample_name)
-        bach_tag = sampler.expand_space(space_name, bache.tag)
-
-        return bache.get_sample(sampler, bach_tag)
+        return bache.get_sample(sampler, tag=bache.tag, **kwd)
 
     def __copy__(self):
         return BachedDomain(*[copy(d) for d in self.domains])

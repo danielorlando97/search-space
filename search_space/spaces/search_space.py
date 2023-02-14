@@ -352,7 +352,7 @@ class BasicSearchSpace:
         #   into the main space, .... All of those are into the struct SpaceInfo,
         #   it save in self.__info__
 
-        return domain.get_sample(params.sampler, self.__info__), params.context
+        return domain.get_sample(params.sampler, **self.__info__), params.context
 
     def __check_sample__(self, sample, ast_result, params: GetSampleParameters):
         visitors.ValidateSampler().transform_to_check_sample(ast_result, sample, params)

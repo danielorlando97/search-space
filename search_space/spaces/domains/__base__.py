@@ -25,7 +25,7 @@ class NumeralDomain(Domain, nsp.NumeralDomainProtocol):
 
     @property
     def tag(self):
-        return (self.min, self.max)
+        return self.min, self.max
 
     def is_invalid(self):
         return self.min > self.max
