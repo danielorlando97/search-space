@@ -27,7 +27,7 @@ class ListSlicePointer:
     """
 
     def __init__(self, _slice, tensor, dims) -> None:
-        self.slice: slice = _slice[0]
+        self.slice: slice = _slice
         self.tensor: ListSearchSpace = tensor
         self.dims = dims
 
@@ -209,6 +209,8 @@ class ListSearchSpace(BasicSearchSpace):
             if i.start < 0 or i.stop >= shape:
                 raise NotEvaluateError()
 
+        return tuple(index)
+
     def _create_sampler_by_index(self, index):
         """
             This function initialize and get the space of index
@@ -239,7 +241,7 @@ class ListSearchSpace(BasicSearchSpace):
             )
 
     def __getitem__(self, index):
-        self._check_limits(index)
+        index = self._check_limits(index)
         # if type(index) == type(list()):
         #     index = tuple(index)
 
@@ -247,8 +249,8 @@ class ListSearchSpace(BasicSearchSpace):
         #     if isinstance(i, slice):
         #         break
         # else:
-        if isinstance(index, slice):
-            return ListSlicePointer(index, self, self._current_shape)
+        if isinstance(index[0], slice):
+            return ListSlicePointer(index[0], self, self._current_shape)
 
         self._create_sampler_by_index(index)
         return TensorIndexPointer(index, self)
@@ -309,7 +311,7 @@ class ListSearchSpace(BasicSearchSpace):
             self._create_sampler_by_index(index)
             result[index[0]] = self.samplers[index].get_sample(params).sample
 
-        return params.build_result(result)
+        return result, params.context
 
     def __sample_index__(self, index, params: GetSampleParameters):
         dynamic_result = params.context.get_sampler_value(self)
@@ -525,12 +527,10 @@ class TensorSearchSpace(BasicSearchSpace):
         # if there are some errors
         params = params.create_child_context(f'{self.space_name}_index')
 
-        return params.build_result(
-            self.iter_virtual_list(
-                shape, [],
-                lambda index: self[index].get_sample(params).sample
-            )
-        )
+        return self.iter_virtual_list(
+            shape, [],
+            lambda index: self[index].get_sample(params).sample
+        ),  params.context
 
     def __sample_index__(self, index, params: GetSampleParameters):
         return self.samplers[index].get_sample(params)

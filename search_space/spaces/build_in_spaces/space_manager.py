@@ -262,7 +262,7 @@ class SpaceFactory(SearchSpace):
                 if isinstance(member.space, BasicSearchSpace):
                     self._sub_space[name] = copy(member.space)
                     self._sub_space[name].set_hash(hash(member.space))
-                    self._sub_space[name].path_space = f'path.{name}'
+                    self._sub_space[name].path_space = f'{path}.{name}'
                     self._sub_space[name].layers_append(
                         visitors.EvalAstChecked(),
                         visitors.MemberAstModifierVisitor(self, name)
