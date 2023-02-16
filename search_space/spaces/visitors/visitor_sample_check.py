@@ -409,18 +409,23 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         a = self.visit(node.target, current_index)
 
         try:
-            space = getattr(a, b)
+            space = getattr(a, b)  # Get instance of Domain
         except AttributeError:
             raise InvalidSampler(
                 f"inconsistent sampler => {a} don't has {b} member")
 
         try:
-            sampler = space.get_sample
+
+            get_sampler = space.get_sample
         except AttributeError:
             raise InvalidSampler(
                 f"inconsistent sampler => {a}.{b} isn't search space")
 
-        return sampler(a.__instance_context__).sample
+        context = a.__instance_context__.context
+        sampler = a.__instance_context__.sampler
+        # Domain is the public interface. it waits a context and a sample
+        result, _ = get_sampler(context=context, sampler=sampler)
+        return result
 
     @ visitor.when(constraints.SelfNode)
     def visit(self, node, current_index=[], is_main_node=False):

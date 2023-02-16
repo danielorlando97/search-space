@@ -210,7 +210,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
                 inverse=lambda x: x * factor,
                 independent_value=ind
             ) for ind in range(*self._get_range(factor))
-                if not abs(ind) in value
+                if not ind % factor in value
             ]
         )
 
@@ -224,7 +224,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
                 transformer=lambda x: x/factor,
                 inverse=lambda x: x * factor,
                 independent_value=ind
-            ) for ind in range(*self._get_range(factor)) if abs(ind) < value]
+            ) for ind in range(*self._get_range(factor)) if ind % factor < value]
         )
 
     def __mod_gt__(self, factor, value):
@@ -237,7 +237,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
                 transformer=lambda x: x/factor,
                 inverse=lambda x: x * factor,
                 independent_value=ind
-            ) for ind in range(*self._get_range(factor)) if abs(ind) > value]
+            ) for ind in range(*self._get_range(factor)) if ind % factor > value]
         )
 
     def __mod_ge__(self, factor, value):
@@ -250,7 +250,7 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
                 transformer=lambda x: x/factor,
                 inverse=lambda x: x * factor,
                 independent_value=ind
-            ) for ind in range(*self._get_range(factor)) if abs(ind) >= value]
+            ) for ind in range(*self._get_range(factor)) if ind % factor >= value]
         )
 
     def __mod_le__(self, factor, value):
@@ -263,5 +263,5 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
                 transformer=lambda x: x/factor,
                 inverse=lambda x: x * factor,
                 independent_value=ind
-            ) for ind in range(*self._get_range(factor)) if abs(ind) <= value]
+            ) for ind in range(*self._get_range(factor)) if ind % factor <= value]
         )

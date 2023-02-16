@@ -99,7 +99,7 @@ class BasicSearchSpace:
         self.initial_domain = initial_domain
         self.__distribute_like__: str = distribute_like
         self.space_name = self.__class__.__name__ if name is None else name
-        self.path_space = path
+        self._path_space = path
 
         # generation vars
         self.visitor_layers: List[VisitorLayer] = [
@@ -118,6 +118,15 @@ class BasicSearchSpace:
             distribution=distribute_like,
             learning_rate=self.config.simply_learning_rate
         )
+
+    @property
+    def path_space(self):
+        return self._path_space
+
+    @path_space.setter
+    def path_space(self, value):
+        self._path_space = value
+        self.__info__.path_space = value
 
     def change_distribution(self, distribution):
         self.__distribute_like__ = distribution

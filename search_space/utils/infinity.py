@@ -27,8 +27,9 @@ class Infinity:
     def __gt__(self, other):
         return self.positive
 
+    # Potential BUG
     def __eq__(self, other):
-        return False
+        return isinstance(other, Infinity) and other.positive == self.positive
 
     def __neg__(self):
         return Infinity(not self.positive)
