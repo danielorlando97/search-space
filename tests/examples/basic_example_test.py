@@ -30,8 +30,8 @@ class BasicExamples(TestCase):
 
         @replay_function
         def ______():
-            v, context = space.get_sample()
-            vy, _ = space2.get_sample(context)
+            v, configs = space.get_sample()
+            vy, _ = space2.get_sample(*configs)
             assert vy < v
 
 
@@ -43,8 +43,8 @@ class BasicExamples(TestCase):
 
         @replay_function
         def ______():
-            bool_, context = space.get_sample()
-            string, _ = space2.get_sample(context)
+            bool_, configs = space.get_sample()
+            string, _ = space2.get_sample(*configs)
             
             if bool_:
                 assert string != '1'
@@ -86,8 +86,8 @@ class BasicExamples(TestCase):
 
         @replay_function
         def ______():
-            v, context = space.get_sample()
-            v1, _ = space2.get_sample(context)
+            v, configs = space.get_sample()
+            v1, _ = space2.get_sample(*configs)
             
             assert v1 < factorial(v)
 

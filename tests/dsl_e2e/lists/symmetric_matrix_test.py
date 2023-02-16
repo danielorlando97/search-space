@@ -19,8 +19,8 @@ class SymmetricMatrix(TestCase):
         )
 
         def test():
-            matrix, context = matrix_space.get_sample()
-            size, _ = matrix_size.get_sample(context)
+            matrix, configs = matrix_space.get_sample()
+            size, _ = matrix_size.get_sample(*configs)
 
             assert len(matrix) == size
             for i, row in enumerate(matrix):

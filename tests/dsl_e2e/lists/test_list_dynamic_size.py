@@ -12,8 +12,8 @@ class DynamicList(TestCase):
 
         @replay_function
         def ______():
-            values, context = space.get_sample()
-            l, context = len_space.get_sample(context=context)
+            values, configs = space.get_sample()
+            l, _ = len_space.get_sample(*configs)
 
             assert len(values) == l
 
@@ -23,8 +23,8 @@ class DynamicList(TestCase):
 
         @replay_function
         def ______():
-            values, context = space.get_sample()
-            l, context = len_space.get_sample(context=context)
+            values, configs = space.get_sample()
+            l, _ = len_space.get_sample(*configs)
 
             assert len(values) == l
 
