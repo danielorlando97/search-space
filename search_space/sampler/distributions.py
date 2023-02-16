@@ -65,13 +65,13 @@ class NormalDistribution(Distribution):
 
     def segmentation(self, domain, *args, **kwds) -> 'Distribution':
         if len(domain) == 2:
-            min, max = domain
+            _min, _max = domain
         else:
-            min, max = 0, len(domain)
+            _min, _max = 0, len(domain)
 
-        mean = self.mean if min <= self.mean and self.mean <= max else (
-            max + min)/2
-        dev = min(self.dev, (max - min))
+        mean = self.mean if _min <= self.mean and self.mean <= _max else (
+            _max + _min)/2
+        dev = min(self.dev, (_max - _min))
 
         return NormalDistribution(
             mean=mean, dev=dev, *args, **kwds
@@ -93,7 +93,10 @@ class BernoulliDistribution(Distribution):
     def create_new_instance(domain: List, *args, **kwds):
         df = {}
         for op in domain:
-            df[op] = 1
+            try:
+                df[op.tag] = 1
+            except AttributeError:
+                df[op] = 1
 
         return BernoulliDistribution(
             df=df,
@@ -107,6 +110,11 @@ class BernoulliDistribution(Distribution):
 
     def find_option(self, option):
         try:
+            option = option.tag
+        except AttributeError:
+            pass
+
+        try:
             return self.df[option]
         except KeyError:
             # The only case when into the options there are
@@ -118,10 +126,10 @@ class BernoulliDistribution(Distribution):
             # there is either (y, _) or (_, z)
 
             y, z = option
-            old_option = next(
-                filter(lambda x: len(x) == 2 and x[0] == y or x[1] == z),
+            old_option = next(filter(
+                lambda x: len(x) == 2 and (x[0] == y or x[1] == z),
                 self.df.keys()
-            )
+            ))
 
             self.df[option] = self.df[old_option]
             return self.df[option]
