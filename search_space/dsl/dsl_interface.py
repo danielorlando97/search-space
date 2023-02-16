@@ -101,7 +101,7 @@ class SpaceDomain(Generic[T]):
     def get_sample(self, context: SamplerContext = None, sampler: ModelSampler = None) -> Tuple[T, SamplerContext]:
         params = GetSampleParameters(context, sampler)
         result = self.space.get_sample(params)
-        return result.sample, result
+        return result.sample, (result.context, result.sampler)
 
     @property
     def random_sample(self) -> T:
