@@ -17,7 +17,7 @@ class BasicCategoricalSearchSpace(BasicSearchSpace):
         super().__init__(
             CategoricalDomain(domain),
             distribute_like=distribute_like,
-            path=path
+            path=path, tag=str
         )
 
 
@@ -31,5 +31,5 @@ class BasicBooleanSearchSpace(BasicSearchSpace):
         super().__init__(
             CategoricalDomain(domain),
             distribute_like=distribute_like,
-            path=path
+            path=path, tag=bool
         )

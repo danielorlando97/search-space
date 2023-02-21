@@ -15,11 +15,11 @@ __all__ = [
 class BasicContinueSearchSpace(BasicSearchSpace):
     def __init__(self, min=-oo, max=oo, distribute_like=NORMAL, path=None) -> None:
         path = 'float_space' if path is None else path
-        super().__init__(ContinuosDomain(min, max), distribute_like, path=path)
+        super().__init__(ContinuosDomain(min, max), distribute_like, path=path, tag=float)
 
 
 @SpacesManager.registry(int)
 class BasicNaturalSearchSpace(BasicSearchSpace):
     def __init__(self, min=-oo, max=oo, distribute_like=NORMAL, path=None) -> None:
         path = 'int_space' if path is None else path
-        super().__init__(NaturalDomain(min, max), distribute_like, path=path)
+        super().__init__(NaturalDomain(min, max), distribute_like, path=path, tag=int)

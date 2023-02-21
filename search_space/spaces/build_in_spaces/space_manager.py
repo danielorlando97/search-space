@@ -9,7 +9,7 @@ from typing import Any, List, Type, Callable, Dict
 from search_space.utils.singleton import Singleton
 from search_space.spaces.search_space import SearchSpace, GetSampleParameters, GetSampleResult
 from search_space.spaces.asts import constraints as ast_constraint
-from typing import _UnionGenericAlias
+from typing import _UnionGenericAlias, Union
 from search_space.spaces.domains.categorical_domain import CategoricalDomain
 
 
@@ -98,7 +98,7 @@ class FunctionParamInfo:
 
             name = value.space_name
             path_space = value.path_space
-            value.path_space = path_space if path is None else path
+            value.path_space = path_space if path is None else f'{path}.{self.name}'
 
         result = value.get_sample(params)
 
@@ -240,7 +240,8 @@ class SpaceFactory(SearchSpace):
         ast=None,
         clean_asts=None,
         layers=[],
-        path=None
+        path=None,
+        tag=None
     ) -> None:
         path = _type.__name__ if path is None else path
 
@@ -250,7 +251,8 @@ class SpaceFactory(SearchSpace):
             ast_constraint.AstRoot() if ast is None else ast,
             ast_constraint.AstRoot() if ast is None else clean_asts,
             layers,
-            path=path
+            path=path,
+            tag=_type
         )
 
         self.type = _type
@@ -342,6 +344,7 @@ class SelfSpace:
         self.self_space = None
         self.ast_cache = []
         self.path_space = path
+        self.tag = 'Self'
 
     def get_sample(self, params: GetSampleParameters) -> GetSampleResult:
         self_params = GetSampleParameters(sampler=params.sampler)
@@ -378,6 +381,7 @@ class SelfSpace:
 class NoneSpace(BasicSearchSpace):
     def __init__(self) -> None:
         super().__init__(None, None)
+        self.tag = None
 
     def get_sample(self, params: GetSampleParameters, local_domain=None):
         return params.build_result(None)
@@ -397,7 +401,8 @@ class UnionSpace(SearchSpace):
         ast=None,
         clean_asts=None,
         layers=[],
-        path=None
+        path=None,
+        tag=None
     ) -> None:
 
         super().__init__(
@@ -406,6 +411,7 @@ class UnionSpace(SearchSpace):
             ast_constraint.AstRoot() if ast is None else ast,
             ast_constraint.AstRoot() if ast is None else clean_asts,
             path=path,
+            tag=None,
             layers=[visitors.TypeDomainModifierVisitor()] if len(
                 layers) == 0 else layers
         )
@@ -431,6 +437,8 @@ class UnionSpace(SearchSpace):
              for i, space in enumerate(self.initial_domain.list)]
         )
 
+        self.tag = 'Union[' + \
+            ','.join(map(lambda x: str(x.tag), self.initial_domain.list)) + ']',
         return self
 
     def __ast_optimization__(self, ast_list):
