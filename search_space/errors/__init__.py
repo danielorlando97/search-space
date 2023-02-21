@@ -56,3 +56,7 @@ class ArgumentFunctionError(Exception):
 
 class RecursionErrorSpaceDefinition(Exception):
     pass
+
+
+class RootNameError(Exception):
+    pass

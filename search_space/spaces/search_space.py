@@ -70,9 +70,19 @@ class SpaceInfo(UncompressClass):
     This struct is to send some info about the space 
     to its domain and sampler as easy and maintained way  
     """
-
-    path_space: str
     distribution: str
+
+    # Genetic samplers use path spaces as key of hyperparamters dict
+    # When the search space is hieratichical there isn't problems
+    # all of class have different types with different names
+    # and there is usually an only root to generate sampler.
+    # But we also can investigations with functional spaces
+    # where there are more than one root and those roots
+    # sometime have the same type. Usually when one space is root
+    # its path_space is its type name. So, this cases where there're
+    # more than one root the genetic samplers will have a contradictions.
+    # In that case they have to use the hash to try to resolve them.
+    path_space: str
 
     # How we have context dependency, it isn't enough
     # one hyperparameter as learning rate. We have to
@@ -92,7 +102,7 @@ class BasicSearchSpace:
     #                                                               #
     #################################################################
 
-    def __init__(self, initial_domain, distribute_like=UNIFORM, name=None, path="") -> None:
+    def __init__(self, initial_domain, distribute_like=UNIFORM, name=None, path="", tag=None) -> None:
         # super().__init__()
 
         # space basic vars
@@ -100,6 +110,7 @@ class BasicSearchSpace:
         self.__distribute_like__: str = distribute_like
         self.space_name = self.__class__.__name__ if name is None else name
         self._path_space = path
+        self.tag = tag
 
         # generation vars
         self.visitor_layers: List[VisitorLayer] = [
@@ -151,7 +162,11 @@ class BasicSearchSpace:
             domain = self.initial_domain,
 
         result = type(self)(
-            *domain, distribute_like=self.__distribute_like__, path=self.path_space)
+            *domain,
+            distribute_like=self.__distribute_like__,
+            path=self.path_space,
+        )
+
         result.initial_domain = copy(self.initial_domain)
         result.space_name = f"{result.space_name}'"
         result.visitor_layers = [item for item in self.visitor_layers]
@@ -232,7 +247,8 @@ class BasicSearchSpace:
             ast=ast,
             clean_asts=self._clean_asts,
             layers=self.visitor_layers,
-            path=self.path_space
+            path=self.path_space,
+            tag=self.tag
         )
         ss.space_name = self.space_name
         ss.set_hash(hash(self))
@@ -369,8 +385,8 @@ class BasicSearchSpace:
 
 class SearchSpace(BasicSearchSpace):
 
-    def __init__(self, domain, distribute_like, ast, clean_asts, layers, path) -> None:
-        super().__init__(domain, distribute_like, path)
+    def __init__(self, domain, distribute_like, ast, clean_asts, layers, path, tag) -> None:
+        super().__init__(domain, distribute_like, path=path, tag=tag)
         self.learning_rate = self.config.dynamic_learning_rate
 
         # generation config
@@ -419,5 +435,6 @@ class SearchSpace(BasicSearchSpace):
             ast=ast_constraint.AstRoot(copy(self.ast_constraint.asts)),
             clean_asts=ast_constraint.AstRoot(copy(self._clean_asts.asts)),
             layers=copy(self.visitor_layers),
-            path=self.path_space
+            path=self.path_space,
+            tag=self.tag
         )
