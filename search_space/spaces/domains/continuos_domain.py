@@ -17,6 +17,9 @@ class ContinuosDomain(NumeralDomain, metaclass=nsp.ContinuosDomain):
         return ContinuosDomain(self.min, self.max)
 
     def get_sample(self, sampler: ModelSampler, **kwd):
+        if not 'tag' in kwd:
+            kwd['tag'] = self.tag
+
         return sampler.get_float(self.min, self.max, **kwd)
 
     def __hash__(self) -> int:

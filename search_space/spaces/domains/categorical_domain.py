@@ -27,6 +27,12 @@ class CategoricalDomain(Domain):
         return CategoricalDomain(self.list)
 
     def get_sample(self, sampler: ModelSampler, **kwd):
+        if not 'tag' in kwd:
+            kwd['tag'] = 'choice'
+
+        if len(self.list) == 1:
+            return self.list[0]
+
         return sampler.choice(self.list, **kwd)
 
     @property

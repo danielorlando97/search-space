@@ -17,6 +17,9 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
         return NaturalDomain(self.min, self.max)
 
     def get_sample(self, sampler: Sampler, **kwd):
+        if not 'tag' in kwd:
+            kwd['tag'] = self.tag
+
         return sampler.get_int(self.min, self.max, **kwd)
 
     def __hash__(self) -> int:
