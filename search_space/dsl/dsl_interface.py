@@ -3,6 +3,8 @@ from search_space.spaces.build_in_spaces import ListSearchSpace, SpacesManager, 
 from search_space.spaces.search_space import SearchSpace, GetSampleParameters
 from search_space.context_manager import SamplerContext
 from search_space.sampler import ModelSampler
+from search_space.errors import RootNameError
+
 T = TypeVar("T")
 
 
@@ -17,9 +19,19 @@ class TypeBuilder(Generic[T]):
     def space(self):
         return self._space if not self.is_tensor_type else self.__space
 
-    def __call__(self, constraints=None, min=None, max=None, options=None, distribute_like=None):
+    def __call__(
+        self,
+        constraints=None,
+        min=None,
+        max=None,
+        options=None,
+        distribute_like=None,
+        tag=None
+    ):
 
-        kwarg = {}
+        kwarg = {
+            'path': None
+        }
 
         if not distribute_like is None:
             kwarg['distribute_like'] = distribute_like
@@ -109,8 +121,8 @@ class SpaceDomain(Generic[T]):
 
 
 class DomainFactory(TypeBuilder, Generic[T]):
-    def __call__(self, constraint_fun=None, min=None, max=None, options=None, distribute_like=None) -> SpaceDomain[T]:
-        space = super().__call__(constraint_fun, min, max, options, distribute_like)
+    def __call__(self, constraint_fun=None, min=None, max=None, options=None, distribute_like=None, tag=None) -> SpaceDomain[T]:
+        space = super().__call__(constraint_fun, min, max, options, distribute_like, tag)
         return SpaceDomain[T](space)
 
     def __getitem__(self, item) -> 'DomainFactory[List[T]]':
