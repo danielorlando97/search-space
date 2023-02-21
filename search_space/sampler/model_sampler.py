@@ -65,6 +65,82 @@ class Sampler:
         return self.rand.uniform(0, 1) < 0.5
 
 
+# class DistributionManager:
+#     def __init__(self, path_space, hash_space) -> None:
+#         self.db = SamplerDataBase()
+#         self.path_space = path_space
+#         self.hash_space = hash_space
+#         self.segments = {}
+
+#     def __eq__(self, __o: object) -> bool:
+#         return __o == self.hash_space
+
+#     def get_model(
+#         self,
+#         domain,  # This param should send when a domain class ask a random value
+#         # This param should send when a domain is segmented
+#         tag: Union[str, tuple] = '',
+
+#         # Other next params are space informations and
+#         # They are from the class SearchSpace, from its SpaceInfo params
+#         distribution=None,
+#         learning_rate=1,
+#         check_segmentation=False,
+#         random_instance=None
+#     ):
+#         if tag == '':
+#             try:
+#                 return self.model
+#             except AttributeError:
+#                 self.model = self.db.get_sampler(
+#                     distribute_name=distribution,
+#                     random_instance=random_instance,
+#                     space_learning_rate=learning_rate,
+#                     domain=domain,
+#                 )
+
+#                 return self.model
+
+#         if tag == 'segmentation':
+#             try:
+#                 return self.model_segmentation
+#             except AttributeError:
+#                 self.model_segmentation = self.db.get_sampler(
+#                     distribute_name=distribution,
+#                     random_instance=random_instance,
+#                     space_learning_rate=learning_rate,
+#                     domain=domain,
+#                 )
+
+#                 return self.model_segmentation
+
+#         if (
+#             check_segmentation and not tag in self.segments
+#             and type(tag) == tuple and len(tag) == 2
+#         ):
+#             previous_domains = [
+#                 (abs(x[1] - x[0]), x) for x in self.segments.keys()
+#                 if type(x) == tuple and (x[0] == tag[0] or x[1] == tag[1])
+#             ]
+
+#             if any(previous_domains):
+#                 _, base = min(previous_domains)
+#                 self.segments[tag] = self.segments[base].segmentation(
+#                     domain=tag,
+#                     random_instance=random_instance,
+#                     space_learning_rate=learning_rate,
+#                 )
+#             else:
+#                 self.segments[tag] = self.db.get_sampler(
+#                     distribute_name=distribution,
+#                     random_instance=random_instance,
+#                     space_learning_rate=learning_rate,
+#                     domain=domain,
+#                 )
+
+#         return self.segments[tag]
+
+
 class ModelSampler(Sampler):
 
     def __init__(self, model=None) -> None:
@@ -87,7 +163,7 @@ class ModelSampler(Sampler):
         path_space=None,
         distribution=None,
         learning_rate=1,
-        check_segmentation=False
+        check_segmentation=False,
     ):
 
         if path_space is None:
