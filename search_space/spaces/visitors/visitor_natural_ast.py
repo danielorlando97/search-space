@@ -153,11 +153,15 @@ class NaturalAstVisitor:
 
         value = getattr(a, b)
         try:
-            _ = value.get_sample
+            get_sampler = value.get_sample
         except AttributeError:
             return value
 
-        return value.get_sample(a.__instance_context__).sample
+        context = a.__instance_context__.context
+        sampler = a.__instance_context__.sampler
+        # Domain is the public interface. it waits a context and a sample
+        result, _ = get_sampler(context=context, sampler=sampler)
+        return result
 
     @ visitor.when(naturals_values.GetItem)
     def visit(self, node: naturals_values.GetItem):

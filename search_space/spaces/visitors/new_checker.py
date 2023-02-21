@@ -407,12 +407,17 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
                     f"inconsistent sampler => {a} don't has {b} member")
 
             try:
-                sampler = space.get_sample
+                get_sampler = space.get_sample
             except AttributeError:
                 raise InvalidSampler(
                     f"inconsistent sampler => {a}.{b} isn't search space")
 
-            return sampler(a.__instance_context__).sample
+            context = a.__instance_context__.context
+            sampler = a.__instance_context__.sampler
+            # Domain is the public interface. it waits a context and a sample
+            result, _ = get_sampler(context=context, sampler=sampler)
+            return result
+            # return sampler(a.__instance_context__).sample
 
         return itertools.map_reduce(a, b, f)
 
@@ -606,11 +611,15 @@ class ValidateSampler(VisitorLayer, metaclass=Singleton):
         def f(a, b):
             value = getattr(a, b)
             try:
-                _ = value.get_sample
+                get_sampler = value.get_sample
             except AttributeError:
                 return value
 
-            return value.get_sample(a.__instance_context__).sample
+            context = a.__instance_context__.context
+            sampler = a.__instance_context__.sampler
+            # Domain is the public interface. it waits a context and a sample
+            result, _ = get_sampler(context=context, sampler=sampler)
+            return result
 
         yield itertools.map_reduce(a, b, f)
 
