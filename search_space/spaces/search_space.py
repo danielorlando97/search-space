@@ -3,7 +3,7 @@ from typing import List, Generic, TypeVar
 from search_space.context_manager.runtime_manager import SearchSpaceConfig
 from search_space.sampler.distribution_names import UNIFORM
 from search_space.context_manager import SamplerContext
-from search_space.errors import ArgumentFunctionError, DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint
+from search_space.errors import ArgumentFunctionError, DetectedRuntimeDependency, InvalidSampler, InvalidSpaceConstraint, InvalidSpaceDefinition
 from search_space.errors import NotEvaluateError, CircularDependencyDetected
 from search_space.utils.itertools import UncompressClass
 from .asts import constraints as ast_constraint
@@ -28,10 +28,10 @@ class GetSampleResult(Generic[T]):
 @dataclass
 class GetSampleParameters:
     """
-    This struct contain all of dependencies that 
+    This struct contain all of dependencies that
     the function get_sample need to generate a new
-    sample. It also have some function to transform and 
-    mute this dependencies. 
+    sample. It also have some function to transform and
+    mute this dependencies.
     """
 
     context: SamplerContext = None
@@ -67,8 +67,8 @@ class GetSampleParameters:
 @dataclass
 class SpaceInfo(UncompressClass):
     """
-    This struct is to send some info about the space 
-    to its domain and sampler as easy and maintained way  
+    This struct is to send some info about the space
+    to its domain and sampler as easy and maintained way
     """
     distribution: str
 
@@ -225,7 +225,17 @@ class BasicSearchSpace:
         args += [ast_natural.IndexSelf(i)
                  for i in range(len(func_data.args) - 1 - len(defaults))]
 
-        args += [ast_natural.SpaceSelfNode(item.space) for item in defaults]
+        for item in defaults:
+            try:
+                s = item.space
+                if not s:
+                    raise AttributeError()
+            except AttributeError:
+                raise InvalidSpaceDefinition(
+                    "Some of the dependencies aren't valid spaces"
+                )
+
+            args.append(ast_natural.SpaceSelfNode(item.space))
 
         return func(*args)
 
