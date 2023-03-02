@@ -4,11 +4,23 @@ from search_space.spaces import FunctionalConstraint
 from search_space.functions.list import Map, Sum
 from typing import List
 import random
+from search_space.context_manager.runtime_manager import SearchSpaceConfig
+from search_space.spaces.printer_tools.default_printer_class import DefaultPrinter
 
 # For having a good folder distribution we add the following two lines
 # to add the previous path and to can look the main library
 import sys
 sys.path.append('../')
+
+
+SearchSpaceConfig(
+    verbose=True,
+    replay_nums=100,
+    printer=DefaultPrinter(),
+    minimal_numeral_limit=0,
+    maximal_numeral_limit=1000,
+)
+
 
 # %%
 
@@ -33,7 +45,7 @@ sys.path.append('../')
 
 
 class BagItem:
-    WeightDomain = Domain[float](min=0, max=100)
+    WeightDomain = Domain[float](max=100)
     PriceDomain = Domain[float](min=1, max=50)
 
     def __init__(self, w: float = WeightDomain, p: float = PriceDomain) -> None:
@@ -48,7 +60,7 @@ class BagProblem:
     ItemsLenDomain = Domain[int](min=5, max=20)
     ItemsDomain = Domain[BagItem][ItemsLenDomain]()
 
-    WeightDomain = Domain[float](min=0) | (
+    WeightDomain = Domain[float] | (
         lambda x, items=ItemsDomain: x < Sum(Map(items, lambda item: item.w))
     )
 
@@ -94,21 +106,23 @@ def random_bag_problem():
 
 
 @FunctionalConstraint
-def ComputingCurrentCapacity(w: float, items: List[BagItem], current_counts: List[float]):
+def ComputingCurrentCapacity(w: float, items: List[BagItem], current_counts: List[float], i):
     current_w = sum([
         count * item.w for count, item in zip(current_counts, items)
     ])
 
-    return (w - current_w) / items[len(current_counts)].w
+    result = (w - current_w) / items[len(current_counts)].w
+
+    return result if result > 0 else 0
 
 
 class BagSolution(BagProblem):
-    SolutionDomain = Domain[int][BagProblem.ItemsLenDomain] | (
+    SolutionDomain = Domain[int][BagProblem.ItemsLenDomain](min=0) | (
         lambda x, i,
         w=BagProblem.WeightDomain,
         items=BagProblem.ItemsDomain: (
             # x[i] < ComputingCurrentCapacity(w, items, x[:i - 1])
-            x[i] < ComputingCurrentCapacity(w, items, x[:i])
+            x[i] < ComputingCurrentCapacity(w, items, x[:i], i)
         )
     )
 
@@ -120,7 +134,7 @@ class BagSolution(BagProblem):
             item.w * count for item, count in zip(self.items, solution)
         ])
 
-        assert self.w >= weight
+        assert self.w >= weight, (self.w, weight)
         return price, solution
 
 # This is also clear, each step of the solution building we check how much weight
@@ -193,7 +207,7 @@ def genetic_search(
     optimal = 0
     the_solution = None
     for i in range(generation_limits):
-        news = [item for item in generation_limits]
+        news = [item for item in population]
 
         if mutably_op:
 
@@ -210,8 +224,11 @@ def genetic_search(
 
         values = []
         for i, solution in enumerate(news):
-            price, _ = problem.validate_solution(solution)
-            values.append(i, price)
+            try:
+                price, _ = problem.validate_solution(solution)
+            except AssertionError:
+                continue
+            values.append((i, price))
 
         values.sort(key=lambda x: x[0])
 
@@ -220,7 +237,7 @@ def genetic_search(
         else:
             optimal, the_solution = values[0][1], population[values[0][0]]
 
-        population = [population[i] for i, _ in values]
+        population = [news[i] for i, _ in values]
 
     return optimal, the_solution
 
