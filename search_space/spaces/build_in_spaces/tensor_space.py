@@ -38,7 +38,19 @@ class ListSlicePointer:
         dynamic_result = params.context.get_sampler_value(self.tensor)
 
         for index in range(*self.slice.indices(self.dims)):
-            if np.isnan(dynamic_result[index]):
+            value = dynamic_result[index]
+            try:
+                # Sometime, when the number is too big numpy throw the following error
+                # TypeError: ufunc 'isnan' not supported for the input types,
+                # and the inputs could not be safely coerced to any supported
+                # types according to the casting rule ''safe''
+                condition = np.isnan(value)
+            except TypeError:
+                # But, this error also means that this index has already sampled
+                # So, we only need to add it into the new list
+                condition = False
+
+            if condition:
                 # If one of slice's indexes hasn't sampled yet
                 # We have to get a nue sample for it
                 result = self.tensor.__sample_index__(
@@ -206,7 +218,11 @@ class ListSearchSpace(BasicSearchSpace):
             if i < 0 or i >= shape:
                 raise NotEvaluateError()
         except TypeError:
-            if i.start < 0 or i.stop >= shape:
+
+            if (
+                (i.start != None and i.start < 0) or
+                (i.stop != None and i.stop >= shape)
+            ):
                 raise NotEvaluateError()
 
         return tuple(index)

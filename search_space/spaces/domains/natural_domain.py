@@ -126,7 +126,15 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
             raise InvalidSpaceDefinition(
                 f"All values intro [{self.min}, {self.max}] are graters that {other}")
 
-        self.max = min(other - 0.51, self.max)
+        # if other - 0.51 <= self.min:
+        #     self.max = self.min
+        # else:
+        self.max = min(
+            # Numeral domains are invalid when min > max
+            # So, the new max cannot be lesser than min
+            max(other - 0.51, self.min), self.max
+        )
+
         return self
 
     def __gt__(self, other):
@@ -137,7 +145,15 @@ class NaturalDomain(NumeralDomain, metaclass=nsp.NaturalDomain):
             raise InvalidSpaceDefinition(
                 f"All values intro [{self.min}, {self.max}] are less that {other}")
 
-        self.min = max(other + 0.51, self.min)
+        # if other + 0.51 >= self.max:
+        #     self.min = self.max
+        # else:
+        self.min = max(
+            # Numeral domains are invalid when min > max
+            # So, the new min cannot be higher than max
+            min(other + 0.51, self.max), self.min
+        )
+
         return self
 
     def __rlt__(self, other):
