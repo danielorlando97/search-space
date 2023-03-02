@@ -12,15 +12,15 @@ from tests.config import replay_function
 
 
 class BagItem:
-    WeightDomain = Domain[float]()
-    PriceDomain = Domain[float](max=50)
+    WeightDomain = Domain[float](min=0)
+    PriceDomain = Domain[float](min=0, max=50)
 
     def __init__(self, w: float = WeightDomain, p: float = PriceDomain) -> None:
         self.w, self.p = w, p
 
 
 class BagProblem:
-    WeightDomain = Domain[float](max=100)
+    WeightDomain = Domain[float](min=0, max=100)
     ItemsLenDomain = Domain[int](min=5, max=20)
     ItemsDomain = Domain[BagItem][ItemsLenDomain] | (
         lambda x, i, w=WeightDomain: x[i].WeightDomain < w
