@@ -64,12 +64,20 @@ class FunctionNode(NaturalValue):
         self.args = args
         self.kwargs = kwargs
 
+    @property
+    def skip_evaluation(self):
+        return False
+
 
 class AdvancedFunctionNode(FunctionNode):
     def __init__(self, target, func, args, kwargs, cls=None) -> None:
         super().__init__(func, args, kwargs)
         self.cls = cls
         self.args_target, self.kw_target = target
+
+    @property
+    def skip_evaluation(self):
+        return True
 
 
 def params_analyze(func, args, kwargs, cls=None):
@@ -80,14 +88,18 @@ def params_analyze(func, args, kwargs, cls=None):
 
     for i, arg in enumerate(args):
         if isinstance(arg, UniversalVariableNode):
-            var_intro_arg.append(i)
+            if arg.skip_evaluation:
+                var_intro_arg.append(i)
+
             new_args.append(arg)
         else:
             new_args.append(NaturalValue(arg))
 
     for name, arg in kwargs.items():
         if isinstance(arg, UniversalVariableNode):
-            var_intro_kw.append(name)
+            if arg.skip_evaluation:
+                var_intro_kw.append(name)
+
             new_kwargs[name] = args
         else:
             new_kwargs[name] = NaturalValue(arg)

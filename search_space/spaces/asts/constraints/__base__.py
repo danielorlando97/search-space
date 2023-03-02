@@ -12,6 +12,10 @@ class UniversalVariableNode:
     def is_self(self):
         return False
 
+    @property
+    def skip_evaluation(self):
+        return True
+
     def _suggestion(self, op):
         return ''
 
