@@ -4,12 +4,13 @@ from search_space.errors import InvalidSpaceDefinition
 from search_space.spaces.domains.__base__ import Domain
 from . import __namespace__ as nsp
 from search_space.sampler import ModelSampler, BERNOULLI
-
+from uuid import uuid4
 
 class BachedDomain(Domain, metaclass=nsp.BachedDomain):
     def __init__(self, *domains: List[Domain]) -> None:
         self.domains: List[Domain] = list(domains)
         self.model_sample_name = None
+        self.id = uuid4()
 
     def extend(self, top):
         self.domains[-1].extend(top)
@@ -110,12 +111,13 @@ class BachedDomain(Domain, metaclass=nsp.BachedDomain):
         return self.domains.append(__o)
 
     def __hash__(self) -> int:
-        return id(self)
+        return hash(self.id)
 
 
 class LogBachedDomain(BachedDomain, metaclass=nsp.LogBachedDomain):
     def __init__(self, *domains: List[Domain]) -> None:
         super().__init__(*domains)
+        self.id = uuid4()
 
     def __copy__(self):
         return LogBachedDomain(*[copy(d) for d in self.domains])
@@ -182,4 +184,4 @@ class LogBachedDomain(BachedDomain, metaclass=nsp.LogBachedDomain):
         return bd
 
     def __hash__(self) -> int:
-        return id(self)
+        return hash(self.id)

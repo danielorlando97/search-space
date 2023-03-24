@@ -14,6 +14,7 @@ from .printer_tools.default_printer_class import DefaultPrinter
 from search_space.sampler import ModelSampler
 import inspect
 from dataclasses import dataclass
+from uuid import uuid4
 
 T = TypeVar('T')
 
@@ -150,9 +151,9 @@ class BasicSearchSpace:
 
     def __hash__(self) -> int:
         if self._inner_hash is None:
-            return id(self)
+            self._inner_hash = uuid4()
 
-        return self._inner_hash
+        return hash(self._inner_hash)
 
     def __copy__(self):
         try:

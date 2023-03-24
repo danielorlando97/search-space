@@ -6,7 +6,7 @@ from search_space.spaces.asts import constraints as ast_constraint
 from typing import Dict, Tuple
 # TODO: check space types
 import numpy as np
-
+from uuid import uuid4
 
 class ListSlicePointer:
     """
@@ -78,6 +78,7 @@ class TensorSlicePointer:
         self.index = index
         self.tensor: TensorSearchSpace = tensor
         self.dims = dims
+        self.id = uuid4()
 
     def get_sample(self, params: GetSampleParameters) -> GetSampleResult:
         params.initialize("TensorSlicePointer")
@@ -104,7 +105,7 @@ class TensorSlicePointer:
         return result
 
     def __hash__(self) -> int:
-        return id(self)
+        return hash(self.id)
 
 
 class TensorIndexPointer:
